@@ -1,0 +1,14 @@
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+node_modules/
+dist/
+.DS_Store
+.dbxignore
+*.stackdump
+.agent-memory/
+.playwright-mcp/
+.superpowers/
+test-results/
+playwright-report/
