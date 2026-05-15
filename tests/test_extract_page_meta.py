@@ -77,3 +77,29 @@ def test_meta_dict_round_trip(tmp_path: Path) -> None:
     assert d["title"] == "Title"
     assert d["subtitle"].startswith("Lead text")
     assert isinstance(d["essence"], str)
+
+
+def test_essence_skips_definition_subheading(tmp_path: Path) -> None:
+    """Wiki convention: `# H1 \\n\\n## Definition \\n\\n<lead>` — skip the sub-heading."""
+    page = tmp_path / "a.md"
+    _write(page, "# Title\n\n## Definition\n\nThe real lead sentence. More context.\n\n## Why it matters\n\nOther stuff.\n")
+    meta = extract_page_meta.extract(page)
+    assert meta.essence.startswith("The real lead sentence.")
+    assert "## Definition" not in meta.essence
+    assert meta.subtitle == "The real lead sentence."
+
+
+def test_essence_skips_multiple_consecutive_subheadings(tmp_path: Path) -> None:
+    """Several heading-only blocks in a row are all skipped."""
+    page = tmp_path / "a.md"
+    _write(page, "# Title\n\n## Sub one\n\n### Sub two\n\nActual content here.\n")
+    meta = extract_page_meta.extract(page)
+    assert meta.essence == "Actual content here."
+
+
+def test_essence_keeps_paragraph_with_inline_heading_text(tmp_path: Path) -> None:
+    """A paragraph that merely mentions a heading-like phrase mid-line is NOT skipped."""
+    page = tmp_path / "a.md"
+    _write(page, "# Title\n\nThis paragraph talks about # symbols inline. Not a heading.\n")
+    meta = extract_page_meta.extract(page)
+    assert meta.essence.startswith("This paragraph talks about")

@@ -70,10 +70,29 @@ def _render_wikilinks(text: str) -> str:
     return _WIKILINK_RE.sub(repl, text)
 
 
+_HEADING_LINE_RE = re.compile(r"^#{1,6}\s")
+
+
+def _is_heading_only(paragraph: str) -> bool:
+    """True if every non-blank line of the paragraph is a markdown heading."""
+    lines = [ln for ln in paragraph.splitlines() if ln.strip()]
+    return bool(lines) and all(_HEADING_LINE_RE.match(ln) for ln in lines)
+
+
 def _first_paragraph(body: str) -> str:
-    """First non-empty paragraph (sequence of non-blank lines)."""
-    paras = re.split(r"\n\s*\n", body.strip())
-    return paras[0].strip() if paras else ""
+    """First non-empty paragraph that is not a markdown heading.
+
+    The wiki convention is `# H1 \\n\\n## Definition \\n\\n<lead>`, so the
+    first block after the H1 is often the sub-heading `## Definition` itself.
+    We skip paragraphs that consist only of heading lines so the real lead
+    text wins.
+    """
+    for para in re.split(r"\n\s*\n", body.strip()):
+        cleaned = para.strip()
+        if not cleaned or _is_heading_only(cleaned):
+            continue
+        return cleaned
+    return ""
 
 
 def _first_sentence(text: str) -> str:
