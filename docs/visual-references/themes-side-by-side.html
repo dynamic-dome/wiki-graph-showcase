@@ -1,0 +1,327 @@
+<style>
+  /* Force dark backdrop for the themes regardless of OS theme */
+  .themes-wrap {
+    background: #0a0a14;
+    padding: 24px;
+    border-radius: 16px;
+    margin: 16px 0 24px;
+  }
+  .themes-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+  .theme-card {
+    /* NOT using .option/.card to avoid frame CSS overlay */
+  }
+  .theme-stage {
+    height: 420px;
+    border-radius: 14px;
+    position: relative;
+    overflow: hidden;
+  }
+  .theme-stage::before {
+    content: attr(data-label);
+    position: absolute;
+    top: 14px; left: 18px;
+    z-index: 20;
+    padding: 5px 12px;
+    border-radius: 999px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  /* ============ THEME 1: DYNAMIC DOME ============ */
+  .t-dome {
+    background: radial-gradient(ellipse at 30% 40%, #1a1428 0%, #0B0F1A 70%);
+    border: 1px solid hsla(42, 65%, 50%, 0.18);
+  }
+  .t-dome::before {
+    background: hsla(42, 65%, 50%, 0.12);
+    color: #E6BF52;
+    border: 1px solid hsla(42, 65%, 50%, 0.4);
+  }
+  .t-dome .brand-row {
+    position: absolute; top: 14px; right: 18px;
+    color: #B6AC92;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 12px;
+    z-index: 15;
+  }
+  .t-dome .brand-row .glyph {
+    color: #C9A23A;
+    text-shadow: 0 0 8px #C9A23A;
+    margin-right: 4px;
+  }
+  .t-dome .star { position: absolute; background: white; border-radius: 50%; }
+  .t-dome .edge {
+    position: absolute; height: 1px;
+    background: linear-gradient(90deg, transparent, hsla(42, 50%, 60%, 0.35), transparent);
+    transform-origin: 0 0;
+  }
+  .t-dome .edge.cyan { background: linear-gradient(90deg, transparent, hsla(188, 95%, 55%, 0.5), transparent); }
+  .t-dome .edge.gold { background: linear-gradient(90deg, transparent, hsla(42, 65%, 55%, 0.7), transparent); height: 2px; }
+  .t-dome .node { position: absolute; border-radius: 50%; }
+  .t-dome .n-center {
+    width: 24px; height: 24px;
+    background: radial-gradient(circle, #E6BF52 0%, #C9A23A 60%, transparent 100%);
+    box-shadow: 0 0 40px #C9A23A, 0 0 80px hsla(42, 65%, 50%, 0.55);
+    animation: pulse-gold 3s ease-in-out infinite;
+  }
+  .t-dome .n-cyan {
+    width: 14px; height: 14px;
+    background: radial-gradient(circle, #2BE2F5, hsla(188, 95%, 50%, 0.4) 70%, transparent);
+    box-shadow: 0 0 18px hsla(188, 95%, 55%, 0.6);
+  }
+  .t-dome .n-magenta {
+    width: 11px; height: 11px;
+    background: radial-gradient(circle, #F23BBF, hsla(320, 95%, 55%, 0.4) 70%, transparent);
+    box-shadow: 0 0 16px hsla(320, 95%, 55%, 0.55);
+  }
+  .t-dome .n-haze {
+    width: 6px; height: 6px;
+    background: hsla(42, 50%, 70%, 0.45);
+  }
+  @keyframes pulse-gold {
+    0%, 100% { box-shadow: 0 0 40px #C9A23A, 0 0 80px hsla(42, 65%, 50%, 0.55); }
+    50% { box-shadow: 0 0 55px #E6BF52, 0 0 120px hsla(42, 65%, 60%, 0.7); }
+  }
+
+  /* ============ THEME 2: CRAB NEBULA ============ */
+  .t-crab {
+    background:
+      radial-gradient(ellipse at 65% 55%, hsla(280, 60%, 25%, 0.45) 0%, transparent 50%),
+      radial-gradient(ellipse at 30% 40%, hsla(200, 80%, 25%, 0.4) 0%, transparent 55%),
+      radial-gradient(ellipse at 50% 50%, hsla(330, 50%, 22%, 0.3) 0%, transparent 60%),
+      #02010a;
+    border: 1px solid hsla(190, 80%, 50%, 0.18);
+  }
+  .t-crab::before {
+    background: hsla(200, 70%, 50%, 0.15);
+    color: #98e8ff;
+    border: 1px solid hsla(190, 70%, 50%, 0.4);
+  }
+  .t-crab .brand-row {
+    position: absolute; top: 14px; right: 18px;
+    color: hsla(200, 30%, 78%, 0.7);
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 12px;
+    z-index: 15;
+  }
+  .t-crab .brand-row .glyph {
+    color: #98e8ff;
+    text-shadow: 0 0 10px #98e8ff;
+    margin-right: 4px;
+  }
+  .t-crab .filament {
+    position: absolute; border-radius: 50%;
+    filter: blur(28px); opacity: 0.5; pointer-events: none;
+  }
+  .t-crab .f1 { width: 200px; height: 80px; left: 25%; top: 25%; background: hsla(200, 95%, 55%, 0.45); transform: rotate(-15deg); }
+  .t-crab .f2 { width: 180px; height: 70px; left: 50%; top: 50%; background: hsla(330, 85%, 60%, 0.4); transform: rotate(20deg); }
+  .t-crab .f3 { width: 140px; height: 50px; left: 55%; top: 30%; background: hsla(165, 80%, 55%, 0.35); transform: rotate(-40deg); }
+  .t-crab .f4 { width: 160px; height: 60px; left: 20%; top: 60%; background: hsla(260, 70%, 60%, 0.3); transform: rotate(35deg); }
+  .t-crab .star { position: absolute; background: white; border-radius: 50%; box-shadow: 0 0 2px white; }
+  .t-crab .star.bright { box-shadow: 0 0 4px white, 0 0 8px hsla(200, 80%, 80%, 0.6); }
+  .t-crab .edge {
+    position: absolute; height: 1px;
+    background: linear-gradient(90deg, transparent, hsla(195, 90%, 70%, 0.45), transparent);
+    transform-origin: 0 0;
+  }
+  .t-crab .edge.pink { background: linear-gradient(90deg, transparent, hsla(330, 85%, 70%, 0.5), transparent); }
+  .t-crab .edge.bright { background: linear-gradient(90deg, transparent, hsla(190, 95%, 75%, 0.85), transparent); height: 2px; }
+  .t-crab .node { position: absolute; border-radius: 50%; }
+  .t-crab .n-center {
+    width: 22px; height: 22px;
+    background: radial-gradient(circle, #ffffff 0%, hsla(190, 95%, 80%, 0.8) 40%, transparent 100%);
+    box-shadow: 0 0 30px white, 0 0 60px hsla(190, 95%, 70%, 0.7), 0 0 120px hsla(200, 95%, 60%, 0.4);
+    animation: pulse-pulsar 1.4s ease-in-out infinite;
+  }
+  .t-crab .n-cyan {
+    width: 13px; height: 13px;
+    background: radial-gradient(circle, hsla(180, 95%, 75%, 1), hsla(180, 90%, 55%, 0.4) 70%, transparent);
+    box-shadow: 0 0 16px hsla(180, 95%, 60%, 0.7);
+  }
+  .t-crab .n-magenta {
+    width: 11px; height: 11px;
+    background: radial-gradient(circle, hsla(330, 90%, 75%, 1), hsla(330, 85%, 55%, 0.4) 70%, transparent);
+    box-shadow: 0 0 14px hsla(330, 85%, 65%, 0.6);
+  }
+  .t-crab .n-haze {
+    width: 5px; height: 5px; background: hsla(200, 40%, 75%, 0.5);
+    box-shadow: 0 0 6px hsla(200, 40%, 75%, 0.4);
+  }
+  @keyframes pulse-pulsar {
+    0%, 100% { transform: scale(1); box-shadow: 0 0 30px white, 0 0 60px hsla(190, 95%, 70%, 0.7), 0 0 120px hsla(200, 95%, 60%, 0.4); }
+    50% { transform: scale(1.08); box-shadow: 0 0 45px white, 0 0 90px hsla(190, 95%, 75%, 0.9), 0 0 160px hsla(200, 95%, 65%, 0.55); }
+  }
+
+  .tooltip-mock {
+    position: absolute; padding: 8px 12px; border-radius: 7px;
+    font-family: 'Inter', sans-serif; font-size: 12px; pointer-events: none;
+  }
+  .t-dome .tooltip-mock {
+    left: 56%; top: 38%;
+    background: hsla(222, 22%, 9%, 0.95);
+    border: 1px solid hsla(42, 65%, 50%, 0.4);
+    color: #F5F1E6;
+    box-shadow: 0 8px 24px hsla(222, 50%, 0%, 0.6);
+  }
+  .t-dome .tooltip-mock .ttitle { color: #E6BF52; font-weight: 600; }
+  .t-dome .tooltip-mock .tmeta { color: #B6AC92; font-family: 'JetBrains Mono', monospace; font-size: 10px; }
+  .t-crab .tooltip-mock {
+    left: 56%; top: 38%;
+    background: hsla(220, 50%, 5%, 0.92);
+    border: 1px solid hsla(190, 70%, 60%, 0.5);
+    color: #E8F4FF;
+    box-shadow: 0 8px 24px hsla(220, 60%, 0%, 0.7), 0 0 24px hsla(190, 80%, 50%, 0.25);
+  }
+  .t-crab .tooltip-mock .ttitle { color: #98e8ff; font-weight: 600; }
+  .t-crab .tooltip-mock .tmeta { color: hsla(200, 30%, 78%, 0.8); font-family: 'JetBrains Mono', monospace; font-size: 10px; }
+
+  .theme-caption {
+    margin-top: 14px;
+    color: #d0d0d8;
+    font-size: 13px;
+    line-height: 1.55;
+  }
+  .theme-caption strong { color: #ffffff; }
+</style>
+
+<h2>Theme 1 (Dynamic Dome) vs Theme 2 (Crab Nebula)</h2>
+<p class="subtitle">Gleicher Knoten-Layout, gleicher BFS-Subgraph, nur Tokens und Glow-Profil unterscheiden sich.</p>
+
+<div class="themes-wrap">
+  <div class="themes-grid">
+
+    <!-- THEME 1: DYNAMIC DOME -->
+    <div class="theme-card">
+      <div class="theme-stage t-dome" data-label="Theme 1 · Dynamic Dome">
+        <div class="brand-row"><span class="glyph">◆</span>87 KNOTEN · 312 MS</div>
+        <div class="star" style="width:2px;height:2px;left:12%;top:18%;opacity:0.5"></div>
+        <div class="star" style="width:1px;height:1px;left:78%;top:10%;opacity:0.7"></div>
+        <div class="star" style="width:2px;height:2px;left:88%;top:78%;opacity:0.4"></div>
+        <div class="star" style="width:1px;height:1px;left:22%;top:82%;opacity:0.6"></div>
+        <div class="edge gold" style="left: 51%; top: 49%; width: 110px; transform: rotate(-25deg);"></div>
+        <div class="edge gold" style="left: 51%; top: 49%; width: 125px; transform: rotate(40deg);"></div>
+        <div class="edge gold" style="left: 51%; top: 49%; width: 100px; transform: rotate(150deg);"></div>
+        <div class="edge gold" style="left: 51%; top: 49%; width: 115px; transform: rotate(-130deg);"></div>
+        <div class="edge cyan" style="left: 36%; top: 32%; width: 75px; transform: rotate(60deg);"></div>
+        <div class="edge cyan" style="left: 65%; top: 38%; width: 70px; transform: rotate(-110deg);"></div>
+        <div class="edge" style="left: 32%; top: 65%; width: 60px; transform: rotate(20deg);"></div>
+        <div class="edge" style="left: 70%; top: 70%; width: 55px; transform: rotate(120deg);"></div>
+        <div class="node n-center" style="left: 48%; top: 46%;"></div>
+        <div class="node n-cyan" style="left: 34%; top: 30%;"></div>
+        <div class="node n-cyan" style="left: 64%; top: 34%;"></div>
+        <div class="node n-cyan" style="left: 32%; top: 62%;"></div>
+        <div class="node n-cyan" style="left: 66%; top: 65%;"></div>
+        <div class="node n-magenta" style="left: 20%; top: 22%;"></div>
+        <div class="node n-magenta" style="left: 78%; top: 22%;"></div>
+        <div class="node n-magenta" style="left: 22%; top: 75%;"></div>
+        <div class="node n-magenta" style="left: 80%; top: 78%;"></div>
+        <div class="node n-magenta" style="left: 14%; top: 50%;"></div>
+        <div class="node n-haze" style="left: 10%; top: 35%;"></div>
+        <div class="node n-haze" style="left: 88%; top: 50%;"></div>
+        <div class="node n-haze" style="left: 50%; top: 88%;"></div>
+        <div class="tooltip-mock">
+          <div class="ttitle">Layer-Capture-These</div>
+          <div class="tmeta">BFS 1 · 8 KANTEN</div>
+        </div>
+      </div>
+      <p class="theme-caption">
+        <strong>Dynamic Dome.</strong> Gold-Center pulsiert ruhig (3 s), Cyan + Magenta nach BFS-Distanz,
+        sterile Sci-Fi-Sterne. Edel, signature-look, "das bin ich". Direkter Token-Mapping von
+        <code style="color:#E6BF52">dome-theme.css</code>.
+      </p>
+    </div>
+
+    <!-- THEME 2: CRAB NEBULA -->
+    <div class="theme-card">
+      <div class="theme-stage t-crab" data-label="Theme 2 · Crab Nebula">
+        <div class="brand-row"><span class="glyph">◆</span>87 KNOTEN · 312 MS</div>
+        <div class="filament f1"></div>
+        <div class="filament f2"></div>
+        <div class="filament f3"></div>
+        <div class="filament f4"></div>
+        <div class="star" style="width:2px;height:2px;left:8%;top:12%;"></div>
+        <div class="star bright" style="width:2px;height:2px;left:18%;top:8%;"></div>
+        <div class="star" style="width:1px;height:1px;left:34%;top:14%;"></div>
+        <div class="star" style="width:2px;height:2px;left:55%;top:18%;"></div>
+        <div class="star bright" style="width:2px;height:2px;left:72%;top:10%;"></div>
+        <div class="star" style="width:1px;height:1px;left:88%;top:14%;"></div>
+        <div class="star" style="width:1px;height:1px;left:6%;top:38%;"></div>
+        <div class="star" style="width:1px;height:1px;left:92%;top:42%;"></div>
+        <div class="star bright" style="width:2px;height:2px;left:5%;top:65%;"></div>
+        <div class="star" style="width:1px;height:1px;left:24%;top:88%;"></div>
+        <div class="star" style="width:1px;height:1px;left:48%;top:92%;"></div>
+        <div class="star" style="width:2px;height:2px;left:78%;top:90%;"></div>
+        <div class="star bright" style="width:2px;height:2px;left:94%;top:80%;"></div>
+        <div class="edge bright" style="left: 51%; top: 49%; width: 110px; transform: rotate(-25deg);"></div>
+        <div class="edge bright" style="left: 51%; top: 49%; width: 125px; transform: rotate(40deg);"></div>
+        <div class="edge bright" style="left: 51%; top: 49%; width: 100px; transform: rotate(150deg);"></div>
+        <div class="edge bright" style="left: 51%; top: 49%; width: 115px; transform: rotate(-130deg);"></div>
+        <div class="edge pink" style="left: 36%; top: 32%; width: 75px; transform: rotate(60deg);"></div>
+        <div class="edge pink" style="left: 65%; top: 38%; width: 70px; transform: rotate(-110deg);"></div>
+        <div class="edge" style="left: 32%; top: 65%; width: 60px; transform: rotate(20deg);"></div>
+        <div class="edge" style="left: 70%; top: 70%; width: 55px; transform: rotate(120deg);"></div>
+        <div class="node n-center" style="left: 48%; top: 46%;"></div>
+        <div class="node n-cyan" style="left: 34%; top: 30%;"></div>
+        <div class="node n-cyan" style="left: 64%; top: 34%;"></div>
+        <div class="node n-cyan" style="left: 32%; top: 62%;"></div>
+        <div class="node n-cyan" style="left: 66%; top: 65%;"></div>
+        <div class="node n-magenta" style="left: 20%; top: 22%;"></div>
+        <div class="node n-magenta" style="left: 78%; top: 22%;"></div>
+        <div class="node n-magenta" style="left: 22%; top: 75%;"></div>
+        <div class="node n-magenta" style="left: 80%; top: 78%;"></div>
+        <div class="node n-magenta" style="left: 14%; top: 50%;"></div>
+        <div class="node n-haze" style="left: 10%; top: 35%;"></div>
+        <div class="node n-haze" style="left: 88%; top: 50%;"></div>
+        <div class="node n-haze" style="left: 50%; top: 88%;"></div>
+        <div class="tooltip-mock">
+          <div class="ttitle">Layer-Capture-These</div>
+          <div class="tmeta">BFS 1 · 8 KANTEN</div>
+        </div>
+      </div>
+      <p class="theme-caption">
+        <strong>Crab Nebula.</strong> Weiss-leuchtender Pulsar-Center mit schnellem Pulse (1.4 s),
+        gehauchte Filament-Wolken im Hintergrund (CSS-blur), mehr Sterne, kuehlere Cyan/Tuerkis-Toene.
+        Astrofotografisch.
+      </p>
+    </div>
+
+  </div>
+</div>
+
+<h3>Was nehmen wir?</h3>
+<div class="options" data-multiselect>
+  <div class="option" data-choice="dome-only" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>Nur Theme 1 (Dome) im MVP</h3>
+      <p>Saubere Linie, eins richtig gut bauen.</p>
+    </div>
+  </div>
+  <div class="option" data-choice="both" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>Beide im MVP, Switcher oben rechts</h3>
+      <p>Ein bisschen mehr Aufwand, doppelter Staunen-Effekt.</p>
+    </div>
+  </div>
+  <div class="option" data-choice="crab-only" onclick="toggleSelect(this)">
+    <div class="letter">C</div>
+    <div class="content">
+      <h3>Nur Theme 2 (Crab) im MVP</h3>
+      <p>Dome-Tokens kommen spaeter, wenn du sie in der Hauptseite nutzt.</p>
+    </div>
+  </div>
+  <div class="option" data-choice="adjust" onclick="toggleSelect(this)">
+    <div class="letter">D</div>
+    <div class="content">
+      <h3>Erst nachjustieren</h3>
+      <p>Sag im Terminal was du anders willst.</p>
+    </div>
+  </div>
+</div>

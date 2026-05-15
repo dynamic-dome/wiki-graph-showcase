@@ -1,0 +1,286 @@
+<style>
+  .themes-wrap {
+    background: #0a0a14;
+    padding: 24px;
+    border-radius: 16px;
+    margin: 16px 0 24px;
+  }
+  .stage-large {
+    height: 520px;
+    border-radius: 14px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* CRAB NEBULA with occasional gold-pulse edges */
+  .t-crab {
+    background:
+      radial-gradient(ellipse at 65% 55%, hsla(280, 60%, 25%, 0.45) 0%, transparent 50%),
+      radial-gradient(ellipse at 30% 40%, hsla(200, 80%, 25%, 0.4) 0%, transparent 55%),
+      radial-gradient(ellipse at 50% 50%, hsla(330, 50%, 22%, 0.3) 0%, transparent 60%),
+      #02010a;
+    border: 1px solid hsla(190, 80%, 50%, 0.18);
+  }
+  .t-crab::before {
+    content: "Theme 2 · Crab Nebula + Gold Pulse";
+    position: absolute;
+    top: 16px; left: 20px;
+    z-index: 20;
+    padding: 6px 14px;
+    border-radius: 999px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    background: hsla(200, 70%, 50%, 0.15);
+    color: #98e8ff;
+    border: 1px solid hsla(190, 70%, 50%, 0.4);
+  }
+  .t-crab .brand-row {
+    position: absolute; top: 16px; right: 20px;
+    color: hsla(200, 30%, 78%, 0.7);
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 12px;
+    z-index: 15;
+  }
+  .t-crab .brand-row .glyph {
+    color: #98e8ff;
+    text-shadow: 0 0 10px #98e8ff;
+    margin-right: 4px;
+    animation: glyph-shift 8s ease-in-out infinite;
+  }
+  @keyframes glyph-shift {
+    0%, 92%, 100% { color: #98e8ff; text-shadow: 0 0 10px #98e8ff; }
+    96% { color: #E6BF52; text-shadow: 0 0 14px #E6BF52, 0 0 28px hsla(42, 65%, 50%, 0.5); }
+  }
+
+  .t-crab .filament {
+    position: absolute; border-radius: 50%;
+    filter: blur(28px); opacity: 0.5; pointer-events: none;
+  }
+  .t-crab .f1 { width: 240px; height: 90px; left: 25%; top: 25%; background: hsla(200, 95%, 55%, 0.45); transform: rotate(-15deg); }
+  .t-crab .f2 { width: 220px; height: 80px; left: 50%; top: 50%; background: hsla(330, 85%, 60%, 0.4); transform: rotate(20deg); }
+  .t-crab .f3 { width: 180px; height: 60px; left: 55%; top: 30%; background: hsla(165, 80%, 55%, 0.35); transform: rotate(-40deg); }
+  .t-crab .f4 { width: 200px; height: 70px; left: 20%; top: 60%; background: hsla(260, 70%, 60%, 0.3); transform: rotate(35deg); }
+
+  .t-crab .star { position: absolute; background: white; border-radius: 50%; box-shadow: 0 0 2px white; }
+  .t-crab .star.bright { box-shadow: 0 0 4px white, 0 0 8px hsla(200, 80%, 80%, 0.6); }
+
+  /* === EDGES === */
+  /* Base edge: cyan/white shimmer */
+  .t-crab .edge {
+    position: absolute; height: 1px;
+    background: linear-gradient(90deg, transparent, hsla(195, 90%, 70%, 0.45), transparent);
+    transform-origin: 0 0;
+  }
+  .t-crab .edge.bright {
+    background: linear-gradient(90deg, transparent, hsla(190, 95%, 75%, 0.85), transparent);
+    height: 2px;
+  }
+  .t-crab .edge.pink {
+    background: linear-gradient(90deg, transparent, hsla(330, 85%, 70%, 0.5), transparent);
+  }
+
+  /* GOLD-PULSE EDGES — staggered breath, each one different timing */
+  .t-crab .edge.gold-breath {
+    height: 2px;
+    animation: gold-breath 7s ease-in-out infinite;
+  }
+  .t-crab .edge.gold-breath.delay-1 { animation-delay: 0s; }
+  .t-crab .edge.gold-breath.delay-2 { animation-delay: 2.3s; }
+  .t-crab .edge.gold-breath.delay-3 { animation-delay: 4.1s; }
+  .t-crab .edge.gold-breath.delay-4 { animation-delay: 5.7s; }
+  @keyframes gold-breath {
+    0%, 75%, 100% {
+      background: linear-gradient(90deg, transparent, hsla(190, 95%, 75%, 0.85), transparent);
+      height: 2px;
+      box-shadow: none;
+    }
+    82% {
+      background: linear-gradient(90deg, transparent, hsla(45, 90%, 70%, 1), transparent);
+      height: 2.5px;
+      box-shadow: 0 0 12px hsla(42, 90%, 65%, 0.7);
+    }
+    90% {
+      background: linear-gradient(90deg, transparent, hsla(42, 85%, 65%, 0.8), transparent);
+      height: 2px;
+      box-shadow: 0 0 6px hsla(42, 85%, 60%, 0.4);
+    }
+  }
+
+  .t-crab .node { position: absolute; border-radius: 50%; }
+  .t-crab .n-center {
+    width: 28px; height: 28px;
+    background: radial-gradient(circle, #ffffff 0%, hsla(190, 95%, 80%, 0.8) 40%, transparent 100%);
+    box-shadow: 0 0 30px white, 0 0 60px hsla(190, 95%, 70%, 0.7), 0 0 120px hsla(200, 95%, 60%, 0.4);
+    animation: pulse-pulsar 1.4s ease-in-out infinite;
+  }
+  .t-crab .n-cyan {
+    width: 16px; height: 16px;
+    background: radial-gradient(circle, hsla(180, 95%, 75%, 1), hsla(180, 90%, 55%, 0.4) 70%, transparent);
+    box-shadow: 0 0 16px hsla(180, 95%, 60%, 0.7);
+  }
+  /* One node occasionally pulses gold to match its incoming edges */
+  .t-crab .n-cyan.gold-touch {
+    animation: node-gold-touch 7s ease-in-out infinite 0.2s;
+  }
+  @keyframes node-gold-touch {
+    0%, 78%, 100% {
+      background: radial-gradient(circle, hsla(180, 95%, 75%, 1), hsla(180, 90%, 55%, 0.4) 70%, transparent);
+      box-shadow: 0 0 16px hsla(180, 95%, 60%, 0.7);
+    }
+    85% {
+      background: radial-gradient(circle, #E6BF52 0%, hsla(42, 85%, 55%, 0.5) 70%, transparent);
+      box-shadow: 0 0 20px hsla(42, 85%, 60%, 0.8), 0 0 40px hsla(42, 65%, 50%, 0.4);
+    }
+  }
+  .t-crab .n-magenta {
+    width: 12px; height: 12px;
+    background: radial-gradient(circle, hsla(330, 90%, 75%, 1), hsla(330, 85%, 55%, 0.4) 70%, transparent);
+    box-shadow: 0 0 14px hsla(330, 85%, 65%, 0.6);
+  }
+  .t-crab .n-haze {
+    width: 6px; height: 6px; background: hsla(200, 40%, 75%, 0.5);
+    box-shadow: 0 0 6px hsla(200, 40%, 75%, 0.4);
+  }
+  @keyframes pulse-pulsar {
+    0%, 100% { transform: scale(1); box-shadow: 0 0 30px white, 0 0 60px hsla(190, 95%, 70%, 0.7), 0 0 120px hsla(200, 95%, 60%, 0.4); }
+    50% { transform: scale(1.08); box-shadow: 0 0 45px white, 0 0 90px hsla(190, 95%, 75%, 0.9), 0 0 160px hsla(200, 95%, 65%, 0.55); }
+  }
+
+  .tooltip-mock {
+    position: absolute; padding: 9px 14px; border-radius: 7px;
+    font-family: 'Inter', sans-serif; font-size: 12px; pointer-events: none;
+    left: 58%; top: 36%;
+    background: hsla(220, 50%, 5%, 0.92);
+    border: 1px solid hsla(190, 70%, 60%, 0.5);
+    color: #E8F4FF;
+    box-shadow: 0 8px 24px hsla(220, 60%, 0%, 0.7), 0 0 24px hsla(190, 80%, 50%, 0.25);
+  }
+  .tooltip-mock .ttitle { color: #98e8ff; font-weight: 600; }
+  .tooltip-mock .tmeta { color: hsla(200, 30%, 78%, 0.8); font-family: 'JetBrains Mono', monospace; font-size: 10px; }
+
+  /* Legend */
+  .legend {
+    margin-top: 18px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    color: #d0d0d8;
+  }
+  .legend-item { display: flex; align-items: center; gap: 10px; }
+  .legend-swatch {
+    width: 36px; height: 4px; border-radius: 2px;
+  }
+  .legend-swatch.cyan { background: linear-gradient(90deg, transparent, hsla(190, 95%, 75%, 1), transparent); }
+  .legend-swatch.gold {
+    background: linear-gradient(90deg, transparent, hsla(42, 90%, 65%, 1), transparent);
+    box-shadow: 0 0 8px hsla(42, 90%, 60%, 0.6);
+  }
+</style>
+
+<h2>Crab Nebula mit gelegentlich gold aufatmenden Kanten</h2>
+<p class="subtitle">Vier von acht Kanten sind <em>gold-breath</em>-markiert mit unterschiedlichem Timing-Versatz. Jede 7 Sekunden glueht eine kurz auf, wieder zurueck zu Cyan. Eine Kante glueht zu einem Knoten der dann <em>mit-glueht</em>. Auch der Brand-Glyph oben rechts hat einen kurzen Gold-Schimmer alle 8 s.</p>
+
+<div class="themes-wrap">
+  <div class="stage-large t-crab">
+    <div class="brand-row"><span class="glyph">◆</span>87 KNOTEN · 312 MS</div>
+
+    <div class="filament f1"></div>
+    <div class="filament f2"></div>
+    <div class="filament f3"></div>
+    <div class="filament f4"></div>
+
+    <div class="star" style="width:2px;height:2px;left:8%;top:12%;"></div>
+    <div class="star bright" style="width:2px;height:2px;left:18%;top:8%;"></div>
+    <div class="star" style="width:1px;height:1px;left:34%;top:14%;"></div>
+    <div class="star" style="width:2px;height:2px;left:55%;top:18%;"></div>
+    <div class="star bright" style="width:2px;height:2px;left:72%;top:10%;"></div>
+    <div class="star" style="width:1px;height:1px;left:88%;top:14%;"></div>
+    <div class="star" style="width:1px;height:1px;left:6%;top:38%;"></div>
+    <div class="star" style="width:1px;height:1px;left:92%;top:42%;"></div>
+    <div class="star bright" style="width:2px;height:2px;left:5%;top:65%;"></div>
+    <div class="star" style="width:1px;height:1px;left:24%;top:88%;"></div>
+    <div class="star" style="width:1px;height:1px;left:48%;top:92%;"></div>
+    <div class="star" style="width:2px;height:2px;left:78%;top:90%;"></div>
+    <div class="star bright" style="width:2px;height:2px;left:94%;top:80%;"></div>
+    <div class="star" style="width:1px;height:1px;left:42%;top:6%;"></div>
+    <div class="star" style="width:1px;height:1px;left:62%;top:78%;"></div>
+
+    <!-- The 4 closest edges: gold-breath at different timings -->
+    <div class="edge gold-breath delay-1" style="left: 51%; top: 49%; width: 140px; transform: rotate(-25deg);"></div>
+    <div class="edge gold-breath delay-2" style="left: 51%; top: 49%; width: 155px; transform: rotate(40deg);"></div>
+    <div class="edge gold-breath delay-3" style="left: 51%; top: 49%; width: 130px; transform: rotate(150deg);"></div>
+    <div class="edge gold-breath delay-4" style="left: 51%; top: 49%; width: 140px; transform: rotate(-130deg);"></div>
+    <!-- Outer edges stay cyan/pink -->
+    <div class="edge pink" style="left: 36%; top: 32%; width: 95px; transform: rotate(60deg);"></div>
+    <div class="edge pink" style="left: 65%; top: 38%; width: 90px; transform: rotate(-110deg);"></div>
+    <div class="edge" style="left: 32%; top: 65%; width: 80px; transform: rotate(20deg);"></div>
+    <div class="edge" style="left: 70%; top: 70%; width: 75px; transform: rotate(120deg);"></div>
+
+    <div class="node n-center" style="left: 48%; top: 46%;"></div>
+    <!-- One direct neighbour does the gold-touch in sync with delay-2 -->
+    <div class="node n-cyan gold-touch" style="left: 64%; top: 34%;"></div>
+    <div class="node n-cyan" style="left: 34%; top: 30%;"></div>
+    <div class="node n-cyan" style="left: 32%; top: 62%;"></div>
+    <div class="node n-cyan" style="left: 66%; top: 65%;"></div>
+    <div class="node n-magenta" style="left: 20%; top: 22%;"></div>
+    <div class="node n-magenta" style="left: 78%; top: 22%;"></div>
+    <div class="node n-magenta" style="left: 22%; top: 75%;"></div>
+    <div class="node n-magenta" style="left: 80%; top: 78%;"></div>
+    <div class="node n-magenta" style="left: 14%; top: 50%;"></div>
+    <div class="node n-haze" style="left: 10%; top: 35%;"></div>
+    <div class="node n-haze" style="left: 88%; top: 50%;"></div>
+    <div class="node n-haze" style="left: 50%; top: 88%;"></div>
+
+    <div class="tooltip-mock">
+      <div class="ttitle">Layer-Capture-These</div>
+      <div class="tmeta">BFS 1 · 8 KANTEN</div>
+    </div>
+  </div>
+
+  <div class="legend">
+    <div class="legend-item">
+      <span class="legend-swatch cyan"></span>
+      <span>Normaler Kanten-Zustand — Cyan-Filament</span>
+    </div>
+    <div class="legend-item">
+      <span class="legend-swatch gold"></span>
+      <span>Gold-Atmer — 1x pro ~7s, gestaffelt</span>
+    </div>
+  </div>
+</div>
+
+<h3>Beobachte 10-15 Sekunden — wirkt der Gold-Atmer richtig?</h3>
+<div class="options">
+  <div class="option" data-choice="perfect" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>Genau so, beides bauen</h3>
+      <p>Theme 1 Dome (Gold-dominant) + Theme 2 Crab mit Gold-Atmern als Easter-Egg. Theme-Switcher oben rechts.</p>
+    </div>
+  </div>
+  <div class="option" data-choice="more-gold" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>Mehr / staerker</h3>
+      <p>Mehr Kanten gleichzeitig gold, intensiveres Glow, kuerzeres Intervall.</p>
+    </div>
+  </div>
+  <div class="option" data-choice="less-gold" onclick="toggleSelect(this)">
+    <div class="letter">C</div>
+    <div class="content">
+      <h3>Subtiler</h3>
+      <p>Nur 1 Kante zur Zeit, schwaecheres Glow, laengeres Intervall (15-20 s).</p>
+    </div>
+  </div>
+  <div class="option" data-choice="other" onclick="toggleSelect(this)">
+    <div class="letter">D</div>
+    <div class="content">
+      <h3>Andere Anpassung</h3>
+      <p>Im Terminal beschreiben.</p>
+    </div>
+  </div>
+</div>
