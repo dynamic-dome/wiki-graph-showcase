@@ -4,6 +4,14 @@ Neueste Eintraege oben.
 
 ---
 
+## 2026-05-15 — Bugfix: extract_page_meta skips heading-only paragraphs (ec071a6)
+
+Folge auf den P0-P4-Befund. `_first_paragraph` ueberspringt jetzt Paragraphen, deren non-blank Zeilen alle Markdown-Headings sind. Neue Helper `_is_heading_only`. 3 Regressionstests dazu — Tests-Total **23 → 26 gruen**. Real-Build erneut durchgelaufen: Essences enthalten jetzt echte Lead-Saetze ("Die Allgemeine Relativitaetstheorie (ART) ist Albert Einsteins...", "Ein Schwarzes Loch ist ein Raumzeitbereich..."). Phase 5 entblockt.
+
+Wiki-TODO `~/wiki/wiki/todos/2026-05-15-showcase-essence-extractor.md` auf `status: done` gesetzt.
+
+---
+
 ## 2026-05-15 — Phase 0-4: Build-Pipeline lauffaehig
 
 **Stand:** 8 Commits, 23 pytest-Tests gruen, Tree clean. Pipeline produziert real **31 Knoten / 103 Kanten** gegen `C:/Users/domes/wiki/` — innerhalb Spec-Erwartung (31-40 / 30-200).
