@@ -1,0 +1,43 @@
+{
+  "vault_root": "C:/Users/domes/wiki",
+  "include": [
+    "wiki/concepts/allgemeine-relativitaetstheorie.md",
+    "wiki/concepts/spezielle-relativitaetstheorie.md",
+    "wiki/concepts/quantenmechanik.md",
+    "wiki/concepts/quantenfeldtheorie.md",
+    "wiki/concepts/quantengravitation.md",
+    "wiki/concepts/stringtheorie.md",
+    "wiki/concepts/schleifen-quantengravitation.md",
+    "wiki/concepts/holographisches-prinzip.md",
+    "wiki/concepts/baryogenese.md",
+    "wiki/concepts/kosmische-inflation.md",
+    "wiki/concepts/kosmische-hintergrundstrahlung.md",
+    "wiki/concepts/kosmische-grossraumstruktur.md",
+    "wiki/concepts/baryonische-akustische-oszillationen.md",
+    "wiki/concepts/hubble-spannung.md",
+    "wiki/concepts/praezisionskosmologie.md",
+    "wiki/concepts/sternentwicklung.md",
+    "wiki/concepts/kompakte-objekte.md",
+    "wiki/concepts/schwarzes-loch.md",
+    "wiki/concepts/schwarzschild-metrik.md",
+    "wiki/concepts/gravitationswellen.md",
+    "wiki/concepts/newtonsche-gravitation.md",
+    "wiki/concepts/maxwell-gleichungen.md",
+    "wiki/concepts/thermodynamik.md",
+    "wiki/concepts/entropie.md",
+    "wiki/concepts/entropische-gravitation.md",
+    "wiki/concepts/higgs-feld.md",
+    "wiki/concepts/dekohaerenz.md",
+    "wiki/concepts/quantenfluktuationen.md",
+    "wiki/concepts/quantenvakuum.md",
+    "wiki/concepts/hilbert-raum.md",
+    "wiki/entities/josef-m-gassner.md"
+  ],
+  "default_center": "wiki/concepts/allgemeine-relativitaetstheorie",
+  "theme_default": "crab",
+  "default_gold": 35,
+  "metadata": {
+    "title": "Knowledge Nebula — Dynamic Dome",
+    "description": "Spiel dich durch eine kuratierte Astrophysik-Wissensnebel."
+  }
+}
