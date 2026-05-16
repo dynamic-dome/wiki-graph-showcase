@@ -1,29 +1,74 @@
 import { test, expect } from "@playwright/test";
 import { spawn, ChildProcess } from "child_process";
-import { setTimeout as wait } from "timers/promises";
+import { createServer } from "net";
 
-const BASE_URL = process.env.BASE_URL ?? "http://127.0.0.1:8000";
-const IS_LOCAL = BASE_URL.startsWith("http://127.0.0.1") || BASE_URL.startsWith("http://localhost");
+const ENV_BASE_URL = process.env.BASE_URL;
+const IS_LOCAL =
+  !ENV_BASE_URL ||
+  ENV_BASE_URL.startsWith("http://127.0.0.1") ||
+  ENV_BASE_URL.startsWith("http://localhost");
 
 let server: ChildProcess | undefined;
+let resolvedBaseUrl: string;
+
+async function findFreePort(): Promise<number> {
+  return new Promise((resolve, reject) => {
+    const srv = createServer();
+    srv.unref();
+    srv.on("error", reject);
+    srv.listen(0, "127.0.0.1", () => {
+      const addr = srv.address();
+      if (addr && typeof addr === "object") {
+        const port = addr.port;
+        srv.close(() => resolve(port));
+      } else {
+        reject(new Error("net.createServer did not return AddressInfo"));
+      }
+    });
+  });
+}
+
+async function waitForServer(url: string, timeoutMs = 5000): Promise<void> {
+  const deadline = Date.now() + timeoutMs;
+  let lastErr: unknown;
+  while (Date.now() < deadline) {
+    try {
+      const res = await fetch(url, { method: "HEAD" });
+      if (res.ok || res.status === 404) return; // 404 is fine, server is up
+    } catch (err) {
+      lastErr = err;
+    }
+    await new Promise((r) => setTimeout(r, 100));
+  }
+  throw new Error(`Server at ${url} did not respond within ${timeoutMs} ms (last error: ${String(lastErr)})`);
+}
 
 test.beforeAll(async () => {
-  if (!IS_LOCAL) return;
-  server = spawn("python", ["-m", "http.server", "--directory", "dist", "8000"], {
+  if (!IS_LOCAL) {
+    resolvedBaseUrl = ENV_BASE_URL!;
+    return;
+  }
+  const port = await findFreePort();
+  resolvedBaseUrl = `http://127.0.0.1:${port}`;
+  server = spawn("python", ["-m", "http.server", "--directory", "dist", String(port)], {
     stdio: "ignore",
   });
-  await wait(800);
+  await waitForServer(`${resolvedBaseUrl}/`);
 });
 
 test.afterAll(() => {
   server?.kill("SIGTERM");
 });
 
+function url(path = "/"): string {
+  return `${resolvedBaseUrl}${path}`;
+}
+
 test("loads the showcase page", async ({ page }) => {
   const errors: string[] = [];
   page.on("pageerror", (err) => errors.push(err.message));
 
-  await page.goto(`${BASE_URL}/`);
+  await page.goto(url("/"));
   await expect(page).toHaveTitle(/Knowledge Nebula/);
 
   // Wait for at least one node to be rendered (3d-force-graph injects a canvas)
@@ -37,7 +82,7 @@ test("loads the showcase page", async ({ page }) => {
 });
 
 test("slider value updates the readout and URL", async ({ page }) => {
-  await page.goto(`${BASE_URL}/`);
+  await page.goto(url("/"));
   await page.locator("#graph-container canvas").waitFor({ state: "visible", timeout: 15_000 });
 
   const slider = page.locator("#gold-slider");
@@ -53,7 +98,7 @@ test("slider value updates the readout and URL", async ({ page }) => {
 });
 
 test("theme toggle switches data-theme attribute", async ({ page }) => {
-  await page.goto(`${BASE_URL}/`);
+  await page.goto(url("/"));
   await page.locator("#graph-container canvas").waitFor({ state: "visible", timeout: 15_000 });
 
   const before = await page.evaluate(() => document.documentElement.getAttribute("data-theme"));
@@ -66,7 +111,7 @@ test("theme toggle switches data-theme attribute", async ({ page }) => {
 test("prefers-reduced-motion disables CMB layer at high gold", async ({ browser }) => {
   const ctx = await browser.newContext({ reducedMotion: "reduce" });
   const page = await ctx.newPage();
-  await page.goto(`${BASE_URL}/?gold=85`);
+  await page.goto(url("/?gold=85"));
   await page.locator("#graph-container canvas").waitFor({ state: "visible", timeout: 15_000 });
   // Wait a tick for app init
   await page.waitForTimeout(500);

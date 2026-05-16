@@ -4,6 +4,12 @@ Neueste Eintraege oben.
 
 ---
 
+## 2026-05-16 — DCO #7702 fix: dynamische Port-Wahl statt hardcoded 8000
+
+`tests/e2e/showcase.spec.ts` Local-Modus nutzt jetzt einen freien Port (via `net.createServer().listen(0)`) statt hardcoded 8000. `beforeAll` wartet aktiv via `fetch(HEAD)` bis der Server antwortet, statt blind `setTimeout(800)`. Vorher: wenn Port 8000 belegt war (z.B. lokal laufendes uvicorn), faellt Python's http.server silent zurueck und Playwright trifft den falschen Service. Jetzt: Spec waehlt einen anderen Port und laeuft stabil — auch wenn 8000 belegt ist. Verifiziert: 4/4 lokal mit uvicorn auf 8000 (11.2 s), 4/4 Live, 1/1 Mobile-Smoke (DOMContentLoaded 1.9 s). Helfer `findFreePort()` und `waitForServer()` direkt im Spec (kein neuer File).
+
+---
+
 ## 2026-05-16 — Phase 12 Mobile-Smoke + Custom-Domain `wiki.dynamic-dome.com`
 
 **Custom-Domain:** `wiki.dynamic-dome.com` ueber CF Pages Dashboard angebunden. DNS bei 8.8.8.8 nach < 1 Min sichtbar (CF-Anycast `104.21.22.46` u.a.). `curl --resolve wiki.dynamic-dome.com:443:104.21.22.46 https://wiki.dynamic-dome.com/` → HTTP 200, korrekter Title, `graph.json` reachable. Local-Resolver Drift (Fritz.box hatte das frueher gefragte "non-existent" gecached) klaert sich von selbst nach TTL.
