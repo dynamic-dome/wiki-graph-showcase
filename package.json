@@ -7,7 +7,8 @@
     "build": "python -m tools.build --config showcase.config.json --out dist/",
     "dev": "python -m http.server --directory dist/ 8000",
     "test:py": "python -m pytest tests/ --ignore=tests/e2e -v",
-    "test:e2e": "npx playwright test tests/e2e/",
+    "test:e2e": "npx playwright test tests/e2e/showcase.spec.ts",
+    "test:e2e:live": "npx playwright test tests/e2e/live/",
     "test": "npm run test:py && npm run test:e2e"
   },
   "devDependencies": {

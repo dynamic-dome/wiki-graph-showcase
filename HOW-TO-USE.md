@@ -40,7 +40,7 @@ npx playwright test tests/e2e/
 
 ## Wie deploye ich
 
-Live: <https://wiki-graph-showcase.pages.dev/> (Cloudflare Pages).
+Live: <https://wiki.dynamic-dome.com/> (Custom-Domain) bzw. <https://wiki-graph-showcase.pages.dev/> (CF-Pages-Default).
 
 ### Setup (einmalig pro Maschine + pro Cloudflare-Account)
 
@@ -64,7 +64,7 @@ npx wrangler pages deploy dist/ --project-name=wiki-graph-showcase --branch=main
 
 Production-Branch im Repo (`main`) ist nur fuer Source-Tracking — Cloudflare baut nicht selbst, weil der Vault `C:/Users/domes/wiki/` nicht in CF-Build-Runnern existiert. Deploys laufen manuell aus dem lokalen `dist/` heraus.
 
-Spaeter Custom-Domain `wiki.dynamic-dome.com`: Pages-Dashboard → wiki-graph-showcase → Custom domains → Add. DNS wird auto-konfiguriert weil `dynamic-dome.com` bereits auf Cloudflare liegt.
+Custom-Domain `wiki.dynamic-dome.com` ist seit 2026-05-16 angebunden (Dashboard → Pages → wiki-graph-showcase → Custom domains). DNS-Records wurden auto-konfiguriert weil `dynamic-dome.com` bereits auf Cloudflare liegt.
 
 ## Troubleshooting
 

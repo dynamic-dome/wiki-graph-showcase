@@ -4,6 +4,18 @@ Neueste Eintraege oben.
 
 ---
 
+## 2026-05-16 — Phase 12 Mobile-Smoke + Custom-Domain `wiki.dynamic-dome.com`
+
+**Custom-Domain:** `wiki.dynamic-dome.com` ueber CF Pages Dashboard angebunden. DNS bei 8.8.8.8 nach < 1 Min sichtbar (CF-Anycast `104.21.22.46` u.a.). `curl --resolve wiki.dynamic-dome.com:443:104.21.22.46 https://wiki.dynamic-dome.com/` → HTTP 200, korrekter Title, `graph.json` reachable. Local-Resolver Drift (Fritz.box hatte das frueher gefragte "non-existent" gecached) klaert sich von selbst nach TTL.
+
+**Mobile-Smoke:** Neuer Spec `tests/e2e/live/mobile-smoke.spec.ts` (iPhone-12 Viewport+UA, CDP-4G-Throttling 4 Mbit/s + 200 ms RTT). Erster Live-Run gegen `wiki-graph-showcase.pages.dev`: **DOMContentLoaded in 2.5 s, 0 pageerror**, sicher unter Plan-Limit 4000 ms. Canvas rendert, Meta-Readout zeigt Knoten-Count.
+
+**Test-Script-Split:** `package.json` jetzt mit `test:e2e` (lokal, `tests/e2e/showcase.spec.ts`) vs `test:e2e:live` (`tests/e2e/live/`). `npm test` (Default) laeuft NICHT die Live-Specs — bewusst, weil sie eine Internet-Verbindung und Cloudflare-Live-State brauchen und in Offline-Dev fail-en wuerden.
+
+**Bekanntes Side-Issue (DCO #7702):** `tests/e2e/showcase.spec.ts` Local-Modus spawnt `python -m http.server` auf Port 8000. Wenn Port 8000 bereits durch einen anderen Service belegt ist (z.B. lokal laufendes uvicorn), faellt Python's http.server **silent** zurueck und Playwright trifft den falschen Service — alle 4 Local-Tests scheitern. Fix vertagt, getrackt in DCO-Todo #7702.
+
+---
+
 ## 2026-05-16 — Phase 12 Smoke: Playwright E2E gegen Live-URL
 
 `tests/e2e/showcase.spec.ts` ist jetzt via `BASE_URL`-Env-Var konfigurierbar (default bleibt `http://127.0.0.1:8000`, http.server-Spawn nur im Local-Modus). Erster Live-Run:
