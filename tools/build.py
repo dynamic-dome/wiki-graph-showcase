@@ -96,6 +96,28 @@ def run(cfg: dict, out: Path) -> None:
             encoding="utf-8",
         )
 
+    # Copy frontend assets if src_root is configured
+    src_root = cfg.get("src_root")
+    if src_root:
+        _copy_frontend_assets(Path(src_root), out)
+
+
+def _copy_frontend_assets(src: Path, out: Path) -> None:
+    """Copy src/index.html, src/styles/, src/scripts/, src/vendor/ to dist/."""
+    import shutil
+    # index.html goes to dist/ root
+    src_index = src / "index.html"
+    if src_index.is_file():
+        shutil.copy2(src_index, out / "index.html")
+    # styles, scripts, vendor go under dist/assets/
+    for sub in ("styles", "scripts", "vendor"):
+        src_dir = src / sub
+        if src_dir.is_dir():
+            dst_dir = out / "assets" / sub
+            if dst_dir.exists():
+                shutil.rmtree(dst_dir)
+            shutil.copytree(src_dir, dst_dir)
+
 
 def _category_from_path(node_id: str) -> str:
     if node_id.startswith("wiki/concepts/"):

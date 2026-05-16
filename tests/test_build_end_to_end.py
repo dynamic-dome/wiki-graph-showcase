@@ -136,6 +136,30 @@ def test_build_does_not_include_private_pages(mini_vault_plus_outside_link: Path
     assert not (nodes_dir / "wiki__concepts__private.json").exists()
 
 
+def test_build_copies_frontend_assets(mini_vault_plus_outside_link: Path, tmp_path: Path, monkeypatch) -> None:
+    """build copies src/index.html + src/styles/* + src/scripts/* + src/vendor/* into dist/."""
+    # Create a minimal frontend tree the build script can copy from
+    src_root = tmp_path / "src"
+    (src_root / "styles").mkdir(parents=True)
+    (src_root / "scripts").mkdir(parents=True)
+    (src_root / "vendor").mkdir(parents=True)
+    (src_root / "index.html").write_text("<!doctype html><h1>hi</h1>", encoding="utf-8")
+    (src_root / "styles" / "base.css").write_text("body{}", encoding="utf-8")
+    (src_root / "scripts" / "main.js").write_text("// main", encoding="utf-8")
+    (src_root / "vendor" / "3d-force-graph.min.js").write_text("// vendor", encoding="utf-8")
+
+    out = tmp_path / "dist"
+    cfg = _make_config(mini_vault_plus_outside_link, out)
+    cfg["src_root"] = str(src_root)
+
+    build.run(cfg, out)
+
+    assert (out / "index.html").is_file()
+    assert (out / "assets" / "styles" / "base.css").is_file()
+    assert (out / "assets" / "scripts" / "main.js").is_file()
+    assert (out / "assets" / "vendor" / "3d-force-graph.min.js").is_file()
+
+
 def test_build_is_deterministic(mini_vault_plus_outside_link: Path, tmp_path: Path) -> None:
     out1 = tmp_path / "dist1"
     out2 = tmp_path / "dist2"

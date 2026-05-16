@@ -1,5 +1,6 @@
 {
   "vault_root": "C:/Users/domes/wiki",
+  "src_root": "src",
   "include": [
     "wiki/concepts/allgemeine-relativitaetstheorie.md",
     "wiki/concepts/spezielle-relativitaetstheorie.md",
