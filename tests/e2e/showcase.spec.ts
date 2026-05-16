@@ -45,7 +45,9 @@ async function waitForServer(url: string, timeoutMs = 5000): Promise<void> {
 
 test.beforeAll(async () => {
   if (!IS_LOCAL) {
-    resolvedBaseUrl = ENV_BASE_URL!;
+    // IS_LOCAL false implies ENV_BASE_URL is set and points to a remote host
+    if (!ENV_BASE_URL) throw new Error("unreachable: IS_LOCAL=false implies ENV_BASE_URL set");
+    resolvedBaseUrl = ENV_BASE_URL;
     return;
   }
   const port = await findFreePort();
