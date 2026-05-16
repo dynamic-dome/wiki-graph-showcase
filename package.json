@@ -1,0 +1,16 @@
+{
+  "name": "wiki-graph-showcase",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "python -m tools.build --config showcase.config.json --out dist/",
+    "dev": "python -m http.server --directory dist/ 8000",
+    "test:py": "python -m pytest tests/ --ignore=tests/e2e -v",
+    "test:e2e": "npx playwright test tests/e2e/",
+    "test": "npm run test:py && npm run test:e2e"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.48.0"
+  }
+}
