@@ -4,6 +4,39 @@ Neueste Eintraege oben.
 
 ---
 
+## 2026-05-16 — Phase 7–10: Frontend wiring + E2E + Safety-Sweep
+
+**Stand:** MVP-Showcase deployment-ready. 31 Knoten / 103 Kanten gegen `~/wiki/`. Tree clean, 29/29 pytest + 4/4 Playwright E2E.
+
+**Phase 7 — Interaction & Stage (5 Commits):**
+- `three-stage.js` (132 LOC) — 3d-force-graph init, BFS-distance coloring, click vs doubleclick (<350 ms), camera-focus
+- `modal.js` (42 LOC) — show/hide, neighbour-pill renderer
+- `theme-switcher.js` (42 LOC) — data-theme attribute, localStorage, themechange Event
+- `gold-pulse.js` (108 LOC) — RAF-driven edge breathing, density-adaptive period (sparse/medium/dense), CMB-Layer >70%, brand-glyph color shift >50%, prefers-reduced-motion off-switch
+- `main.js` (124 LOC) — async init, precedence URL > storage > default, modal-on-click, doubleclick=new center, tooltip, error fallback
+
+**Phase 8 — Build kopiert frontend assets:**
+- `tools/build.py._copy_frontend_assets` — src/index.html nach dist/, src/{styles,scripts,vendor}/ nach dist/assets/
+- TDD: failing test → helper → 6/6 build-e2e green
+- `showcase.config.json` setzt `src_root: "src"`
+
+**Phase 9 — Playwright E2E (4 Tests):**
+- `package.json` + `tests/e2e/showcase.spec.ts`
+- 4 Tests: page load (canvas visible, kein pageerror, Knoten-Count im meta-readout), slider+URL-sync, theme-toggle, prefers-reduced-motion deaktiviert CMB
+- **Found bug:** `src/index.html` lud `3d-force-graph.min.js` nie als `<script>`-Tag — `createStage` warf `ForceGraph3D global not found`. Fix `cf04d23` (1 Zeile). Plan-Tests sahen das nicht (kein Test gegen dist/index.html). P006-Sub "Test-Fixture-Realitaetsluecke" wieder.
+
+**Phase 10.1 — Public-Safety-Sweep:**
+- Automatischer Scan ueber 31 Node-JSONs auf interne Pfade / Tokens / Emails / Privatnamen: **0 Treffer**
+- Inhaltliche Pruefung aller subtitle/essence-Felder: ausschliesslich Astrophysik-Wissenschaft, Personen-Erwaehnungen nur oeffentliche Wissenschaftler (Einstein, Boltzmann, Maxwell, Schwarzschild, Verlinde, Gaßner, Lesch) im fachlichen Kontext
+- **Found leak:** `maxwell-gleichungen` zeigte `> \`status: seed\` ...` Wiki-Internal-Meta im Modal-Subtitle
+- **Fix:** `_first_paragraph` skipped jetzt auch Blockquote-Paragraphen (`> ...`). Zwei neue Regressionstests. Tests 27 → 29 green.
+
+**Commits Phasen 7–10:** `ef3adf6` `c6cd8f4` `e4e82e9` `f912a1d` `c59bce1` (Phase 7) · `20f8947` (Phase 8) · `cf04d23` (Phase 9 vendor-tag fix) · `8433a0e` (Phase 9 E2E) · diese Commit (Phase 10 Maxwell-Meta-Fix + CHANGELOG).
+
+**Deployment-Ready.** Phase 10.2 (GitHub-Push) bereits in Phase 6-Iteration erledigt, alle 16 Commits auf `dynamic-dome/wiki-graph-showcase`. Naechste Schritte: Phase 11 (Cloudflare Pages Deploy), Phase 12 (Final Live-Smoke).
+
+---
+
 ## 2026-05-16 — Phase 5+6: Frontend Shell + Vendor + Loader + URL-State
 
 **Stand:** 7 Commits, Repo gepusht auf neues private GitHub-Repo `dynamic-dome/wiki-graph-showcase` (14 Commits gesamt ab Phase 0). Tree clean. Frontend-Quellen unter `src/` vollstaendig fuer die statische Anzeige vorbereitet — Phase 7 (Three Stage + Interaction) entblockt.

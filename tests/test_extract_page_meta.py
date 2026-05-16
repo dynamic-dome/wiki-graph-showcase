@@ -103,3 +103,22 @@ def test_essence_keeps_paragraph_with_inline_heading_text(tmp_path: Path) -> Non
     _write(page, "# Title\n\nThis paragraph talks about # symbols inline. Not a heading.\n")
     meta = extract_page_meta.extract(page)
     assert meta.essence.startswith("This paragraph talks about")
+
+
+def test_essence_skips_blockquote_status_marker(tmp_path: Path) -> None:
+    """Wiki status-seed pages start with a `> ...` blockquote — skip it for the lead."""
+    page = tmp_path / "a.md"
+    _write(page, "# Maxwell\n\n> `status: seed` — bewusst minimal.\n\n## Definition\n\nDie Maxwell-Gleichungen sind das klassische Feldgleichungssystem.\n")
+    meta = extract_page_meta.extract(page)
+    assert meta.essence.startswith("Die Maxwell-Gleichungen sind")
+    assert "status: seed" not in meta.essence
+    assert "status: seed" not in meta.subtitle
+    assert meta.subtitle.startswith("Die Maxwell-Gleichungen sind")
+
+
+def test_essence_keeps_paragraph_with_inline_gt_character(tmp_path: Path) -> None:
+    """A paragraph with `>` inside but not as a line-leading quote marker is NOT skipped."""
+    page = tmp_path / "a.md"
+    _write(page, "# Title\n\nIf x > 0 then we say x is positive.\n")
+    meta = extract_page_meta.extract(page)
+    assert meta.essence.startswith("If x > 0")
