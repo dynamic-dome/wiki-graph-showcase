@@ -4,6 +4,27 @@ Neueste Eintraege oben.
 
 ---
 
+## 2026-05-16 — Phase 5+6: Frontend Shell + Vendor + Loader + URL-State
+
+**Stand:** 7 Commits, Repo gepusht auf neues private GitHub-Repo `dynamic-dome/wiki-graph-showcase` (14 Commits gesamt ab Phase 0). Tree clean. Frontend-Quellen unter `src/` vollstaendig fuer die statische Anzeige vorbereitet — Phase 7 (Three Stage + Interaction) entblockt.
+
+**Phase 5 — HTML Shell + Base + Themes:**
+- **Phase 5.1** `src/index.html` (69 Zeilen) — Shell mit 17 IDs und 4 strukturellen Bloecken (Stage, Modal, Slider, Status)
+- **Phase 5.2** `src/styles/base.css` (249 Zeilen, 7 Sektionen) — Layout, Typografie, Gold-Slider, Modal-Hide, Dark-Theme-Grund
+- **Phase 5.3** `src/styles/theme-crab.css` + `theme-dome.css` (20+21 CSS-Vars) — Crab mit Nebel-Filamenten, Dome austerer
+- **Doku** 4 Screenshot-Renders nach `docs/screenshots/`
+
+**Phase 6 — Vendor + Loader + URL-State:**
+- **Phase 6.1** `src/vendor/3d-force-graph.min.js` (707 KB, MD5-identisch zur DCO-Kopie)
+- **Phase 6.2** `src/scripts/url-state.js` (43 Zeilen) — `?node=&theme=&gold=` shareable URL-State
+- **Phase 6.3** `src/scripts/graph-loader.js` (38 Zeilen) — `fetch` von `graph.json` + per-node Lazy-Load + Slug-Helpers
+
+**Commits:** `884ebf2` (index.html) · `3a1e41a` (base.css) · `72ac562` (themes) · `a9f3276` (screenshots) · `23431cd` (vendor) · `37882a4` (url-state) · `822cd82` (graph-loader).
+
+**Push:** `gh repo create dynamic-dome/wiki-graph-showcase --private --source=. --push` — alle 14 Commits auf `origin/main`.
+
+---
+
 ## 2026-05-15 — Bugfix: extract_page_meta skips heading-only paragraphs (ec071a6)
 
 Folge auf den P0-P4-Befund. `_first_paragraph` ueberspringt jetzt Paragraphen, deren non-blank Zeilen alle Markdown-Headings sind. Neue Helper `_is_heading_only`. 3 Regressionstests dazu — Tests-Total **23 → 26 gruen**. Real-Build erneut durchgelaufen: Essences enthalten jetzt echte Lead-Saetze ("Die Allgemeine Relativitaetstheorie (ART) ist Albert Einsteins...", "Ein Schwarzes Loch ist ein Raumzeitbereich..."). Phase 5 entblockt.
