@@ -4,6 +4,18 @@ Neueste Eintraege oben.
 
 ---
 
+## 2026-05-16 — Phase 12 Smoke: Playwright E2E gegen Live-URL
+
+`tests/e2e/showcase.spec.ts` ist jetzt via `BASE_URL`-Env-Var konfigurierbar (default bleibt `http://127.0.0.1:8000`, http.server-Spawn nur im Local-Modus). Erster Live-Run:
+
+```bash
+BASE_URL=https://wiki-graph-showcase.pages.dev npx playwright test tests/e2e/showcase.spec.ts
+```
+
+**4/4 gruen in 20.0 s gegen Live-URL.** Title, Canvas-Render, Slider+URL-Sync, Theme-Toggle, prefers-reduced-motion-CMB-Off — alle bestaetigt. Regressionscheck im Local-Modus: weiterhin 4/4 in 12.3 s.
+
+---
+
 ## 2026-05-16 — Phase 11: Cloudflare Pages Deploy (live)
 
 **Stand:** MVP-Showcase live unter `https://wiki-graph-showcase.pages.dev/`.

@@ -2,30 +2,32 @@ import { test, expect } from "@playwright/test";
 import { spawn, ChildProcess } from "child_process";
 import { setTimeout as wait } from "timers/promises";
 
-let server: ChildProcess;
+const BASE_URL = process.env.BASE_URL ?? "http://127.0.0.1:8000";
+const IS_LOCAL = BASE_URL.startsWith("http://127.0.0.1") || BASE_URL.startsWith("http://localhost");
+
+let server: ChildProcess | undefined;
 
 test.beforeAll(async () => {
-  // Serve dist/ on :8000
+  if (!IS_LOCAL) return;
   server = spawn("python", ["-m", "http.server", "--directory", "dist", "8000"], {
     stdio: "ignore",
   });
-  // Give the server a moment to bind
   await wait(800);
 });
 
 test.afterAll(() => {
-  server.kill("SIGTERM");
+  server?.kill("SIGTERM");
 });
 
 test("loads the showcase page", async ({ page }) => {
   const errors: string[] = [];
   page.on("pageerror", (err) => errors.push(err.message));
 
-  await page.goto("http://127.0.0.1:8000/");
+  await page.goto(`${BASE_URL}/`);
   await expect(page).toHaveTitle(/Knowledge Nebula/);
 
   // Wait for at least one node to be rendered (3d-force-graph injects a canvas)
-  await expect(page.locator("#graph-container canvas")).toBeVisible({ timeout: 10_000 });
+  await expect(page.locator("#graph-container canvas")).toBeVisible({ timeout: 15_000 });
 
   // Should display the node count from graph.json
   const meta = await page.locator("#meta-readout").innerText();
@@ -35,8 +37,8 @@ test("loads the showcase page", async ({ page }) => {
 });
 
 test("slider value updates the readout and URL", async ({ page }) => {
-  await page.goto("http://127.0.0.1:8000/");
-  await page.locator("#graph-container canvas").waitFor({ state: "visible" });
+  await page.goto(`${BASE_URL}/`);
+  await page.locator("#graph-container canvas").waitFor({ state: "visible", timeout: 15_000 });
 
   const slider = page.locator("#gold-slider");
   await slider.fill("80");
@@ -51,8 +53,8 @@ test("slider value updates the readout and URL", async ({ page }) => {
 });
 
 test("theme toggle switches data-theme attribute", async ({ page }) => {
-  await page.goto("http://127.0.0.1:8000/");
-  await page.locator("#graph-container canvas").waitFor({ state: "visible" });
+  await page.goto(`${BASE_URL}/`);
+  await page.locator("#graph-container canvas").waitFor({ state: "visible", timeout: 15_000 });
 
   const before = await page.evaluate(() => document.documentElement.getAttribute("data-theme"));
   await page.locator("#theme-toggle").click();
@@ -64,8 +66,8 @@ test("theme toggle switches data-theme attribute", async ({ page }) => {
 test("prefers-reduced-motion disables CMB layer at high gold", async ({ browser }) => {
   const ctx = await browser.newContext({ reducedMotion: "reduce" });
   const page = await ctx.newPage();
-  await page.goto("http://127.0.0.1:8000/?gold=85");
-  await page.locator("#graph-container canvas").waitFor({ state: "visible" });
+  await page.goto(`${BASE_URL}/?gold=85`);
+  await page.locator("#graph-container canvas").waitFor({ state: "visible", timeout: 15_000 });
   // Wait a tick for app init
   await page.waitForTimeout(500);
   const cmbActive = await page.evaluate(
