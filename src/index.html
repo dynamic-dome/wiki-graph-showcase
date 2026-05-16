@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="de" data-theme="crab">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Knowledge Nebula — Dynamic Dome</title>
+<meta name="description" content="Spiel dich durch eine kuratierte Astrophysik-Wissensnebel.">
+<meta property="og:title" content="Knowledge Nebula — Dynamic Dome">
+<meta property="og:description" content="Astrophysik-Wissensgraph zum Rumklicken.">
+<meta property="og:type" content="website">
+<link rel="preload" href="assets/graph.json" as="fetch" crossorigin>
+<link rel="stylesheet" href="assets/styles/base.css">
+<link rel="stylesheet" href="assets/styles/theme-crab.css">
+<link rel="stylesheet" href="assets/styles/theme-dome.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-glyph" id="brand-glyph">&#x25C6;</span>
+      <span class="brand-name">Knowledge Nebula</span>
+    </div>
+    <div class="topbar-right">
+      <button class="theme-toggle" id="theme-toggle" aria-label="Theme umschalten">
+        <span class="theme-label">Theme</span>
+        <span class="theme-current" id="theme-current">crab</span>
+      </button>
+      <div class="meta-readout" id="meta-readout">— Knoten · — Kanten</div>
+    </div>
+  </header>
+
+  <main class="stage" id="stage" aria-label="3D Wissensgraph">
+    <div class="graph-container" id="graph-container"></div>
+    <div class="cmb-layer" id="cmb-layer" aria-hidden="true"></div>
+    <div class="tooltip" id="tooltip" role="status" aria-live="polite"></div>
+    <div class="status-bar" id="status-bar" aria-live="polite"></div>
+  </main>
+
+  <aside class="modal" id="modal" aria-hidden="true">
+    <button class="modal-close" id="modal-close" aria-label="Schliessen">&times;</button>
+    <h2 class="modal-title" id="modal-title"></h2>
+    <p class="modal-subtitle" id="modal-subtitle"></p>
+    <p class="modal-essence" id="modal-essence"></p>
+    <div class="modal-neighbours">
+      <span class="modal-section-label">Verbunden mit</span>
+      <div class="neighbour-pills" id="neighbour-pills"></div>
+    </div>
+    <p class="modal-hint">Doppelklick auf den Knoten oeffnet ihn als neues Zentrum.</p>
+  </aside>
+
+  <footer class="control-panel">
+    <label class="ctrl-label" for="gold-slider">
+      <span class="ctrl-glyph">&#x25C6;</span> Gold-Mode
+    </label>
+    <input
+      type="range"
+      min="0"
+      max="100"
+      step="1"
+      value="35"
+      class="gold-slider"
+      id="gold-slider"
+      aria-label="Gold-Mode Intensitaet"
+    >
+    <span class="ctrl-value" id="gold-value">35%</span>
+  </footer>
+
+  <script type="module" src="assets/scripts/main.js"></script>
+</body>
+</html>
