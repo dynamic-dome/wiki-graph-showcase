@@ -4,6 +4,22 @@ Neueste Eintraege oben.
 
 ---
 
+## 2026-05-16 — Phase 11: Cloudflare Pages Deploy (live)
+
+**Stand:** MVP-Showcase live unter `https://wiki-graph-showcase.pages.dev/`.
+
+- `npm install --save-dev wrangler` (4.92.0).
+- Pre-Deploy-Sweep: grep ueber `dist/assets/nodes/*.json` auf Markdown-Artefakte (`^>`, `^##`, `status:`), Pfade (`C:/`, `/Users/`), Secrets, Privatdaten — alle Sweeps clean. Drei Sample-Spotchecks (Maxwell, ART, Gassner) zeigen echte Lead-Saetze ohne Meta-Leaks.
+- `wrangler pages project create wiki-graph-showcase --production-branch=main` — Projekt angelegt.
+- `wrangler pages deploy dist/ --project-name=wiki-graph-showcase --branch=main --commit-dirty=true` — 44 Dateien, 3.9 s Upload. Production-URL: `https://wiki-graph-showcase.pages.dev/`.
+- Live-Check via `curl -sI`: HTTP 200, Title `Knowledge Nebula — Dynamic Dome`, `graph.json` reachable.
+
+Custom-Domain `wiki.dynamic-dome.com` ist noch nicht gesetzt — kommt in Phase 12 oder als Cutover-Schritt danach.
+
+**Hinweis fuer naechste Deploys:** Cloudflare baut NICHT selbst (Vault liegt auf lokaler FS, nicht im Repo). Jeder Update-Deploy: lokal `npm run build` + `npx wrangler pages deploy dist/ --project-name=wiki-graph-showcase --branch=main --commit-dirty=true`. Dokumentiert in `HOW-TO-USE.md` Sektion "Wie deploye ich".
+
+---
+
 ## 2026-05-16 — Phase 7–10: Frontend wiring + E2E + Safety-Sweep
 
 **Stand:** MVP-Showcase deployment-ready. 31 Knoten / 103 Kanten gegen `~/wiki/`. Tree clean, 29/29 pytest + 4/4 Playwright E2E.
