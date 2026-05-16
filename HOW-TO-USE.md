@@ -42,13 +42,24 @@ npx playwright test tests/e2e/
 
 Live: <https://wiki-graph-showcase.pages.dev/> (Cloudflare Pages).
 
+### Setup (einmalig pro Maschine + pro Cloudflare-Account)
+
+```bash
+npx wrangler login                                                              # OAuth-Browser-Klick, speichert Token in ~/.wrangler/ (1x pro Maschine)
+npx wrangler pages project create wiki-graph-showcase --production-branch=main  # 1x pro CF-Account, sonst "Project not found" beim Deploy
+```
+
+`pages project create` ist nur noetig, wenn das Projekt in **diesem** CF-Account noch nicht existiert. Mit `npx wrangler pages project list` pruefst du den Stand und ueberspringst Schritt 2 wenn `wiki-graph-showcase` schon gelistet ist.
+
+### Jeder Update-Deploy
+
 ```bash
 npm run build
 npx wrangler pages deploy dist/ --project-name=wiki-graph-showcase --branch=main --commit-dirty=true
 ```
 
 1. `npm run build` baut `dist/` aus dem aktuellen Vault-Stand (liest `C:/Users/domes/wiki/`).
-2. `wrangler pages deploy ...` pusht `dist/` direkt zu Cloudflare Pages. Erster Run pro Maschine: `npx wrangler login` (OAuth-Browser-Klick).
+2. `wrangler pages deploy ...` pusht `dist/` direkt zu Cloudflare Pages.
 3. Live unter `https://wiki-graph-showcase.pages.dev/` nach ~30 Sekunden Edge-Propagation.
 
 Production-Branch im Repo (`main`) ist nur fuer Source-Tracking — Cloudflare baut nicht selbst, weil der Vault `C:/Users/domes/wiki/` nicht in CF-Build-Runnern existiert. Deploys laufen manuell aus dem lokalen `dist/` heraus.
@@ -60,3 +71,4 @@ Spaeter Custom-Domain `wiki.dynamic-dome.com`: Pages-Dashboard → wiki-graph-sh
 - **Build wirft `private page rejected`** — eine im `include` gelistete Page hat `private: true` im Frontmatter. Entweder entfernen oder aus `include` rauswerfen.
 - **Build wirft `page has no H1`** — Page hat weder `# Titel` noch `title:` im Frontmatter. Page korrigieren oder ausschliessen.
 - **Frontend leer/keine Knoten** — pruefen ob `dist/assets/graph.json` existiert + `nodes`-Array nicht leer. Browser-Console auf 404 zu `graph.json` checken.
+- **`wrangler pages deploy` wirft `Project not found` (code 8000007)** — das Pages-Projekt existiert in deinem CF-Account noch nicht. Einmal `npx wrangler pages project create wiki-graph-showcase --production-branch=main` ausfuehren, dann deploy nochmal.
