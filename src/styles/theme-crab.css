@@ -1,0 +1,61 @@
+/* === Theme: Crab Nebula === */
+html[data-theme="crab"] {
+  --bg-page: #02010a;
+  --bg-gradient:
+    radial-gradient(ellipse at 65% 55%, rgba(140, 60, 180, 0.18) 0%, transparent 50%),
+    radial-gradient(ellipse at 30% 40%, rgba(80, 160, 200, 0.18) 0%, transparent 55%),
+    radial-gradient(ellipse at 50% 50%, rgba(180, 80, 140, 0.12) 0%, transparent 60%),
+    #02010a;
+
+  --text: #E8F4FF;
+  --text-muted: rgba(200, 210, 230, 0.7);
+
+  --brand-color: #C9D8E8;
+  --brand-glyph-color: #98E8FF;
+  --brand-glyph-shadow: 0 0 10px #98E8FF;
+
+  --gold: #E6BF52;
+  --gold-soft: #C9A23A;
+
+  --node-center: #FFFFFF;
+  --node-center-halo: rgba(152, 232, 255, 0.7);
+  --node-ring1: rgba(140, 240, 255, 1);
+  --node-ring1-halo: rgba(120, 220, 255, 0.55);
+  --node-ring2: rgba(240, 140, 200, 1);
+  --node-ring2-halo: rgba(220, 100, 180, 0.5);
+
+  --edge-base-rgba: rgba(140, 220, 255, 0.5);
+  --edge-gold-rgba: rgba(230, 191, 82, 1);
+
+  --border-soft: rgba(152, 232, 255, 0.18);
+  --border-tooltip: rgba(152, 232, 255, 0.5);
+  --shadow-modal: -8px 0 32px rgba(2, 1, 10, 0.6), 0 0 24px rgba(152, 232, 255, 0.08);
+}
+
+html[data-theme="crab"] body {
+  background: var(--bg-gradient);
+}
+
+/* Crab-specific atmospheric filaments (CSS pseudo-elements on body) */
+html[data-theme="crab"] body::before,
+html[data-theme="crab"] body::after {
+  content: "";
+  position: fixed;
+  border-radius: 50%;
+  filter: blur(60px);
+  opacity: 0.5;
+  pointer-events: none;
+  z-index: 0;
+}
+html[data-theme="crab"] body::before {
+  width: 50vw; height: 30vh;
+  left: 15%; top: 20%;
+  background: rgba(80, 200, 255, 0.35);
+  transform: rotate(-15deg);
+}
+html[data-theme="crab"] body::after {
+  width: 45vw; height: 25vh;
+  left: 50%; top: 55%;
+  background: rgba(220, 120, 200, 0.3);
+  transform: rotate(20deg);
+}
