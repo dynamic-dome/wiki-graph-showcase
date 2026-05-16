@@ -12,3 +12,6 @@ dist/
 .superpowers/
 test-results/
 playwright-report/
+
+# Browser-preview mirror (built by Phase 8 from src/styles + src/scripts)
+src/assets/
