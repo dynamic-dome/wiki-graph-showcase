@@ -103,12 +103,13 @@ def run(cfg: dict, out: Path) -> None:
 
 
 def _copy_frontend_assets(src: Path, out: Path) -> None:
-    """Copy src/index.html, src/styles/, src/scripts/, src/vendor/ to dist/."""
+    """Copy src/index.html, src/_headers, src/styles/, src/scripts/, src/vendor/ to dist/."""
     import shutil
-    # index.html goes to dist/ root
-    src_index = src / "index.html"
-    if src_index.is_file():
-        shutil.copy2(src_index, out / "index.html")
+    # index.html and _headers go to dist/ root
+    for root_file in ("index.html", "_headers"):
+        src_file = src / root_file
+        if src_file.is_file():
+            shutil.copy2(src_file, out / root_file)
     # styles, scripts, vendor go under dist/assets/
     for sub in ("styles", "scripts", "vendor"):
         src_dir = src / sub

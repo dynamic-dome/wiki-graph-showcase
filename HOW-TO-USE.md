@@ -66,6 +66,21 @@ Production-Branch im Repo (`main`) ist nur fuer Source-Tracking — Cloudflare b
 
 Custom-Domain `wiki.dynamic-dome.com` ist seit 2026-05-16 angebunden (Dashboard → Pages → wiki-graph-showcase → Custom domains). DNS-Records wurden auto-konfiguriert weil `dynamic-dome.com` bereits auf Cloudflare liegt.
 
+## Update-Workflow fuer Vault-Diffs
+
+**Manuell pro Sprint** — nicht automatisch. Wenn das Showcase einen neuen Themen-Cluster oder eine inhaltliche Welle zeigen soll, bewusst pro Sprint `npm run build && wrangler pages deploy` ausloesen.
+
+Begruendung:
+- `~/wiki/` waechst staendig, viele Pages sind seed/Notiz-Stadium. Auto-Deploy wuerde unfertiges Material publizieren.
+- Public-Safety-Sweep (private:true, Pfad-Leaks im config) braucht menschliches Auge.
+- Visuelle Komposition (Cluster-Mix, Knoten-Anzahl) ist ein bewusster Kurations-Akt, nicht Vault-Drift.
+
+Wenn du irgendwann doch eine Notification willst ("Drift seit letztem Deploy"): TODO-Idee, nicht jetzt.
+
+## Security Headers (Defense-in-Depth)
+
+`src/_headers` wird vom Build nach `dist/_headers` kopiert und von Cloudflare Pages automatisch als HTTP-Headers ausgespielt. Enthaelt CSP, HSTS, X-Frame-Options, X-Content-Type-Options, Referrer-Policy, Permissions-Policy. CSP erlaubt `style-src 'unsafe-inline'` (gold-pulse.js + url-state.js setzen inline-Styles); script-src ist auf `'self'` beschraenkt.
+
 ## Troubleshooting
 
 - **Build wirft `private page rejected`** — eine im `include` gelistete Page hat `private: true` im Frontmatter. Entweder entfernen oder aus `include` rauswerfen.
