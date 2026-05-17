@@ -4,6 +4,18 @@ Neueste Eintraege oben.
 
 ---
 
+## 2026-05-17 - Buchfuehrungs-Fix + Projekt-Audit
+
+**Stand:** Vor dem eigentlichen Audit wurden die offensichtlichen Inventar-Drifts bereinigt.
+
+- `docs/PROJECT.md` und `docs/CAPABILITIES.md` auf Live-Stand gebracht: MVP ist deployt, Gantefoer-Cluster, Security-Headers, Auto-Tour und Pre-Deploy-Sweep sind nicht mehr als geplant markiert.
+- `tools/pre_deploy_sweep.py` neu: prueft Pflichtdateien in `dist/`, interne Pfad-Leaks, private/secret Marker, Markdown-Meta-Marker in JSON-Strings und Graph-Stats. Optional schreibt es `dist/assets/build-manifest.json`.
+- `tests/test_pre_deploy_sweep.py` neu: Clean-Dist-Pass, interner Pfad-Leak und Markdown-Meta-Leak als Regressionstests.
+- `HOW-TO-USE.md`, `CLAUDE.md`, `AGENTS.md` aktualisiert: Vor Deploy ist jetzt der Tool-basierte Sweep der verbindliche Schritt.
+- `docs/audits/2026-05-17-project-audit.md` neu: Inventar, Findings, offene Punkte und konstruktive Richtung nach Buchfuehrungslogik.
+
+---
+
 ## 2026-05-16 — DCO #7702 fix: dynamische Port-Wahl statt hardcoded 8000
 
 `tests/e2e/showcase.spec.ts` Local-Modus nutzt jetzt einen freien Port (via `net.createServer().listen(0)`) statt hardcoded 8000. `beforeAll` wartet aktiv via `fetch(HEAD)` bis der Server antwortet, statt blind `setTimeout(800)`. Vorher: wenn Port 8000 belegt war (z.B. lokal laufendes uvicorn), faellt Python's http.server silent zurueck und Playwright trifft den falschen Service. Jetzt: Spec waehlt einen anderen Port und laeuft stabil — auch wenn 8000 belegt ist. Verifiziert: 4/4 lokal mit uvicorn auf 8000 (11.2 s), 4/4 Live, 1/1 Mobile-Smoke (DOMContentLoaded 1.9 s). Helfer `findFreePort()` und `waitForServer()` direkt im Spec (kein neuer File).

@@ -1,4 +1,4 @@
-# CLAUDE.md
+# AGENTS.md
 
 > **Erste Pflichtlektuere:** [`HOW-TO-USE.md`](HOW-TO-USE.md).
 
@@ -18,5 +18,5 @@ Fuer strukturierte Code-Uebergaben, Audits, Patch-Reviews, Regressionstests und 
 
 - `docs/agent-handoff/CLAUDE_HANDOFF.md`
 
-Diese Datei ergaenzt die projektspezifischen Regeln in `CLAUDE.md`, ersetzt sie aber nicht.
-Bei Konflikten gilt: projektspezifische `CLAUDE.md` > `CLAUDE_HANDOFF.md` > allgemeine Agenten-Konventionen.
+Diese Datei ergaenzt die projektspezifischen Regeln in `AGENTS.md`, ersetzt sie aber nicht.
+Bei Konflikten gilt: projektspezifische `AGENTS.md` > `CLAUDE_HANDOFF.md` > allgemeine Agenten-Konventionen.

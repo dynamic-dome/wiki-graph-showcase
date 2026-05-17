@@ -31,6 +31,11 @@ python -m pytest tests/ -v --ignore=tests/e2e
 npx playwright test tests/e2e/
 ```
 
+**Pre-Deploy-Sweep:**
+```bash
+python tools/pre_deploy_sweep.py --dist dist --write-manifest
+```
+
 ## Wo Doku lebt
 
 - Architektur + Datenfluss → `docs/ARCHITECTURE.md`
@@ -59,8 +64,9 @@ npx wrangler pages deploy dist/ --project-name=wiki-graph-showcase --branch=main
 ```
 
 1. `npm run build` baut `dist/` aus dem aktuellen Vault-Stand (liest `C:/Users/domes/wiki/`).
-2. `wrangler pages deploy ...` pusht `dist/` direkt zu Cloudflare Pages.
-3. Live unter `https://wiki-graph-showcase.pages.dev/` nach ~30 Sekunden Edge-Propagation.
+2. `python tools/pre_deploy_sweep.py --dist dist --write-manifest` prueft Public-Safety-Marker, Pflichtdateien, Graph-Stats und schreibt ein Deploy-Manifest nach `dist/assets/build-manifest.json`.
+3. `wrangler pages deploy ...` pusht `dist/` direkt zu Cloudflare Pages.
+4. Live unter `https://wiki-graph-showcase.pages.dev/` nach ~30 Sekunden Edge-Propagation.
 
 Production-Branch im Repo (`main`) ist nur fuer Source-Tracking — Cloudflare baut nicht selbst, weil der Vault `C:/Users/domes/wiki/` nicht in CF-Build-Runnern existiert. Deploys laufen manuell aus dem lokalen `dist/` heraus.
 
@@ -72,7 +78,7 @@ Custom-Domain `wiki.dynamic-dome.com` ist seit 2026-05-16 angebunden (Dashboard 
 
 Begruendung:
 - `~/wiki/` waechst staendig, viele Pages sind seed/Notiz-Stadium. Auto-Deploy wuerde unfertiges Material publizieren.
-- Public-Safety-Sweep (private:true, Pfad-Leaks im config) braucht menschliches Auge.
+- Public-Safety-Sweep (private:true, Pfad-Leaks, Markdown-Meta-Marker) laeuft per Tool; das menschliche Auge bleibt fuer inhaltliche Kurationsentscheidungen.
 - Visuelle Komposition (Cluster-Mix, Knoten-Anzahl) ist ein bewusster Kurations-Akt, nicht Vault-Drift.
 
 Wenn du irgendwann doch eine Notification willst ("Drift seit letztem Deploy"): TODO-Idee, nicht jetzt.
