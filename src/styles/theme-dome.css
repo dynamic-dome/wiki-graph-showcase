@@ -22,8 +22,13 @@ html[data-theme="dome"] {
   --node-ring2: #F23BBF;
   --node-ring2-halo: rgba(242, 59, 191, 0.5);
 
+  --node-astro: #2BE2F5;
+  --node-gante: #E6BF52;
+  --node-entity: #F5F1E6;
+
   --edge-base-rgba: rgba(201, 162, 58, 0.4);
   --edge-gold-rgba: rgba(230, 191, 82, 1);
+  --edge-bridge-rgba: rgba(255, 220, 130, 0.9);
 
   --border-soft: rgba(201, 162, 58, 0.18);
   --border-tooltip: rgba(201, 162, 58, 0.4);

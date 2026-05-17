@@ -89,6 +89,70 @@ def test_build_emits_graph_json(mini_vault_plus_outside_link: Path, tmp_path: Pa
     assert graph["default_center"] == "wiki/concepts/art"
     node_ids = {n["id"] for n in graph["nodes"]}
     assert node_ids == {"wiki/concepts/art", "wiki/concepts/sl", "wiki/concepts/sm"}
+    # Every node carries weight, kind, cluster
+    for n in graph["nodes"]:
+        assert "weight" in n and 0.0 <= n["weight"] <= 1.0
+        assert n["kind"] in ("concept", "concept-gantefoer", "entity", "synthesis", "other")
+        assert n["cluster"] in ("gantefoer", "astrophysik")
+
+
+def test_build_assigns_gantefoer_cluster_and_kind(tmp_path: Path) -> None:
+    """Pages under concepts/gantefoer/ get kind='concept-gantefoer' and cluster='gantefoer'."""
+    root = tmp_path / "vault"
+    _write(root / "wiki" / "concepts" / "art.md", "# ART\n\nLead.\n")
+    _write(root / "wiki" / "concepts" / "gantefoer" / "g-urknall.md", "# G Urknall\n\nLead.\n")
+    out = tmp_path / "dist"
+    cfg = {
+        "vault_root": str(root),
+        "include": [
+            "wiki/concepts/art.md",
+            "wiki/concepts/gantefoer/g-urknall.md",
+        ],
+        "default_center": "wiki/concepts/art",
+    }
+    build.run(cfg, out)
+    graph = json.loads((out / "assets" / "graph.json").read_text(encoding="utf-8"))
+    by_id = {n["id"]: n for n in graph["nodes"]}
+    assert by_id["wiki/concepts/art"]["kind"] == "concept"
+    assert by_id["wiki/concepts/art"]["cluster"] == "astrophysik"
+    assert by_id["wiki/concepts/gantefoer/g-urknall"]["kind"] == "concept-gantefoer"
+    assert by_id["wiki/concepts/gantefoer/g-urknall"]["cluster"] == "gantefoer"
+
+
+def test_build_weight_reflects_degree(tmp_path: Path) -> None:
+    """Hub with the most links gets weight=1.0; isolated leaf gets weight=0."""
+    root = tmp_path / "vault"
+    # hub linked to a, b, c
+    _write(root / "wiki" / "concepts" / "hub.md", """\
+# Hub
+
+Links zu [[wiki/concepts/a]], [[wiki/concepts/b]], [[wiki/concepts/c]].
+""")
+    _write(root / "wiki" / "concepts" / "a.md", "# A\n\nLead.\n")
+    _write(root / "wiki" / "concepts" / "b.md", "# B\n\nLead.\n")
+    _write(root / "wiki" / "concepts" / "c.md", "# C\n\nLead.\n")
+    # isolated leaf with no in- or out-edges
+    _write(root / "wiki" / "concepts" / "lonely.md", "# Lonely\n\nLead.\n")
+    out = tmp_path / "dist"
+    cfg = {
+        "vault_root": str(root),
+        "include": [
+            "wiki/concepts/hub.md",
+            "wiki/concepts/a.md",
+            "wiki/concepts/b.md",
+            "wiki/concepts/c.md",
+            "wiki/concepts/lonely.md",
+        ],
+        "default_center": "wiki/concepts/hub",
+    }
+    build.run(cfg, out)
+    graph = json.loads((out / "assets" / "graph.json").read_text(encoding="utf-8"))
+    by_id = {n["id"]: n for n in graph["nodes"]}
+    assert by_id["wiki/concepts/hub"]["weight"] == 1.0
+    assert by_id["wiki/concepts/lonely"]["weight"] == 0.0
+    # leaf nodes a/b/c are below the hub
+    for leaf in ("a", "b", "c"):
+        assert by_id[f"wiki/concepts/{leaf}"]["weight"] < 1.0
 
 
 def test_build_drops_edges_outside_slice(mini_vault_plus_outside_link: Path, tmp_path: Path) -> None:

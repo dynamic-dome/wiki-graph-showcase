@@ -24,8 +24,14 @@ html[data-theme="crab"] {
   --node-ring2: rgba(240, 140, 200, 1);
   --node-ring2-halo: rgba(220, 100, 180, 0.5);
 
+  /* Cluster colors */
+  --node-astro: rgba(140, 240, 255, 1);
+  --node-gante: rgba(245, 194, 74, 1);
+  --node-entity: #FFE0B2;
+
   --edge-base-rgba: rgba(140, 220, 255, 0.5);
-  --edge-gold-rgba: rgba(230, 191, 82, 1);
+  --edge-gold-rgba: rgba(245, 200, 90, 1);
+  --edge-bridge-rgba: rgba(255, 200, 100, 0.85);
 
   --border-soft: rgba(152, 232, 255, 0.18);
   --border-tooltip: rgba(152, 232, 255, 0.5);

@@ -6,6 +6,8 @@ import { createStage } from "./three-stage.js";
 import { createModal } from "./modal.js";
 import { createThemeSwitcher } from "./theme-switcher.js";
 import { createGoldPulse } from "./gold-pulse.js";
+import { createSparkles } from "./sparkles.js";
+import { createAutoTour } from "./auto-tour.js";
 import { readState, writeState } from "./url-state.js";
 
 (async function main() {
@@ -41,6 +43,13 @@ import { readState, writeState } from "./url-state.js";
   );
   gold.notifyGraphData(graphData);
 
+  // Sparkles overlay
+  const sparkles = createSparkles(document.getElementById("sparkles-layer"));
+
+  // Auto-tour
+  const statusBar = document.getElementById("status-bar");
+  const tour = createAutoTour(stage, statusBar);
+
   // Slider
   const slider = document.getElementById("gold-slider");
   const goldValue = document.getElementById("gold-value");
@@ -48,13 +57,28 @@ import { readState, writeState } from "./url-state.js";
   slider.value = String(initialGold);
   goldValue.textContent = `${initialGold}%`;
   gold.setGold(initialGold / 100);
+  sparkles.setGold(initialGold / 100);
 
   slider.addEventListener("input", (e) => {
     const v = parseInt(e.target.value, 10);
     goldValue.textContent = `${v}%`;
     gold.setGold(v / 100);
+    sparkles.setGold(v / 100);
     writeState({ gold: v });
   });
+
+  // Tour button
+  const tourBtn = document.getElementById("tour-btn");
+  if (tourBtn) {
+    tourBtn.addEventListener("click", () => {
+      tour.startTour({
+        stationCount: 6,
+        onStationChange: (node) => {
+          if (node) stage.setCenter(node.id);
+        },
+      });
+    });
+  }
 
   // Theme change writes URL
   document.addEventListener("themechange", (e) => {
@@ -69,7 +93,6 @@ import { readState, writeState } from "./url-state.js";
 
   // Click handlers
   const tooltip = document.getElementById("tooltip");
-  const statusBar = document.getElementById("status-bar");
 
   stage.onNodeClick(async ({ type, node }) => {
     if (type === "click") {

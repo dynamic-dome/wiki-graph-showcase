@@ -123,3 +123,46 @@ test("prefers-reduced-motion disables CMB layer at high gold", async ({ browser 
   expect(cmbActive).toBe(false);
   await ctx.close();
 });
+
+test("sparkles canvas and tour button are present", async ({ page }) => {
+  await page.goto(url("/?gold=70"));
+  await page.locator("#graph-container canvas").waitFor({ state: "visible", timeout: 15_000 });
+  await expect(page.locator("#sparkles-layer")).toBeAttached();
+  await expect(page.locator("#tour-btn")).toBeVisible();
+  // Sparkles canvas must have non-zero pixel dimensions (sized by JS)
+  const dims = await page.locator("#sparkles-layer").evaluate(
+    (el: HTMLCanvasElement) => ({ width: el.width, height: el.height }),
+  );
+  expect(dims.width).toBeGreaterThan(0);
+  expect(dims.height).toBeGreaterThan(0);
+});
+
+test("tour button starts a tour with status output", async ({ page }) => {
+  await page.goto(url("/?gold=50"));
+  await page.locator("#graph-container canvas").waitFor({ state: "visible", timeout: 15_000 });
+  await page.locator("#tour-btn").click();
+  await page.waitForTimeout(800);
+  const status = await page.locator("#status-bar").innerText();
+  expect(status).toMatch(/TOUR/);
+});
+
+test("graph contains both clusters with cross-cluster bridges", async ({ page }) => {
+  await page.goto(url("/"));
+  await page.locator("#graph-container canvas").waitFor({ state: "visible", timeout: 15_000 });
+  const stats = await page.evaluate(async () => {
+    const resp = await fetch("/assets/graph.json");
+    const g = await resp.json();
+    const clusters = new Set(g.nodes.map((n: any) => n.cluster));
+    let bridges = 0;
+    const byId = Object.fromEntries(g.nodes.map((n: any) => [n.id, n]));
+    for (const l of g.links) {
+      const s = byId[l.source];
+      const t = byId[l.target];
+      if (s && t && s.cluster !== t.cluster) bridges++;
+    }
+    return { clusterCount: clusters.size, bridges, nodeCount: g.nodes.length };
+  });
+  expect(stats.clusterCount).toBe(2);
+  expect(stats.bridges).toBeGreaterThan(10);
+  expect(stats.nodeCount).toBeGreaterThan(30);
+});

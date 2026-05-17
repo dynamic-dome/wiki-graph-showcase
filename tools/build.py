@@ -38,6 +38,18 @@ def run(cfg: dict, out: Path) -> None:
             slice_edges_set.add((src, tgt))
     slice_edges = sorted(slice_edges_set)
 
+    # Build neighbour map (needed for weight calculation)
+    neighbours: dict[str, set[str]] = {nid: set() for nid in in_slice_ids}
+    for src, tgt in slice_edges:
+        neighbours[src].add(tgt)
+        neighbours[tgt].add(src)
+
+    # Weight normalisation: 0..1 by degree (0 = isolated leaf, 1 = top hub)
+    degrees = {nid: len(nb) for nid, nb in neighbours.items()}
+    max_degree = max(degrees.values()) if degrees else 1
+    if max_degree == 0:
+        max_degree = 1
+
     # Build node list with metadata
     nodes: list[dict] = []
     metas: dict[str, extract_page_meta.PageMeta] = {}
@@ -47,18 +59,16 @@ def run(cfg: dict, out: Path) -> None:
             continue  # belt+braces; filter_slice should have dropped these
         node_id = _path_id_of(p, vault)
         metas[node_id] = meta
+        kind = _kind_from_path(node_id)
         nodes.append({
             "id": node_id,
             "title": meta.title,
             "category": _category_from_path(node_id),
+            "kind": kind,
+            "cluster": _cluster_from_kind_and_id(kind, node_id),
+            "weight": round(degrees.get(node_id, 0) / max_degree, 3),
         })
     nodes.sort(key=lambda n: n["id"])
-
-    # Build neighbour map for per-node files
-    neighbours: dict[str, set[str]] = {nid: set() for nid in in_slice_ids}
-    for src, tgt in slice_edges:
-        neighbours[src].add(tgt)
-        neighbours[tgt].add(src)
 
     graph = {
         "version": 1,
@@ -128,6 +138,28 @@ def _category_from_path(node_id: str) -> str:
     if node_id.startswith("wiki/synthesis/"):
         return "synthesis"
     return "other"
+
+
+def _kind_from_path(node_id: str) -> str:
+    """Finer classification used for visual shape selection in the frontend."""
+    if node_id.startswith("wiki/concepts/gantefoer/"):
+        return "concept-gantefoer"
+    if node_id.startswith("wiki/concepts/"):
+        return "concept"
+    if node_id.startswith("wiki/entities/"):
+        return "entity"
+    if node_id.startswith("wiki/synthesis/"):
+        return "synthesis"
+    return "other"
+
+
+def _cluster_from_kind_and_id(kind: str, node_id: str) -> str:
+    """High-level cluster used for layered 3D positioning."""
+    if kind == "concept-gantefoer":
+        return "gantefoer"
+    if node_id == "wiki/entities/harald-gantefoer":
+        return "gantefoer"
+    return "astrophysik"
 
 
 def _main() -> None:
