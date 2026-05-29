@@ -1,0 +1,38 @@
+{
+  "dataset": "kompetenz",
+  "vault_root": "C:/Users/domes/Desktop/kompetenz-wiki",
+  "src_root": "src",
+  "output_subdir": "kompetenz",
+  "include": [
+    "wiki/competences/*.md",
+    "wiki/synthesis/*.md",
+    "wiki/topics/*.md"
+  ],
+  "exclude": [
+    "**/README.md"
+  ],
+  "neighbour_dirs": [
+    "wiki/concepts",
+    "wiki/entities"
+  ],
+  "status_gate": {
+    "field": "status",
+    "block_values": ["superseded", "archived", "paused", "seed", "in-progress"],
+    "missing_policy": "allow"
+  },
+  "default_center": "wiki/competences/agentic-workflows-orchestrieren",
+  "theme_default": "dome",
+  "default_gold": 100,
+  "category_map": {
+    "wiki/competences/": "competence",
+    "wiki/synthesis/": "synthesis",
+    "wiki/topics/": "topic",
+    "wiki/concepts/": "concept",
+    "wiki/entities/": "entity"
+  },
+  "cluster_default": "kompetenz",
+  "metadata": {
+    "title": "Kompetenz-Wiki",
+    "description": "Kuratierter Kompetenz-Wissensgraph — Kompetenzen, Synthesen und Themenfelder mit ihren Verknuepfungen."
+  }
+}
