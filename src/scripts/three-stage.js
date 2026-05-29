@@ -17,12 +17,27 @@ const CLUSTER_ANCHORS = {
   gantefoer: { x: 160, y: 40, z: 0 },
 };
 
+// Kompetenz dataset: colour by node.category instead of astro kind.
+// One single cluster, forces-only layout (no anchor) per design decision.
+const KOMPETENZ_CATEGORY_COLORS = {
+  competence: "#d9b65f",
+  synthesis: "#22c7e8",
+  topic: "#8fb7ff",
+  concept: "#c7d7e6",
+  entity: "#d46ff0",
+};
+
 // Weight -> sphere radius. Hubs (weight=1.0) ~3x bigger than leaves (weight=0).
 function sizeFromWeight(weight) {
   return 3 + (weight || 0) * 16;
 }
 
-export function createStage(container) {
+export function createStage(container, options = {}) {
+  // colorMode: "astro" (kind-based, default) or "kompetenz" (category-based).
+  // clustered: whether the cluster-anchor force is active (astro=true).
+  const colorMode = options.colorMode || "astro";
+  const clustered = options.clustered !== undefined ? options.clustered : true;
+
   const ForceGraph3D = window.ForceGraph3D;
   if (typeof ForceGraph3D !== "function") {
     throw new Error("ForceGraph3D global not found — is 3d-force-graph.min.js loaded?");
@@ -92,7 +107,12 @@ export function createStage(container) {
       if (d === undefined || d >= 3) return hazeColor;
     }
 
-    // Clean cluster-coding by kind
+    // Kompetenz dataset: colour by semantic category.
+    if (colorMode === "kompetenz") {
+      return KOMPETENZ_CATEGORY_COLORS[node.category] || cAstro;
+    }
+
+    // Astro: clean cluster-coding by kind
     if (node.kind === "entity") return cEntity;
     if (node.kind === "concept-gantefoer") return cGold;
     return cAstro;
@@ -109,17 +129,21 @@ export function createStage(container) {
   // Cluster-anchor force: pulls every node gently toward its cluster center.
   // Strength is small so the force-graph layout still resolves edges nicely,
   // but enough that the two clusters separate visibly in 3D.
-  graph.d3Force("clusterAnchor", (alpha) => {
-    const STRENGTH = 0.06;
-    const data = graph.graphData();
-    for (const node of data.nodes) {
-      const anchor = CLUSTER_ANCHORS[node.cluster] || CLUSTER_ANCHORS.astrophysik;
-      if (node.x === undefined) continue;
-      node.vx = (node.vx || 0) + (anchor.x - node.x) * STRENGTH * alpha;
-      node.vy = (node.vy || 0) + (anchor.y - node.y) * STRENGTH * alpha;
-      node.vz = (node.vz || 0) + (anchor.z - node.z) * STRENGTH * alpha;
-    }
-  });
+  // Only active for clustered datasets (astro). The kompetenz dataset is a
+  // single forces-only cloud, so the anchor force is omitted entirely there.
+  if (clustered) {
+    graph.d3Force("clusterAnchor", (alpha) => {
+      const STRENGTH = 0.06;
+      const data = graph.graphData();
+      for (const node of data.nodes) {
+        const anchor = CLUSTER_ANCHORS[node.cluster] || CLUSTER_ANCHORS.astrophysik;
+        if (node.x === undefined) continue;
+        node.vx = (node.vx || 0) + (anchor.x - node.x) * STRENGTH * alpha;
+        node.vy = (node.vy || 0) + (anchor.y - node.y) * STRENGTH * alpha;
+        node.vz = (node.vz || 0) + (anchor.z - node.z) * STRENGTH * alpha;
+      }
+    });
+  }
 
   // Reduce the default many-body repulsion a touch so clusters can cohere
   if (graph.d3Force("charge")) {

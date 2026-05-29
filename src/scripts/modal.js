@@ -2,7 +2,25 @@
  * Render and animate the detail modal on the right side.
  */
 
+// German display labels for kompetenz node categories.
+const CATEGORY_LABELS = {
+  competence: "Kompetenz",
+  synthesis: "Synthese",
+  topic: "Thema",
+  concept: "Konzept",
+  entity: "Akteur / Entitaet",
+};
+
+// German labels for verification_status badge.
+const VSTATUS_LABELS = {
+  verified: "verifiziert",
+  partially_verified: "teilweise verifiziert",
+  unverified: "unverifiziert",
+  superseded: "ueberholt",
+};
+
 export function createModal(rootEl) {
+  const badgesEl = rootEl.querySelector("#modal-badges");
   const titleEl = rootEl.querySelector("#modal-title");
   const subtitleEl = rootEl.querySelector("#modal-subtitle");
   const essenceEl = rootEl.querySelector("#modal-essence");
@@ -13,7 +31,27 @@ export function createModal(rootEl) {
 
   closeBtn.addEventListener("click", () => hide());
 
+  function renderBadges(nodeDoc) {
+    if (!badgesEl) return;
+    badgesEl.innerHTML = "";
+    const catLabel = CATEGORY_LABELS[nodeDoc.category];
+    if (catLabel) {
+      const b = document.createElement("span");
+      b.className = `badge badge-cat badge-${nodeDoc.category}`;
+      b.textContent = catLabel;
+      badgesEl.appendChild(b);
+    }
+    const vs = nodeDoc.verification_status;
+    if (vs && VSTATUS_LABELS[vs]) {
+      const b = document.createElement("span");
+      b.className = `badge badge-vstatus badge-vstatus-${vs}`;
+      b.textContent = VSTATUS_LABELS[vs];
+      badgesEl.appendChild(b);
+    }
+  }
+
   function show(nodeDoc) {
+    renderBadges(nodeDoc);
     titleEl.textContent = nodeDoc.title || nodeDoc.id;
     subtitleEl.textContent = nodeDoc.subtitle || "";
     essenceEl.textContent = nodeDoc.essence || "";

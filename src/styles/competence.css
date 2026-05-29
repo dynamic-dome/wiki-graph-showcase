@@ -1,0 +1,117 @@
+/* Kompetenz dataset UI: dataset switcher, search box, modal badges.
+   Additive only — astro visuals are untouched. */
+
+/* ---- Dataset switcher (top bar) ---- */
+.dataset-switch {
+  display: inline-flex;
+  gap: 2px;
+  padding: 2px;
+  border: 1px solid rgba(160, 200, 220, 0.25);
+  border-radius: 8px;
+  background: rgba(10, 16, 28, 0.45);
+}
+.dataset-btn {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  padding: 5px 10px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-muted, rgba(200, 210, 230, 0.7));
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+.dataset-btn:hover { color: #e8f4ff; }
+.dataset-btn.active {
+  background: var(--brand-glyph-color, #98e8ff);
+  color: #06101f;
+  font-weight: 600;
+}
+
+/* ---- Search box (top-left of stage) ---- */
+.search-box {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  z-index: 20;
+  width: min(320px, 70vw);
+}
+.search-input {
+  width: 100%;
+  box-sizing: border-box;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  padding: 8px 12px;
+  border: 1px solid rgba(160, 200, 220, 0.3);
+  border-radius: 8px;
+  background: rgba(8, 14, 26, 0.82);
+  color: #e8f4ff;
+  backdrop-filter: blur(6px);
+}
+.search-input:focus {
+  outline: none;
+  border-color: var(--brand-glyph-color, #98e8ff);
+}
+.search-results {
+  list-style: none;
+  margin: 6px 0 0;
+  padding: 4px;
+  max-height: 46vh;
+  overflow-y: auto;
+  border: 1px solid rgba(160, 200, 220, 0.25);
+  border-radius: 8px;
+  background: rgba(8, 14, 26, 0.94);
+  backdrop-filter: blur(8px);
+}
+.search-result {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 7px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.search-result:hover { background: rgba(152, 232, 255, 0.12); }
+.search-title { font-size: 12px; color: #e8f4ff; }
+.search-cat {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted, rgba(200, 210, 230, 0.7));
+  white-space: nowrap;
+}
+
+/* ---- Modal badges (category + verification_status) ---- */
+.modal-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+.badge {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 3px 8px;
+  border-radius: 999px;
+  border: 1px solid rgba(160, 200, 220, 0.3);
+  color: #e8f4ff;
+}
+.badge-competence { border-color: #d9b65f; color: #f0d68a; }
+.badge-synthesis  { border-color: #22c7e8; color: #8fe6f5; }
+.badge-topic      { border-color: #8fb7ff; color: #b9d2ff; }
+.badge-concept    { border-color: #c7d7e6; color: #dbe7f2; }
+.badge-entity     { border-color: #d46ff0; color: #e6a8f7; }
+.badge-vstatus-verified { border-color: #5fd97f; color: #9af0ad; }
+.badge-vstatus-partially_verified { border-color: #d9c45f; color: #efe08a; }
+.badge-vstatus-unverified { border-color: rgba(200, 210, 230, 0.4); }
+.badge-vstatus-superseded { border-color: #d97f7f; color: #f0a8a8; }
+
+@media (max-width: 720px) {
+  .search-box { width: calc(100vw - 28px); }
+  .dataset-btn { padding: 4px 8px; font-size: 10px; }
+}
