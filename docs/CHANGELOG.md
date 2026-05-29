@@ -4,6 +4,36 @@ Neueste Eintraege oben.
 
 ---
 
+## 2026-05-30 — Zweiter Datensatz: Kompetenz-Wiki Nebula
+
+Das Showcase rendert jetzt einen zweiten, statischen Datensatz aus
+`Desktop/kompetenz-wiki` neben der Astrophysik-Slice. Prinzip des
+DCO-Wiki-Graph-Dashboards (typisierte Verbindungen, Verknüpfungstiefe,
+Suche, Recenter) im Nebula/Gold/Dome-Look. Der bestehende Exporter wurde
+**parametrisiert statt dupliziert**.
+
+- `kompetenz.config.json` neu: Kern-Tier (competences/synthesis/topics) voll,
+  concepts/entities nur als referenzierte Nachbarn, Status-Gate
+  (block superseded/archived/paused/seed/in-progress, missing=lenient).
+- `tools/filter_slice.py`: optionales `status_gate` + `exclude` +
+  `resolve_slice_with_neighbours` (zweistufige Slice). Astro-Pfad unverändert.
+- `tools/parser.py`: bewusster Fork — `extract_typed_edges`
+  (supports/depends_on/applies_to/related). Legacy-Extraktoren unberührt.
+- `tools/build.py`: vault-agnostisch (config-getriebene category/kind/cluster),
+  `output_subdir` → `assets/kompetenz/`, `index.json` für Suche, Links mit
+  `type`, additive `dataset`/`verification_status`.
+- `tools/pre_deploy_sweep.py`: scannt jetzt auch Dataset-Subdirs; `secret_marker`
+  unterscheidet Credential-Zuweisungen von AI-Vokabular ("Token-Budget").
+- Frontend: dataset-aware Loader, `?dataset=` URL-State (astro implizit),
+  sichtbarer Switcher (Nebula|Kompetenz), Suche aus index.json, Modal-Badges,
+  kompetenz-Farben nach category, forces-only Layout. Astro-Visuals additiv-frei.
+- `docs/COMPETENCE_EXPORT.md` neu (Wegweiser).
+- Verifiziert: pytest 59 grün (+17 neu), Playwright 7/7 kompetenz + 7/7 astro
+  (Regression), Sweep über echten Build (263 Knoten, 1377 typisierte Links,
+  0 isolierte, 0 Leaks). Noch NICHT live deployt.
+
+---
+
 ## 2026-05-17 - Buchfuehrungs-Fix + Projekt-Audit
 
 **Stand:** Vor dem eigentlichen Audit wurden die offensichtlichen Inventar-Drifts bereinigt.

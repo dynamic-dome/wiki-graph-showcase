@@ -1,7 +1,11 @@
-# Source: dynamic_central_orchestrator/wiki_graph/parser.py @ commit 0050d65
-# Copied: 2026-05-15. Re-sync manually if the upstream parser changes.
-# Reason for the copy (not import): showcase is its own repo, no
-# cross-repo Python paths.
+# Origin: dynamic_central_orchestrator/wiki_graph/parser.py @ commit 0050d65
+# Copied: 2026-05-15. Reason for the copy (not import): showcase is its own
+# repo, no cross-repo Python paths.
+#
+# DELIBERATE FORK since 2026-05-30: this file now carries showcase-only
+# additions (extract_typed_edges -> (src, tgt, relation_type) for the
+# kompetenz dataset's coloured links). It is NO LONGER a 1:1 mirror of the
+# DCO parser — do NOT blindly re-sync from upstream; merge by hand.
 
 """Wikilink + YAML-frontmatter parser for markdown vaults.
 
@@ -209,3 +213,47 @@ def extract_frontmatter_edges(vault_root: Path) -> list[tuple[str, str]]:
                 edges.append((src, _resolve_target(target, alias_map)))
     edges.sort()
     return edges
+
+
+# --- Showcase fork: typed edges for the kompetenz dataset ------------------
+
+# Frontmatter keys that carry a typed relation. The relation type equals the
+# key name. 'supports' is added on top of the legacy depends_on/applies_to.
+_TYPED_FRONTMATTER_KEYS = ("supports", "depends_on", "applies_to")
+
+
+def extract_typed_edges(vault_root: Path) -> list[tuple[str, str, str]]:
+    """Return sorted list of (src_id, target_id, relation_type) edges.
+
+    Frontmatter keys (supports/depends_on/applies_to) yield their key as the
+    relation type. Body wikilinks yield 'related'. When the same (src, tgt)
+    pair has both a typed frontmatter edge and a body wikilink, the stronger
+    frontmatter type wins and the 'related' duplicate is dropped.
+    """
+    alias_map = _build_stem_alias_map(vault_root)
+    # (src, tgt) -> relation_type, with frontmatter taking precedence.
+    typed: dict[tuple[str, str], str] = {}
+
+    for path, src in _walk_md(vault_root):
+        try:
+            body = path.read_text(encoding="utf-8")
+        except (OSError, UnicodeDecodeError):
+            continue
+
+        clean_body, frontmatter = _strip_noise(body)
+
+        # 1) Frontmatter typed edges (strong) — set first so they win.
+        if frontmatter:
+            for key in _TYPED_FRONTMATTER_KEYS:
+                for raw in _parse_yaml_list(frontmatter, key):
+                    tgt = _resolve_target(raw, alias_map)
+                    if tgt and tgt != src:
+                        typed[(src, tgt)] = key
+
+        # 2) Body wikilinks as weak 'related' — only if no stronger edge yet.
+        for match in _WIKILINK_RE.finditer(clean_body):
+            tgt = _resolve_target(match.group(1), alias_map)
+            if tgt and tgt != src:
+                typed.setdefault((src, tgt), "related")
+
+    return sorted((s, t, ty) for (s, t), ty in typed.items())

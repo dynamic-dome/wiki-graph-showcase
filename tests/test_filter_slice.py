@@ -78,3 +78,74 @@ def test_missing_file_in_explicit_include_logs_warning(tmp_path: Path, capsys) -
     assert rels == {"a.md"}
     captured = capsys.readouterr()
     assert "does-not-exist.md" in captured.err
+
+
+# ---------------------------------------------------------------------------
+# Status gate (Task 3): block superseded/archived/etc., lenient on missing.
+# ---------------------------------------------------------------------------
+
+_GATE = {
+    "field": "status",
+    "block_values": ["superseded", "archived", "paused", "seed", "in-progress"],
+    "missing_policy": "allow",
+}
+
+
+def test_status_gate_allows_active(tmp_path: Path) -> None:
+    _write(tmp_path / "a.md", "---\nstatus: active\n---\n# A\n")
+    result = filter_slice.resolve_slice(tmp_path, include=["*.md"], status_gate=_GATE)
+    rels = {p.relative_to(tmp_path).as_posix() for p in result}
+    assert rels == {"a.md"}
+
+
+def test_status_gate_blocks_listed_values(tmp_path: Path) -> None:
+    _write(tmp_path / "act.md", "---\nstatus: active\n---\n# Active\n")
+    _write(tmp_path / "sup.md", "---\nstatus: superseded\n---\n# Superseded\n")
+    _write(tmp_path / "arc.md", "---\nstatus: archived\n---\n# Archived\n")
+    _write(tmp_path / "wip.md", "---\nstatus: in-progress\n---\n# WIP\n")
+    result = filter_slice.resolve_slice(tmp_path, include=["*.md"], status_gate=_GATE)
+    rels = {p.relative_to(tmp_path).as_posix() for p in result}
+    assert rels == {"act.md"}
+
+
+def test_status_gate_missing_is_lenient_and_warns(tmp_path: Path, capsys) -> None:
+    """Missing status field -> page is included, but a warning names the path."""
+    _write(tmp_path / "nostatus.md", "# No Status Field\n")
+    result = filter_slice.resolve_slice(tmp_path, include=["*.md"], status_gate=_GATE)
+    rels = {p.relative_to(tmp_path).as_posix() for p in result}
+    assert rels == {"nostatus.md"}
+    captured = capsys.readouterr()
+    assert "nostatus.md" in captured.err
+
+
+def test_no_status_gate_means_no_status_filtering(tmp_path: Path) -> None:
+    """Backward compat: without a gate, status is irrelevant (astro slice path)."""
+    _write(tmp_path / "sup.md", "---\nstatus: superseded\n---\n# Superseded\n")
+    result = filter_slice.resolve_slice(tmp_path, include=["*.md"])
+    rels = {p.relative_to(tmp_path).as_posix() for p in result}
+    assert rels == {"sup.md"}
+
+
+# ---------------------------------------------------------------------------
+# Exclude globs (Task 5 follow-up): drop pages matching an exclude pattern.
+# ---------------------------------------------------------------------------
+
+
+def test_exclude_drops_readmes(tmp_path: Path) -> None:
+    _write(tmp_path / "wiki" / "synthesis" / "real.md", "# Real\n")
+    _write(tmp_path / "wiki" / "synthesis" / "README.md", "# Readme\n")
+    result = filter_slice.resolve_slice(
+        tmp_path,
+        include=["wiki/synthesis/*.md"],
+        exclude=["**/README.md"],
+    )
+    rels = {p.relative_to(tmp_path).as_posix() for p in result}
+    assert rels == {"wiki/synthesis/real.md"}
+
+
+def test_exclude_none_keeps_everything(tmp_path: Path) -> None:
+    _write(tmp_path / "a.md", "# A\n")
+    _write(tmp_path / "README.md", "# Readme\n")
+    result = filter_slice.resolve_slice(tmp_path, include=["*.md"])
+    rels = {p.relative_to(tmp_path).as_posix() for p in result}
+    assert rels == {"a.md", "README.md"}

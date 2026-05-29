@@ -109,6 +109,21 @@ def _first_sentence(text: str) -> str:
     return parts[0].strip()
 
 
+def read_frontmatter(path: Path) -> Optional[dict]:
+    """Return the parsed frontmatter dict for a page, or None if unreadable.
+
+    Public helper so other tools (filter_slice's status gate) can inspect
+    frontmatter without re-implementing the minimal YAML parser. A page with
+    no frontmatter block returns an empty dict (readable, just no keys).
+    """
+    try:
+        body = Path(path).read_text(encoding="utf-8")
+    except (OSError, UnicodeDecodeError):
+        return None
+    fm, _ = _parse_frontmatter(body)
+    return fm
+
+
 def extract(path: Path) -> Optional[PageMeta]:
     """Return PageMeta or None if the page is not valid for showcase."""
     try:
