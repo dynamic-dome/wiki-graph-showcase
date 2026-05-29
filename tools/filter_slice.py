@@ -44,6 +44,17 @@ def _is_valid_page(path: Path) -> bool:
     return extract_page_meta.extract(path) is not None
 
 
+def _is_excluded(rel_posix: str, exclude: list[str] | None) -> bool:
+    """True if the vault-relative posix path matches any exclude glob."""
+    if not exclude:
+        return False
+    from fnmatch import fnmatch
+    # fnmatch's '*' spans '/', so '**/README.md' and '*/README.md' both work
+    # for our purposes; also match a bare 'README.md' anywhere via basename.
+    base = rel_posix.rsplit("/", 1)[-1]
+    return any(fnmatch(rel_posix, pat) or fnmatch(base, pat) for pat in exclude)
+
+
 def _passes_status_gate(path: Path, status_gate: dict | None) -> bool:
     """True if the page may be published under the status gate.
 
@@ -72,14 +83,18 @@ def resolve_slice(
     vault_root: Path,
     include: list[str],
     status_gate: dict | None = None,
+    exclude: list[str] | None = None,
 ) -> list[Path]:
     """Return sorted list of valid page Paths for the slice."""
-    expanded = _expand_globs(Path(vault_root), include)
+    vault = Path(vault_root)
+    expanded = _expand_globs(vault, include)
     # dedupe and filter
     unique = sorted({p.resolve() for p in expanded if p.is_file()})
     valid = [
         p for p in unique
-        if _is_valid_page(p) and _passes_status_gate(p, status_gate)
+        if not _is_excluded(p.relative_to(vault).as_posix(), exclude)
+        and _is_valid_page(p)
+        and _passes_status_gate(p, status_gate)
     ]
     return valid
 
@@ -99,15 +114,16 @@ def resolve_slice_with_neighbours(
     include: list[str],
     neighbour_dirs: list[str],
     status_gate: dict | None = None,
+    exclude: list[str] | None = None,
 ) -> list[Path]:
     """Core slice (from `include`) PLUS referenced pages in neighbour_dirs.
 
     A neighbour is added iff (a) a core page references it (frontmatter edges
     or body wikilinks), (b) its id starts with one of neighbour_dirs, (c) the
-    file exists, is a valid page, and passes the status gate.
+    file exists, is a valid page, passes the status gate, and is not excluded.
     """
     vault = Path(vault_root)
-    core = resolve_slice(vault, include, status_gate=status_gate)
+    core = resolve_slice(vault, include, status_gate=status_gate, exclude=exclude)
     core_ids = {_path_id_of(p, vault) for p in core}
 
     # All edges in the vault; keep only those originating from a core page.
@@ -124,6 +140,8 @@ def resolve_slice_with_neighbours(
             continue
         candidate = _id_to_path(tgt, vault).resolve()
         if not candidate.is_file() or candidate in seen:
+            continue
+        if _is_excluded(candidate.relative_to(vault).as_posix(), exclude):
             continue
         if not _is_valid_page(candidate):
             continue

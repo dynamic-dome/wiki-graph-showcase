@@ -23,22 +23,41 @@ def _path_id_of(path: Path, vault_root: Path) -> str:
 
 
 def run(cfg: dict, out: Path) -> None:
-    """Build the dist tree from cfg into `out`."""
+    """Build the dist tree from cfg into `out`.
+
+    Astro slice (no neighbour_dirs/category_map) keeps its original behaviour
+    and writes to assets/. A dataset with `output_subdir` writes to
+    assets/<subdir>/ and pulls referenced neighbours / typed links / config
+    classification (kompetenz path).
+    """
     out = Path(out)
     vault = Path(cfg["vault_root"]).resolve()
 
-    pages = filter_slice.resolve_slice(vault, cfg["include"])
+    status_gate = cfg.get("status_gate")
+    neighbour_dirs = cfg.get("neighbour_dirs")
+    exclude = cfg.get("exclude")
+
+    if neighbour_dirs:
+        pages = filter_slice.resolve_slice_with_neighbours(
+            vault, cfg["include"], neighbour_dirs,
+            status_gate=status_gate, exclude=exclude,
+        )
+    else:
+        pages = filter_slice.resolve_slice(
+            vault, cfg["include"], status_gate=status_gate, exclude=exclude
+        )
     in_slice_ids = {_path_id_of(p, vault) for p in pages}
 
-    # Parse all edges in the vault, then filter to slice-internal
-    all_edges = parser.extract_edges(vault) + parser.extract_frontmatter_edges(vault)
-    slice_edges_set: set[tuple[str, str]] = set()
-    for src, tgt in all_edges:
+    # Typed edges (showcase fork). Astro ignores the type but it is harmless.
+    typed_edges = parser.extract_typed_edges(vault)
+    slice_edge_type: dict[tuple[str, str], str] = {}
+    for src, tgt, rel in typed_edges:
         if src in in_slice_ids and tgt in in_slice_ids and src != tgt:
-            slice_edges_set.add((src, tgt))
-    slice_edges = sorted(slice_edges_set)
+            # First (sorted) type wins for a given ordered pair; stable.
+            slice_edge_type.setdefault((src, tgt), rel)
+    slice_edges = sorted(slice_edge_type)
 
-    # Build neighbour map (needed for weight calculation)
+    # Build neighbour map (needed for weight calculation), undirected.
     neighbours: dict[str, set[str]] = {nid: set() for nid in in_slice_ids}
     for src, tgt in slice_edges:
         neighbours[src].add(tgt)
@@ -50,24 +69,36 @@ def run(cfg: dict, out: Path) -> None:
     if max_degree == 0:
         max_degree = 1
 
+    category_map = cfg.get("category_map")
+    cluster_default = cfg.get("cluster_default")
+
     # Build node list with metadata
     nodes: list[dict] = []
     metas: dict[str, extract_page_meta.PageMeta] = {}
+    vstatus: dict[str, str] = {}
     for p in pages:
         meta = extract_page_meta.extract(p)
         if meta is None:
             continue  # belt+braces; filter_slice should have dropped these
         node_id = _path_id_of(p, vault)
         metas[node_id] = meta
-        kind = _kind_from_path(node_id)
-        nodes.append({
+        category = _category_of(node_id, category_map)
+        kind = _kind_of(node_id, category_map)
+        node = {
             "id": node_id,
             "title": meta.title,
-            "category": _category_from_path(node_id),
+            "category": category,
             "kind": kind,
-            "cluster": _cluster_from_kind_and_id(kind, node_id),
+            "cluster": _cluster_of(kind, node_id, cluster_default),
             "weight": round(degrees.get(node_id, 0) / max_degree, 3),
-        })
+        }
+        # Additive: verification_status badge when present in frontmatter.
+        fm = extract_page_meta.read_frontmatter(p) or {}
+        vs = fm.get("verification_status")
+        if vs:
+            node["verification_status"] = str(vs)
+            vstatus[node_id] = str(vs)
+        nodes.append(node)
     nodes.sort(key=lambda n: n["id"])
 
     graph = {
@@ -78,17 +109,37 @@ def run(cfg: dict, out: Path) -> None:
         "default_gold": cfg.get("default_gold", 35),
         "metadata": cfg.get("metadata", {}),
         "nodes": nodes,
-        "links": [{"source": s, "target": t} for s, t in slice_edges],
+        "links": [
+            {"source": s, "target": t, "type": slice_edge_type[(s, t)]}
+            for s, t in slice_edges
+        ],
     }
+    if cfg.get("dataset"):
+        graph["dataset"] = cfg["dataset"]
 
-    # Write outputs
+    # Output location: assets/ (astro) or assets/<subdir>/ (datasets).
+    subdir = cfg.get("output_subdir")
     assets = out / "assets"
-    assets.mkdir(parents=True, exist_ok=True)
-    nodes_dir = assets / "nodes"
+    dataset_dir = assets / subdir if subdir else assets
+    dataset_dir.mkdir(parents=True, exist_ok=True)
+    nodes_dir = dataset_dir / "nodes"
     nodes_dir.mkdir(exist_ok=True)
 
-    (assets / "graph.json").write_text(
+    (dataset_dir / "graph.json").write_text(
         json.dumps(graph, indent=2, ensure_ascii=False, sort_keys=False) + "\n",
+        encoding="utf-8",
+    )
+
+    # Slim search index alongside the graph.
+    index = {
+        "dataset": cfg.get("dataset"),
+        "nodes": [
+            {"id": n["id"], "title": n["title"], "category": n["category"]}
+            for n in nodes
+        ],
+    }
+    (dataset_dir / "index.json").write_text(
+        json.dumps(index, indent=2, ensure_ascii=False, sort_keys=False) + "\n",
         encoding="utf-8",
     )
 
@@ -98,9 +149,11 @@ def run(cfg: dict, out: Path) -> None:
             "title": meta.title,
             "subtitle": meta.subtitle,
             "essence": meta.essence,
-            "category": _category_from_path(node_id),
+            "category": _category_of(node_id, category_map),
             "neighbours": sorted(neighbours.get(node_id, set())),
         }
+        if node_id in vstatus:
+            node_doc["verification_status"] = vstatus[node_id]
         (nodes_dir / f"{_slug(node_id)}.json").write_text(
             json.dumps(node_doc, indent=2, ensure_ascii=False, sort_keys=True) + "\n",
             encoding="utf-8",
@@ -131,6 +184,7 @@ def _copy_frontend_assets(src: Path, out: Path) -> None:
 
 
 def _category_from_path(node_id: str) -> str:
+    """Astro default category classification (prefix-based)."""
     if node_id.startswith("wiki/concepts/"):
         return "concept"
     if node_id.startswith("wiki/entities/"):
@@ -141,7 +195,7 @@ def _category_from_path(node_id: str) -> str:
 
 
 def _kind_from_path(node_id: str) -> str:
-    """Finer classification used for visual shape selection in the frontend."""
+    """Astro default fine-grained kind for visual shape selection."""
     if node_id.startswith("wiki/concepts/gantefoer/"):
         return "concept-gantefoer"
     if node_id.startswith("wiki/concepts/"):
@@ -154,12 +208,44 @@ def _kind_from_path(node_id: str) -> str:
 
 
 def _cluster_from_kind_and_id(kind: str, node_id: str) -> str:
-    """High-level cluster used for layered 3D positioning."""
+    """Astro default cluster (gantefoer vs astrophysik)."""
     if kind == "concept-gantefoer":
         return "gantefoer"
     if node_id == "wiki/entities/harald-gantefoer":
         return "gantefoer"
     return "astrophysik"
+
+
+def _category_of(node_id: str, category_map: dict | None) -> str:
+    """Config-driven category (longest matching prefix), else astro default."""
+    if category_map:
+        match = _longest_prefix(node_id, category_map)
+        if match is not None:
+            return match
+        return "other"
+    return _category_from_path(node_id)
+
+
+def _kind_of(node_id: str, category_map: dict | None) -> str:
+    """With a category_map, kind == category. Else astro default kind."""
+    if category_map:
+        return _category_of(node_id, category_map)
+    return _kind_from_path(node_id)
+
+
+def _cluster_of(kind: str, node_id: str, cluster_default: str | None) -> str:
+    """A configured single cluster (forces-only layout) or astro default."""
+    if cluster_default:
+        return cluster_default
+    return _cluster_from_kind_and_id(kind, node_id)
+
+
+def _longest_prefix(node_id: str, prefix_map: dict) -> str | None:
+    best_key = None
+    for key in prefix_map:
+        if node_id.startswith(key) and (best_key is None or len(key) > len(best_key)):
+            best_key = key
+    return prefix_map[best_key] if best_key is not None else None
 
 
 def _main() -> None:

@@ -124,3 +124,28 @@ def test_no_status_gate_means_no_status_filtering(tmp_path: Path) -> None:
     result = filter_slice.resolve_slice(tmp_path, include=["*.md"])
     rels = {p.relative_to(tmp_path).as_posix() for p in result}
     assert rels == {"sup.md"}
+
+
+# ---------------------------------------------------------------------------
+# Exclude globs (Task 5 follow-up): drop pages matching an exclude pattern.
+# ---------------------------------------------------------------------------
+
+
+def test_exclude_drops_readmes(tmp_path: Path) -> None:
+    _write(tmp_path / "wiki" / "synthesis" / "real.md", "# Real\n")
+    _write(tmp_path / "wiki" / "synthesis" / "README.md", "# Readme\n")
+    result = filter_slice.resolve_slice(
+        tmp_path,
+        include=["wiki/synthesis/*.md"],
+        exclude=["**/README.md"],
+    )
+    rels = {p.relative_to(tmp_path).as_posix() for p in result}
+    assert rels == {"wiki/synthesis/real.md"}
+
+
+def test_exclude_none_keeps_everything(tmp_path: Path) -> None:
+    _write(tmp_path / "a.md", "# A\n")
+    _write(tmp_path / "README.md", "# Readme\n")
+    result = filter_slice.resolve_slice(tmp_path, include=["*.md"])
+    rels = {p.relative_to(tmp_path).as_posix() for p in result}
+    assert rels == {"a.md", "README.md"}
