@@ -26,7 +26,17 @@ GENERATED_MANIFEST = "assets/build-manifest.json"
 RAW_PATTERNS = (
     ("internal_path", re.compile(r"(?:(?<![A-Za-z])[A-Za-z]:[\\/]|/Users/|\\Users\\)")),
     ("private_marker", re.compile(r"\bprivate\s*:\s*true\b", re.IGNORECASE)),
-    ("secret_marker", re.compile(r"\b(?:SECRET|TOKEN|PASSWORD|API_KEY|PRIVATE_KEY)\b", re.IGNORECASE)),
+    # Secret detection targets credential KEYS/ASSIGNMENTS, not the bare word
+    # "token" — in an AI vault "Token-Budget" / "Pay-per-Token" is vocabulary,
+    # not a leak. api_key/private_key are always markers; secret/token/password
+    # only count when they look assigned (key: value / key=value), plus the
+    # 'sk-' secret-key prefix.
+    ("secret_marker", re.compile(
+        r"\b(?:API[_-]?KEY|PRIVATE[_-]?KEY)\b"
+        r"|\b(?:SECRET|TOKEN|PASSWORD|PASSWD)\s*[:=]\s*\S"
+        r"|\bsk-[A-Za-z0-9]{8,}\b",
+        re.IGNORECASE,
+    )),
 )
 
 LINE_PATTERNS = (
@@ -132,9 +142,13 @@ def run(dist: Path, write_manifest: bool = False) -> tuple[int, dict]:
     for path in scan_files:
         _scan_text(path, dist, findings)
 
+    # Deep JSON line-scan for markdown-meta leaks: the astro graph.json + nodes,
+    # plus every dataset subdir (assets/<dataset>/graph.json + nodes/*.json).
     graph_path = dist / "assets" / "graph.json"
     graph = _scan_json_strings(graph_path, dist, findings) if graph_path.is_file() else None
-    for node_path in sorted((dist / "assets" / "nodes").glob("*.json")):
+    for graph_json in sorted((dist / "assets").glob("*/graph.json")):
+        _scan_json_strings(graph_json, dist, findings)
+    for node_path in sorted((dist / "assets").rglob("nodes/*.json")):
         _scan_json_strings(node_path, dist, findings)
 
     stats = _graph_stats(graph) if isinstance(graph, dict) else {}

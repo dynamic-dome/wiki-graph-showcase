@@ -86,3 +86,47 @@ def test_pre_deploy_sweep_fails_on_markdown_meta_lines_inside_json(tmp_path: Pat
     checks = {f["check"] for f in manifest["findings"]}
     assert "markdown_blockquote_meta" in checks
     assert "markdown_heading_meta" in checks
+
+
+def test_secret_marker_ignores_token_as_vocabulary(tmp_path: Path) -> None:
+    """'Token-Budget' / 'Pay-per-Token' is AI vocabulary, not a leaked secret."""
+    dist = tmp_path / "dist"
+    _write_minimal_dist(dist)
+    _write(
+        dist / "assets" / "kompetenz" / "nodes" / "wiki__concepts__budget.json",
+        json.dumps({"essence": "Einer Schleife ein hartes Token-Budget vorgeben. "
+                               "Pay-per-Token-Modell statt GPU-Stunden."}),
+    )
+    code, manifest = pre_deploy_sweep.run(dist)
+    assert code == 0, manifest["findings"]
+    assert manifest["status"] == "pass"
+
+
+def test_secret_marker_still_catches_real_secret_assignments(tmp_path: Path) -> None:
+    """Actual secret-looking key/value pairs must still fail the sweep."""
+    dist = tmp_path / "dist"
+    _write_minimal_dist(dist)
+    _write(
+        dist / "assets" / "nodes" / "wiki__concepts__leak2.json",
+        json.dumps({"essence": "config api_key=sk-abc123 and PASSWORD: hunter2"}),
+    )
+    code, manifest = pre_deploy_sweep.run(dist)
+    assert code == 1
+    assert any(f["check"] == "secret_marker" for f in manifest["findings"])
+
+
+def test_pre_deploy_sweep_scans_dataset_subdir_nodes(tmp_path: Path) -> None:
+    """A markdown-meta leak in a kompetenz dataset node must also be caught."""
+    dist = tmp_path / "dist"
+    _write_minimal_dist(dist)
+    _write(
+        dist / "assets" / "kompetenz" / "nodes" / "wiki__competences__x.json",
+        json.dumps({"essence": "> status: seed\nReal lead."}),
+    )
+
+    code, manifest = pre_deploy_sweep.run(dist)
+
+    assert code == 1
+    leaked = [f for f in manifest["findings"]
+              if "kompetenz" in f["path"] and f["check"] == "markdown_blockquote_meta"]
+    assert leaked
