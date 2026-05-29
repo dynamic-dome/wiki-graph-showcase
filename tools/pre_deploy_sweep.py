@@ -28,13 +28,15 @@ RAW_PATTERNS = (
     ("private_marker", re.compile(r"\bprivate\s*:\s*true\b", re.IGNORECASE)),
     # Secret detection targets credential KEYS/ASSIGNMENTS, not the bare word
     # "token" — in an AI vault "Token-Budget" / "Pay-per-Token" is vocabulary,
-    # not a leak. api_key/private_key are always markers; secret/token/password
-    # only count when they look assigned (key: value / key=value), plus the
-    # 'sk-' secret-key prefix.
+    # not a leak. api(_/-)key / private(_/-)key (also no-separator apikey) are
+    # always markers; secret/token/password only count when assigned
+    # (key: value / key=value). Plus bearer tokens and the 'sk-' key prefix.
     ("secret_marker", re.compile(
-        r"\b(?:API[_-]?KEY|PRIVATE[_-]?KEY)\b"
-        r"|\b(?:SECRET|TOKEN|PASSWORD|PASSWD)\s*[:=]\s*\S"
-        r"|\bsk-[A-Za-z0-9]{8,}\b",
+        r"\bapi[_-]?key\b"
+        r"|\bprivate[_-]?key\b"
+        r"|\b(?:secret|token|password|passwd)\s*[:=]\s*\S"
+        r"|\bbearer\s+[A-Za-z0-9._-]{8,}\b"
+        r"|\bsk-[A-Za-z0-9]{4,}\b",
         re.IGNORECASE,
     )),
 )

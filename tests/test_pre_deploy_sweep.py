@@ -115,6 +115,21 @@ def test_secret_marker_still_catches_real_secret_assignments(tmp_path: Path) -> 
     assert any(f["check"] == "secret_marker" for f in manifest["findings"])
 
 
+def test_secret_marker_catches_separator_and_bearer_variants(tmp_path: Path) -> None:
+    """apikey/apiKey (no separator), bearer tokens, short sk- keys all fail."""
+    for i, payload in enumerate([
+        {"essence": "apikey is leaked here"},
+        {"essence": "header: Bearer abcdef0123456789"},
+        {"essence": "key sk-Xy12ab90"},
+    ]):
+        dist = tmp_path / f"dist{i}"
+        _write_minimal_dist(dist)
+        _write(dist / "assets" / "nodes" / f"wiki__concepts__v{i}.json", json.dumps(payload))
+        code, manifest = pre_deploy_sweep.run(dist)
+        assert code == 1, payload
+        assert any(f["check"] == "secret_marker" for f in manifest["findings"]), payload
+
+
 def test_pre_deploy_sweep_scans_dataset_subdir_nodes(tmp_path: Path) -> None:
     """A markdown-meta leak in a kompetenz dataset node must also be caught."""
     dist = tmp_path / "dist"
