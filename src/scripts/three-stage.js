@@ -19,7 +19,7 @@ const CLUSTER_ANCHORS = {
 
 // Kompetenz dataset: colour by node.category instead of astro kind.
 // One single cluster, forces-only layout (no anchor) per design decision.
-const KOMPETENZ_CATEGORY_COLORS = {
+export const KOMPETENZ_CATEGORY_COLORS = {
   competence: "#d9b65f",
   synthesis: "#22c7e8",
   topic: "#8fb7ff",
@@ -51,6 +51,11 @@ export function createStage(container, options = {}) {
     .linkOpacity(0.5)
     .cooldownTicks(500)
     .enableNodeDrag(false);
+
+  // Hide the library's built-in "left-click: rotate…" nav hint — it reads as
+  // dev chrome and overlaps the control panel. (Guarded: older bundles may
+  // not expose it.)
+  if (typeof graph.showNavInfo === "function") graph.showNavInfo(false);
 
   let centerId = null;
   let adjacency = new Map();
@@ -198,8 +203,16 @@ export function createStage(container, options = {}) {
     onNodeHover(handler) {
       graph.onNodeHover((node, _prev) => handler(node));
     },
+    onBackgroundClick(handler) {
+      if (typeof graph.onBackgroundClick === "function") {
+        graph.onBackgroundClick(handler);
+      }
+    },
     getThreeRenderer() {
       return graph.renderer ? graph.renderer() : null;
+    },
+    getCamera() {
+      return typeof graph.camera === "function" ? graph.camera() : null;
     },
     getGraphForceInstance() {
       return graph;

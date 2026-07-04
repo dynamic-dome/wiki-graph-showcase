@@ -5,7 +5,7 @@ html[data-theme="dome"] {
     radial-gradient(ellipse at 30% 40%, #1a1428 0%, #0B0F1A 70%);
 
   --text: #F5F1E6;
-  --text-muted: #B6AC92;
+  --text-muted: #C7BEA4;
 
   --brand-color: #F5F1E6;
   --brand-glyph-color: #C9A23A;
@@ -32,6 +32,7 @@ html[data-theme="dome"] {
 
   --border-soft: rgba(201, 162, 58, 0.18);
   --border-tooltip: rgba(201, 162, 58, 0.4);
+  --surface-border-color: rgba(201, 162, 58, 0.22);
   --shadow-modal: -8px 0 32px rgba(11, 15, 26, 0.8), 0 0 0 1px rgba(201, 162, 58, 0.08);
 }
 

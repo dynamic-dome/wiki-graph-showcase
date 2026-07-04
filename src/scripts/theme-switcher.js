@@ -11,6 +11,9 @@ export function createThemeSwitcher(toggleButton, currentLabelEl) {
     if (!VALID.includes(theme)) return;
     document.documentElement.setAttribute("data-theme", theme);
     currentLabelEl.textContent = theme;
+    // Expose state to assistive tech: crab is the default, dome is "pressed".
+    toggleButton.setAttribute("aria-pressed", theme === "dome" ? "true" : "false");
+    toggleButton.setAttribute("aria-label", `Theme: ${theme} — umschalten`);
     try {
       localStorage.setItem(STORAGE_KEY, theme);
     } catch (_e) {

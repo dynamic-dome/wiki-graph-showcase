@@ -7,8 +7,12 @@ import {
   loadGraph, loadIndex, loadNode,
   DATASETS, DEFAULT_DATASET, datasetConfig,
 } from "./graph-loader.js";
-import { createStage } from "./three-stage.js";
+import { createStage, KOMPETENZ_CATEGORY_COLORS } from "./three-stage.js";
 import { createModal } from "./modal.js";
+import { createLegend } from "./legend.js";
+import { createCameraRig } from "./camera-rig.js";
+import { createLabels } from "./labels.js";
+import { createFocusLock } from "./focus-lock.js";
 import { createThemeSwitcher } from "./theme-switcher.js";
 import { createGoldPulse } from "./gold-pulse.js";
 import { createSparkles } from "./sparkles.js";
@@ -41,6 +45,11 @@ import { readState, writeState } from "./url-state.js";
   }
   wireDatasetSwitch(dataset);
 
+  createLegend(document.getElementById("legend"), {
+    dataset,
+    kompetenzColors: KOMPETENZ_CATEGORY_COLORS,
+  });
+
   document.getElementById("meta-readout").textContent =
     `${graphData.nodes.length} Knoten · ${graphData.links.length} Kanten`;
 
@@ -51,6 +60,15 @@ import { readState, writeState } from "./url-state.js";
 
   const initialCenter = urlState.node || graphData.default_center;
   stage.setCenter(initialCenter);
+
+  const rig = createCameraRig(stage);
+
+  // In-space labels for hubs + the current focus neighbourhood.
+  const labels = createLabels(document.getElementById("label-layer"), stage);
+  labels.refresh();
+  labels.start();
+
+  const focusLock = createFocusLock(document.getElementById("reticle"), stage);
 
   // Gold pulse
   const gold = createGoldPulse(
@@ -88,7 +106,11 @@ import { readState, writeState } from "./url-state.js";
       tour.startTour({
         stationCount: 6,
         onStationChange: (node) => {
-          if (node) stage.setCenter(node.id);
+          if (node) {
+            stage.setCenter(node.id);
+            labels.refresh();
+            focusLock.lockOn(node);
+          }
         },
       });
     });
@@ -98,11 +120,33 @@ import { readState, writeState } from "./url-state.js";
     writeState({ theme: e.detail.theme });
   });
 
+  // Plate mode: hide all chrome for a clean, shareable capture. Toggle with "P".
+  const plateHint = document.getElementById("plate-hint");
+  let plateHintTimer = null;
+  document.addEventListener("keydown", (e) => {
+    if (e.key !== "p" && e.key !== "P") return;
+    const t = e.target;
+    if (t && t.closest && t.closest("input, textarea")) return; // don't hijack typing
+    const on = document.body.classList.toggle("plate-mode");
+    if (plateHint) {
+      if (plateHintTimer) clearTimeout(plateHintTimer);
+      if (on) {
+        plateHint.textContent = "Plate-Modus · P beendet";
+        plateHint.classList.add("show");
+        plateHintTimer = setTimeout(() => plateHint.classList.remove("show"), 2200);
+      } else {
+        plateHint.classList.remove("show");
+      }
+    }
+  });
+
   // Modal
   const modal = createModal(document.getElementById("modal"));
   modal.onNeighbourClick(async (neighbourId) => {
     await openCenter(neighbourId);
   });
+  // Clicking empty 3D space dismisses the detail panel.
+  stage.onBackgroundClick(() => modal.hide());
 
   // Search (index.json driven) — loaded lazily, never blocks the graph render.
   const searchInput = document.getElementById("search-input");
@@ -119,13 +163,22 @@ import { readState, writeState } from "./url-state.js";
   // Click handlers
   const tooltip = document.getElementById("tooltip");
 
+  // Human telemetry instead of raw slugs: "Fokus · Schwarzes Loch · 15 Verbindungen".
+  function statusFor(verb, node) {
+    const adj = stage.getAdjacency().get(node.id);
+    const n = adj ? adj.size : 0;
+    const title = node.title || node.id;
+    return `${verb} · ${title} · ${n} ${n === 1 ? "Verbindung" : "Verbindungen"}`;
+  }
+
   stage.onNodeClick(async ({ type, node }) => {
     if (type === "click") {
-      statusBar.textContent = `KLICK · ${node.id}`;
+      statusBar.textContent = statusFor("Fokus", node);
+      focusLock.lockOn(node);
       const doc = await loadNode(node.id, dataset);
       modal.show(doc);
     } else if (type === "doubleclick") {
-      statusBar.textContent = `NEUES ZENTRUM · ${node.id}`;
+      statusBar.textContent = statusFor("Neues Zentrum", node);
       await openCenter(node.id);
     }
   });
@@ -146,6 +199,18 @@ import { readState, writeState } from "./url-state.js";
 
   async function openCenter(nodeId) {
     stage.setCenter(nodeId);
+    labels.refresh();
+    // Acquisition: lock the reticle and gently dolly the camera onto the new
+    // centre (the rig cancels any in-flight move, so this never fights).
+    const node = stage.getNodeById(nodeId);
+    if (node && node.x !== undefined && node.x !== null) {
+      focusLock.lockOn(node);
+      rig.flyTo(
+        { x: node.x, y: node.y + 24, z: node.z + 300 },
+        { x: node.x, y: node.y, z: node.z },
+        { ms: 1100 },
+      );
+    }
     writeState({ node: nodeId });
     try {
       const doc = await loadNode(nodeId, dataset);
@@ -155,15 +220,18 @@ import { readState, writeState } from "./url-state.js";
     }
   }
 
-  // Initial modal for the starting center
-  if (initialCenter) {
+  // Cold-open "First Light": the graph is centered + coloured on the default
+  // node (setCenter above); the camera flies in from deep space while the title
+  // lockup fades. Only a deep-linked node (?node=...) opens its detail panel,
+  // and only once the intro finishes — a bare visit stays on the nebula.
+  runIntro(rig, graphData, urlState.node ? initialCenter : null, async (id) => {
     try {
-      const doc = await loadNode(initialCenter, dataset);
+      const doc = await loadNode(id, dataset);
       modal.show(doc);
     } catch (e) {
       // No node detail for that ID — skip silently
     }
-  }
+  });
 })().catch((err) => {
   console.error("Init failed:", err);
   document.body.innerHTML = `<pre style="color:#f88;padding:24px">${String(err.stack || err)}</pre>`;
@@ -199,4 +267,50 @@ function escapeHtml(s) {
   return String(s).replace(/[&<>"']/g, (c) =>
     ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c],
   );
+}
+
+/**
+ * Cold-open sequence: deep-space fly-in + title-lockup fade. Opens the deep-
+ * linked node's panel (if any) once the intro finishes. Reduced-motion snaps
+ * straight to the resolved state with no overlay.
+ */
+function runIntro(rig, graphData, deepLinkNode, openNode) {
+  const overlay = document.getElementById("intro-overlay");
+  const tel = document.getElementById("intro-telemetry");
+  if (tel) {
+    tel.textContent = `${graphData.nodes.length} Objekte · ${graphData.links.length} Verbindungen`;
+  }
+  const reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  // Play the ignition once per browser session — a reload or dataset switch
+  // shouldn't replay the full sequence for a returning visitor.
+  let seen = null;
+  try { seen = sessionStorage.getItem("nebula_intro_seen"); } catch (_e) { /* private mode */ }
+  const finish = () => { if (deepLinkNode) openNode(deepLinkNode); };
+
+  if (!overlay || reduce || seen) {
+    if (overlay) { overlay.classList.add("done"); overlay.style.display = "none"; }
+    rig.settle();  // same resting frame as a played intro → consistent, legible framing
+    finish();
+    return;
+  }
+  try { sessionStorage.setItem("nebula_intro_seen", "1"); } catch (_e) { /* ignore */ }
+  rig.intro({});
+  // Abortable + idempotent: an impatient click/keypress (which also supersedes
+  // the intro camera via the rig token) skips the rest instead of leaving stale
+  // timers to hide the overlay / open the modal later.
+  let ended = false;
+  const skipEvents = ["pointerdown", "keydown", "wheel", "touchstart"];
+  const t1 = setTimeout(() => overlay.classList.add("done"), 2600);
+  const t2 = setTimeout(endIntro, 3800);
+  function endIntro() {
+    if (ended) return;
+    ended = true;
+    clearTimeout(t1);
+    clearTimeout(t2);
+    skipEvents.forEach((ev) => window.removeEventListener(ev, endIntro));
+    overlay.classList.add("done");
+    setTimeout(() => { overlay.style.display = "none"; }, 400);
+    finish();
+  }
+  skipEvents.forEach((ev) => window.addEventListener(ev, endIntro, { passive: true }));
 }

@@ -4,6 +4,58 @@ Neueste Eintraege oben.
 
 ---
 
+## 2026-07-04 — UI-Showcase-Upgrade: „First Light" (Fundament + Signature)
+
+Grosser Darstellungs-/Bedienbarkeits-/Vorzeigbarkeits-Sprung, informiert von den
+RAG-Skills (frontend-design, modern-web-design, gsap/threejs) + A11y-Audit. Zwei
+Schichten, jede einzeln deploybar. Verifiziert: **60/60 pytest, 14/14 Playwright,
+Pre-Deploy-Sweep pass (0 Findings)**, In-Browser-Runtime-QA (crab+dome), 0 App-
+Konsolenfehler. Noch NICHT live deployt.
+
+**Schicht 0 — Fundament (behebt jeden Bug + jedes Audit-Finding):**
+- **F1 Typo-Substrat:** Kern-Befund behoben — die referenzierten Fonts (Inter/
+  Space Grotesk/JetBrains) existierten nie (kein `@font-face`), alles fiel still
+  auf `system-ui`. Jetzt bewusster, lizenzfreier System-Stack als Tokens
+  (`--font-display` Serif / `--font-body` Sans / `--font-mono`) + `clamp()`-Skala.
+- **F2 Glas-Design-System:** ein `:root`-Surface-Token-Satz
+  (`--surface-bg/-strong/-border-color/-radius/-blur/-shadow`), konsumiert von
+  Modal/Tooltip/Controls/Suche/Legende; themen-getönte Border (crab cyan / dome gold).
+- **F3 Markdown-Bold:** `modal.js` rendert `**bold**` (escape-then-bold, XSS-safe)
+  statt literaler Sternchen; Bold in Akzentfarbe.
+- **F4 Modal-Härtung:** `role="dialog"`, Escape schliesst, Klick-ausserhalb +
+  Klick-ins-leere-All (`onBackgroundClick`), Focus-Trap/-Restore, `inert`-when-closed.
+- **F5 Cold-Open entkoppelt:** Auto-Modal nur noch bei Deep-Link; bare Visit zeigt
+  den Nebel.
+- **F6/F7:** Suchfeld-/Backlink-Kollision oben-links behoben; Debug-Statusleiste →
+  Telemetrie (`Fokus · Titel · N Verbindungen`).
+- **F8 Legende:** ein-/ausklappbarer Farb-/Gold-Mode-Key, liest echte CSS-Vars
+  (kann nie driften), datensatz-abhängig, themen-reaktiv.
+- **F9 A11y-Floor:** `:focus-visible` überall, Slider-Fokusring, Kontrast-Bump
+  (`--text-muted`), Touch-Targets, Theme-`aria-pressed`, Such-Combobox +
+  Pfeiltasten, `safe-area-insets`.
+- **F10 Social-Preview:** self-hosted `og-image.jpg` (1200×630, SVG→sharp) +
+  og/twitter-Tags.
+
+**Schicht 1 — Signature „First Light" (Observatorium):**
+- **S1/S4 Cold-Open-Zündung + Kamera-Rig:** `camera-rig.js` (+ `ease.js`) — ein
+  Kamera-Zustandsautomat über der `cameraPosition()`-API (kein THREE). Deep-Space-
+  Fly-In beim ersten Besuch (1×/Session via sessionStorage), Titel-Lockup;
+  `settle()` hält konsistentes Framing für Wiederkehrer/reduced-motion.
+- **S2 In-3D-Labels:** `labels.js` — DOM-Chips via `graph2ScreenCoords()` für
+  Hubs + Fokus, Behind-Camera-Cull + Distanz-Fade. Macht aus Blobs eine Wissenskarte.
+  **Kein three.min.js** (600 KB gespart).
+- **S3 Focus-Lock:** `focus-lock.js` — Reticle-Puls + sanfter Dolly beim
+  Re-Zentrieren (Klick/Suche/Nachbar-Pill/Tour).
+- **S6 Plate-Modus:** Taste `P` blendet Chrome aus → teilbarer OS-Screenshot.
+- **S7 Atmosphäre:** permanente Deep-Space-Vignette (`.stage::after`).
+- Nebenbei: 3d-force-graph Default-Nav-Hinweis abgeschaltet (`showNavInfo(false)`).
+
+**Neue Frontend-Module:** `camera-rig.js`, `ease.js`, `labels.js`, `focus-lock.js`,
+`legend.js`. **Geänderter Test:** `kompetenz.spec.ts` — Default-Modal-on-load →
+Deep-Link (spiegelt F5).
+
+---
+
 ## 2026-05-30 — Zweiter Datensatz: Kompetenz-Wiki Nebula
 
 Das Showcase rendert jetzt einen zweiten, statischen Datensatz aus

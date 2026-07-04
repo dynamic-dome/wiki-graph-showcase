@@ -8,6 +8,15 @@
 <meta property="og:title" content="Knowledge Nebula — Dynamic Dome">
 <meta property="og:description" content="Astrophysik-Wissensgraph zum Rumklicken.">
 <meta property="og:type" content="website">
+<meta property="og:url" content="https://wiki.dynamic-dome.com/">
+<meta property="og:image" content="https://wiki.dynamic-dome.com/assets/vendor/og-image.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Knowledge Nebula — ein 3D-Wissensgraph aus Astrophysik-Konzepten">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Knowledge Nebula — Dynamic Dome">
+<meta name="twitter:description" content="Astrophysik-Wissensgraph zum Rumklicken.">
+<meta name="twitter:image" content="https://wiki.dynamic-dome.com/assets/vendor/og-image.jpg">
 <link rel="preload" href="assets/graph.json" as="fetch" crossorigin>
 <link rel="stylesheet" href="assets/styles/base.css">
 <link rel="stylesheet" href="assets/styles/theme-crab.css">
@@ -15,6 +24,14 @@
 <link rel="stylesheet" href="assets/styles/competence.css">
 </head>
 <body>
+  <div class="intro-overlay" id="intro-overlay" aria-hidden="true">
+    <div class="intro-inner">
+      <div class="intro-eyebrow">First Light</div>
+      <h1 class="intro-title">Knowledge Nebula</h1>
+      <div class="intro-telemetry" id="intro-telemetry"></div>
+    </div>
+  </div>
+
   <header class="topbar">
     <a class="parent-link" href="https://dynamic-dome.com/" rel="noopener" aria-label="Zurueck zu dynamic-dome.com">
       <span class="parent-link-arrow" aria-hidden="true">&larr;</span>
@@ -50,13 +67,23 @@
       <ul class="search-results" id="search-results" role="listbox" hidden></ul>
     </div>
     <div class="graph-container" id="graph-container"></div>
+    <div class="label-layer" id="label-layer" aria-hidden="true"></div>
     <canvas class="sparkles-layer" id="sparkles-layer" aria-hidden="true"></canvas>
     <div class="cmb-layer" id="cmb-layer" aria-hidden="true"></div>
+    <div class="reticle" id="reticle" aria-hidden="true"><div class="reticle-ring"></div></div>
     <div class="tooltip" id="tooltip" role="status" aria-live="polite"></div>
+    <div class="legend" id="legend">
+      <div class="legend-body" id="legend-body" hidden></div>
+      <button class="legend-toggle" id="legend-toggle" type="button" aria-expanded="false" aria-controls="legend-body">
+        <span class="legend-glyph" aria-hidden="true">&#x25C6;</span> Legende
+      </button>
+    </div>
     <div class="status-bar" id="status-bar" aria-live="polite"></div>
   </main>
 
-  <aside class="modal" id="modal" aria-hidden="true">
+  <div class="plate-hint" id="plate-hint" aria-hidden="true"></div>
+
+  <aside class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title" inert>
     <button class="modal-close" id="modal-close" aria-label="Schliessen">&times;</button>
     <div class="modal-badges" id="modal-badges"></div>
     <h2 class="modal-title" id="modal-title"></h2>

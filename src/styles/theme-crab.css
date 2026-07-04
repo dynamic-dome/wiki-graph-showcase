@@ -8,7 +8,7 @@ html[data-theme="crab"] {
     #02010a;
 
   --text: #E8F4FF;
-  --text-muted: rgba(200, 210, 230, 0.7);
+  --text-muted: rgba(206, 217, 236, 0.85);
 
   --brand-color: #C9D8E8;
   --brand-glyph-color: #98E8FF;
@@ -35,6 +35,7 @@ html[data-theme="crab"] {
 
   --border-soft: rgba(152, 232, 255, 0.18);
   --border-tooltip: rgba(152, 232, 255, 0.5);
+  --surface-border-color: rgba(152, 232, 255, 0.18);
   --shadow-modal: -8px 0 32px rgba(2, 1, 10, 0.6), 0 0 24px rgba(152, 232, 255, 0.08);
 }
 

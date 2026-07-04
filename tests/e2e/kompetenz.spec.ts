@@ -100,9 +100,11 @@ test("dataset switcher navigates to kompetenz and updates URL", async ({ page })
 });
 
 test("kompetenz detail modal shows a node title and category badge", async ({ page }) => {
-  await page.goto(url("/?dataset=kompetenz"));
+  // A bare visit now shows the nebula first (cold-open decoupling in main.js);
+  // deep-linking a node is what opens the detail panel on load.
+  await page.goto(url("/?dataset=kompetenz&node=wiki%2Fcompetences%2Fagentic-workflows-orchestrieren"));
   await page.locator("#graph-container canvas").waitFor({ state: "visible", timeout: 15_000 });
-  // The default-center node opens the modal on load.
+  // The deep-linked node opens the modal on load.
   await expect(page.locator("#modal")).toHaveClass(/open/, { timeout: 10_000 });
   await expect(page.locator("#modal-title")).not.toBeEmpty();
   // default center is a competence -> category badge present

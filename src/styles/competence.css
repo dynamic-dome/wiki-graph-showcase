@@ -6,12 +6,14 @@
   display: inline-flex;
   gap: 2px;
   padding: 2px;
-  border: 1px solid rgba(160, 200, 220, 0.25);
-  border-radius: 8px;
-  background: rgba(10, 16, 28, 0.45);
+  border: 1px solid var(--surface-border-color);
+  border-radius: 12px;
+  background: var(--surface-bg);
+  backdrop-filter: var(--surface-blur);
+  -webkit-backdrop-filter: var(--surface-blur);
 }
 .dataset-btn {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: var(--font-mono);
   font-size: 11px;
   letter-spacing: 0.04em;
   padding: 5px 10px;
@@ -32,22 +34,25 @@
 /* ---- Search box (top-left of stage) ---- */
 .search-box {
   position: absolute;
-  top: 14px;
-  left: 14px;
+  /* Sits below the topbar so it never collides with the "back to
+     dynamic-dome.com" link that shares the top-left corner. */
+  top: 62px;
+  left: 22px;
   z-index: 20;
   width: min(320px, 70vw);
 }
 .search-input {
   width: 100%;
   box-sizing: border-box;
-  font-family: 'JetBrains Mono', monospace;
+  font-family: var(--font-mono);
   font-size: 12px;
-  padding: 8px 12px;
-  border: 1px solid rgba(160, 200, 220, 0.3);
-  border-radius: 8px;
-  background: rgba(8, 14, 26, 0.82);
-  color: #e8f4ff;
-  backdrop-filter: blur(6px);
+  padding: 10px 13px;
+  border: 1px solid var(--surface-border-color);
+  border-radius: 12px;
+  background: var(--surface-strong);
+  color: var(--text, #e8f4ff);
+  backdrop-filter: var(--surface-blur);
+  -webkit-backdrop-filter: var(--surface-blur);
 }
 .search-input:focus {
   outline: none;
@@ -59,10 +64,12 @@
   padding: 4px;
   max-height: 46vh;
   overflow-y: auto;
-  border: 1px solid rgba(160, 200, 220, 0.25);
-  border-radius: 8px;
-  background: rgba(8, 14, 26, 0.94);
-  backdrop-filter: blur(8px);
+  border: 1px solid var(--surface-border-color);
+  border-radius: var(--surface-radius);
+  background: var(--surface-strong);
+  backdrop-filter: var(--surface-blur);
+  -webkit-backdrop-filter: var(--surface-blur);
+  box-shadow: var(--surface-shadow);
 }
 .search-result {
   display: flex;
@@ -73,10 +80,13 @@
   border-radius: 6px;
   cursor: pointer;
 }
-.search-result:hover { background: rgba(152, 232, 255, 0.12); }
+.search-result { min-height: 34px; }
+.search-result:hover,
+.search-result.active,
+.search-result[aria-selected="true"] { background: rgba(152, 232, 255, 0.16); }
 .search-title { font-size: 12px; color: #e8f4ff; }
 .search-cat {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: var(--font-mono);
   font-size: 9px;
   text-transform: uppercase;
   letter-spacing: 0.06em;
@@ -92,7 +102,7 @@
   margin-bottom: 8px;
 }
 .badge {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: var(--font-mono);
   font-size: 9px;
   text-transform: uppercase;
   letter-spacing: 0.06em;
@@ -112,6 +122,6 @@
 .badge-vstatus-superseded { border-color: #d97f7f; color: #f0a8a8; }
 
 @media (max-width: 720px) {
-  .search-box { width: calc(100vw - 28px); }
+  .search-box { width: calc(100vw - 28px); left: 14px; top: 58px; }
   .dataset-btn { padding: 4px 8px; font-size: 10px; }
 }
