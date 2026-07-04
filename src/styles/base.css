@@ -305,9 +305,26 @@ body {
 /* === Control Panel (slider) === */
 .control-panel {
   position: fixed; bottom: 0; left: 0; right: 0; z-index: 30;
-  display: flex; align-items: center; gap: 16px;
+  display: flex; align-items: center; gap: 16px; flex-wrap: wrap; row-gap: 8px;
   padding: 18px 24px;
   background: linear-gradient(0deg, rgba(2, 1, 10, 0.95), rgba(2, 1, 10, 0));
+}
+.ctrl-legal {
+  margin-left: auto;
+  display: flex; gap: 14px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+}
+.ctrl-legal a {
+  color: #6b7a90;
+  text-decoration: none;
+  letter-spacing: 0.02em;
+  pointer-events: auto;
+}
+.ctrl-legal a:hover,
+.ctrl-legal a:focus-visible {
+  color: var(--brand-glyph-color, #98e8ff);
+  text-decoration: underline;
 }
 .ctrl-label {
   display: flex; align-items: center; gap: 6px;
