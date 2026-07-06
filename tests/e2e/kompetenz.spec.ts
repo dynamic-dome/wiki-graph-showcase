@@ -87,21 +87,28 @@ test("existing astrophysics URL stays compatible", async ({ page }) => {
   await expect(page.locator("#brand-name")).toHaveText(/Knowledge Nebula/);
 });
 
-test("dataset switcher navigates to kompetenz and updates URL", async ({ page }) => {
+test("bare URL defaults to the kompetenz dataset (SP-35)", async ({ page }) => {
   await page.goto(url("/"));
   await page.locator("#graph-container canvas").waitFor({ state: "visible", timeout: 15_000 });
-
-  await expect(page.locator("#dataset-astro")).toHaveClass(/active/);
-  await page.locator("#dataset-kompetenz").click();
-
-  await expect(page).toHaveURL(/dataset=kompetenz/);
-  await expect(page.locator("#graph-container canvas")).toBeVisible({ timeout: 15_000 });
+  await expect(page.locator("#brand-name")).toHaveText(/Kompetenz-Wiki/);
   await expect(page.locator("#dataset-kompetenz")).toHaveClass(/active/);
 });
 
+test("dataset switcher navigates to astro and updates URL", async ({ page }) => {
+  await page.goto(url("/"));
+  await page.locator("#graph-container canvas").waitFor({ state: "visible", timeout: 15_000 });
+
+  await expect(page.locator("#dataset-kompetenz")).toHaveClass(/active/);
+  await page.locator("#dataset-astro").click();
+
+  await expect(page).toHaveURL(/dataset=astro/);
+  await expect(page.locator("#graph-container canvas")).toBeVisible({ timeout: 15_000 });
+  await expect(page.locator("#dataset-astro")).toHaveClass(/active/);
+});
+
 test("kompetenz detail modal shows a node title and category badge", async ({ page }) => {
-  // A bare visit now shows the nebula first (cold-open decoupling in main.js);
-  // deep-linking a node is what opens the detail panel on load.
+  // A bare visit opens the graph without a modal (cold-open decoupling in
+  // main.js); deep-linking a node is what opens the detail panel on load.
   await page.goto(url("/?dataset=kompetenz&node=wiki%2Fcompetences%2Fagentic-workflows-orchestrieren"));
   await page.locator("#graph-container canvas").waitFor({ state: "visible", timeout: 15_000 });
   // The deep-linked node opens the modal on load.

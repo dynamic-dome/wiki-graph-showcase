@@ -1,7 +1,7 @@
 /**
  * App entry. Imports modules, fetches data, sets up controllers, wires events.
- * Supports two datasets (astro default, kompetenz) selected via ?dataset= and
- * a visible top-bar switcher.
+ * Supports two datasets (kompetenz default since SP-35, astro) selected via
+ * ?dataset= and a visible top-bar switcher.
  */
 import {
   loadGraph, loadIndex, loadNode,
@@ -211,7 +211,9 @@ import { readState, writeState } from "./url-state.js";
         { ms: 1100 },
       );
     }
-    writeState({ node: nodeId });
+    // dataset explizit mitschreiben: ?node ohne ?dataset liest der
+    // Legacy-Guard in url-state.js als astro (SP-35).
+    writeState({ dataset, node: nodeId });
     try {
       const doc = await loadNode(nodeId, dataset);
       modal.show(doc);
@@ -253,8 +255,9 @@ function wireDatasetSwitch(activeDataset) {
     btn.addEventListener("click", () => {
       if (ds === activeDataset) return;
       const params = new URLSearchParams(window.location.search);
-      if (ds === DEFAULT_DATASET) params.delete("dataset");
-      else params.set("dataset", ds);
+      // Immer explizit (SP-35): implizite Defaults kollidieren mit dem
+      // Legacy-Guard, sobald spaeter ein node-Param dazukommt.
+      params.set("dataset", ds);
       // Drop node so the target dataset opens on its own default center.
       params.delete("node");
       const qs = params.toString();

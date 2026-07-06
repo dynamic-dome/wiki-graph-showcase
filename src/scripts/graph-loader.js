@@ -18,7 +18,9 @@ export const DATASETS = {
   },
 };
 
-export const DEFAULT_DATASET = "astro";
+// SP-35 (2026-07-06): der portfolio-relevante Kompetenz-Graph ist der Default;
+// der Astro-Nebel bleibt als Tab und ueber Legacy-Permalinks (url-state.js) erreichbar.
+export const DEFAULT_DATASET = "kompetenz";
 
 export function datasetConfig(dataset) {
   return DATASETS[dataset] || DATASETS[DEFAULT_DATASET];
