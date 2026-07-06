@@ -166,10 +166,10 @@ def run(cfg: dict, out: Path) -> None:
 
 
 def _copy_frontend_assets(src: Path, out: Path) -> None:
-    """Copy src/index.html, src/_headers, src/styles/, src/scripts/, src/vendor/ to dist/."""
+    """Copy src/index.html, src/_headers, src/robots.txt, src/sitemap.xml, src/styles/, src/scripts/, src/vendor/ to dist/."""
     import shutil
-    # index.html and _headers go to dist/ root
-    for root_file in ("index.html", "_headers"):
+    # root-level files go to dist/ root (real files beat the Pages SPA catch-all)
+    for root_file in ("index.html", "_headers", "robots.txt", "sitemap.xml"):
         src_file = src / root_file
         if src_file.is_file():
             shutil.copy2(src_file, out / root_file)
