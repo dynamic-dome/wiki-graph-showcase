@@ -122,7 +122,13 @@ export function createModal(rootEl) {
     renderBadges(nodeDoc);
     titleEl.textContent = nodeDoc.title || nodeDoc.id;
     subtitleEl.innerHTML = renderInline(nodeDoc.subtitle);
-    essenceEl.innerHTML = renderInline(nodeDoc.essence);
+    // essence is a multi-paragraph lead section (\n\n-separated); renderInline
+    // alone would collapse it into one block, so wrap each paragraph in <p>.
+    essenceEl.innerHTML = String(nodeDoc.essence == null ? "" : nodeDoc.essence)
+      .split(/\n\s*\n/)
+      .filter((para) => para.trim())
+      .map((para) => `<p>${renderInline(para)}</p>`)
+      .join("");
     pillsEl.innerHTML = "";
     for (const neighbour of nodeDoc.neighbours || []) {
       const btn = document.createElement("button");

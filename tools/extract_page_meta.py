@@ -102,6 +102,36 @@ def _first_paragraph(body: str) -> str:
     return ""
 
 
+def _lead_section(body: str, max_paragraphs: int = 4, max_chars: int = 1200) -> str:
+    """Lead section: every content paragraph from the first one up to the next
+    heading block (wiki convention: the next `## ...` section), joined with
+    blank lines.
+
+    Preamble heading blocks (`## Definition`) and blockquote meta-markers are
+    skipped with the same logic as _first_paragraph. Safety-cap against
+    full-text dumps: at most `max_paragraphs` paragraphs and ~`max_chars`
+    characters, always cut at a paragraph boundary (the first paragraph is
+    never dropped).
+    """
+    collected: list[str] = []
+    total = 0
+    for para in re.split(r"\n\s*\n", body.strip()):
+        cleaned = para.strip()
+        if not cleaned:
+            continue
+        if _is_heading_only(cleaned):
+            if collected:
+                break  # next section starts -> lead ends
+            continue  # preamble heading before the lead -> skip
+        if _is_blockquote(cleaned):
+            continue
+        if collected and (len(collected) >= max_paragraphs or total + len(cleaned) > max_chars):
+            break
+        collected.append(cleaned)
+        total += len(cleaned)
+    return "\n\n".join(collected)
+
+
 def _first_sentence(text: str) -> str:
     if not text:
         return ""
@@ -146,8 +176,10 @@ def extract(path: Path) -> Optional[PageMeta]:
         if not title:
             return None
 
-    lead = _first_paragraph(rest)
-    lead = _render_wikilinks(lead)
-    subtitle = _first_sentence(lead)
+    # Subtitle stays the first sentence of the FIRST paragraph; essence carries
+    # the whole lead section (map stays a map, detail panel gets enough to read).
+    first = _render_wikilinks(_first_paragraph(rest))
+    subtitle = _first_sentence(first)
+    essence = _render_wikilinks(_lead_section(rest))
 
-    return PageMeta(title=title, subtitle=subtitle, essence=lead)
+    return PageMeta(title=title, subtitle=subtitle, essence=essence)

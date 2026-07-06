@@ -48,13 +48,49 @@ def test_subtitle_is_first_sentence_of_lead(tmp_path: Path) -> None:
     assert meta.subtitle == "First sentence."
 
 
-def test_essence_is_first_paragraph(tmp_path: Path) -> None:
+def test_essence_is_lead_section_until_next_heading(tmp_path: Path) -> None:
+    """Weg A: essence carries the whole lead section (all paragraphs up to the
+    next heading), joined with blank lines; subtitle stays the first sentence."""
     page = tmp_path / "a.md"
-    _write(page, "# Title\n\nLead paragraph with multiple sentences. Here is more. And another.\n\nSecond para.\n")
+    _write(page, "# Title\n\nLead paragraph with multiple sentences. Here is more. And another.\n\nSecond para.\n\n## Next section\n\nNot part of the lead.\n")
     meta = extract_page_meta.extract(page)
     assert "Lead paragraph" in meta.essence
-    assert "And another." in meta.essence
-    assert "Second para." not in meta.essence
+    assert "Second para." in meta.essence
+    assert "\n\n" in meta.essence
+    assert "Not part of the lead." not in meta.essence
+    assert "## Next section" not in meta.essence
+    assert meta.subtitle == "Lead paragraph with multiple sentences."
+
+
+def test_essence_caps_paragraph_count(tmp_path: Path) -> None:
+    """Safety-cap: at most 4 paragraphs, cut at a paragraph boundary."""
+    paras = "\n\n".join(f"Absatz {i} mit etwas Text." for i in range(1, 8))
+    page = tmp_path / "a.md"
+    _write(page, f"# Title\n\n{paras}\n")
+    meta = extract_page_meta.extract(page)
+    assert "Absatz 4" in meta.essence
+    assert "Absatz 5" not in meta.essence
+
+
+def test_essence_caps_char_length_at_paragraph_boundary(tmp_path: Path) -> None:
+    """Safety-cap: ~1200 chars, but never mid-paragraph and never dropping the first."""
+    long_para = "Wort " * 260  # ~1300 Zeichen
+    page = tmp_path / "a.md"
+    _write(page, f"# Title\n\n{long_para.strip()}\n\nZweiter Absatz danach.\n")
+    meta = extract_page_meta.extract(page)
+    assert meta.essence.startswith("Wort")
+    assert "Zweiter Absatz danach." not in meta.essence
+
+
+def test_essence_skips_blockquote_between_lead_paragraphs(tmp_path: Path) -> None:
+    """Blockquote meta-markers inside the lead section are skipped, lead continues."""
+    page = tmp_path / "a.md"
+    _write(page, "# Title\n\nErster Absatz.\n\n> meta-marker\n\nZweiter Absatz.\n\n## Section\n\nRest.\n")
+    meta = extract_page_meta.extract(page)
+    assert "Erster Absatz." in meta.essence
+    assert "Zweiter Absatz." in meta.essence
+    assert "meta-marker" not in meta.essence
+    assert "Rest." not in meta.essence
 
 
 def test_essence_strips_wikilink_brackets(tmp_path: Path) -> None:
