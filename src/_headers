@@ -1,7 +1,14 @@
+# CSP-Kopplung: script-src enthaelt den sha256-Hash der INLINE Import Map in
+# index.html (<script type="importmap">). Aendert sich deren Inhalt, MUSS der
+# Hash hier neu berechnet werden — sonst blockt die CSP die Import Map live und
+# alle THREE-Module (Bloom, Scene-Dressing, Node-Forms) laden nicht. Lokal via
+# `python -m http.server` unsichtbar, weil dort _headers NICHT ausgespielt wird
+# — nur ein Live-Check (oder Cloudflare-Preview) zeigt es. Hash neu berechnen:
+#   python -c "import hashlib,base64,re;raw=open('dist/index.html','rb').read();c=re.search(rb'<script type=.importmap.>(.*?)</script>',raw,re.DOTALL).group(1);print('sha256-'+base64.b64encode(hashlib.sha256(c).digest()).decode())"
 /*
   X-Frame-Options: DENY
   X-Content-Type-Options: nosniff
   Referrer-Policy: strict-origin-when-cross-origin
   Strict-Transport-Security: max-age=31536000; includeSubDomains
   Permissions-Policy: camera=(), microphone=(), geolocation=(), interest-cohort=()
-  Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; font-src 'self' data:; frame-ancestors 'none'; base-uri 'self'; form-action 'self'
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'sha256-2dKkrr9dPqwVsaJrGisoD3YRJ6KcEZZop43ucG6AwDk='; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; font-src 'self' data:; frame-ancestors 'none'; base-uri 'self'; form-action 'self'
