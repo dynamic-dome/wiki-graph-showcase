@@ -56,6 +56,8 @@ import { readState, writeState } from "./url-state.js";
   // Stage
   const container = document.getElementById("graph-container");
   const stage = createStage(container, stageOptions);
+  // Testhook für Playwright (aurum.spec.ts) — bewusst öffentlich, read-only genutzt.
+  window.__nebula = { stage };
   stage.setGraphData(graphData);
 
   const initialCenter = urlState.node || graphData.default_center;
@@ -184,6 +186,7 @@ import { readState, writeState } from "./url-state.js";
   });
 
   stage.onNodeHover((node) => {
+    stage.setSpotlight(node ? node.id : null);
     if (!node) {
       tooltip.classList.remove("visible");
       return;

@@ -10,7 +10,7 @@
     "dev": "python -m http.server --bind 127.0.0.1 --directory dist/ 8042",
     "sweep": "python tools/pre_deploy_sweep.py --dist dist",
     "test:py": "python -m pytest tests/ --ignore=tests/e2e -v",
-    "test:e2e": "npx playwright test tests/e2e/showcase.spec.ts tests/e2e/kompetenz.spec.ts",
+    "test:e2e": "npx playwright test tests/e2e/showcase.spec.ts tests/e2e/kompetenz.spec.ts tests/e2e/aurum.spec.ts",
     "test:e2e:live": "npx playwright test tests/e2e/live/",
     "test": "npm run test:py && npm run test:e2e"
   },

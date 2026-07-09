@@ -58,6 +58,8 @@ export function createStage(container, options = {}) {
   if (typeof graph.showNavInfo === "function") graph.showNavInfo(false);
 
   let centerId = null;
+  let centerDist = new Map();   // BFS-Distanzen vom Zentrum, gecacht (vorher O(n²): bfsDistance lief pro Knoten im Color-Callback)
+  let spotlightId = null;       // Hover-Spotlight
   let adjacency = new Map();
   let nodesById = new Map();
   let lastClickMs = 0;
@@ -94,6 +96,14 @@ export function createStage(container, options = {}) {
     return dist;
   }
 
+  function endpointIds(link) {
+    const s = typeof link.source === "object" ? link.source.id : link.source;
+    const t = typeof link.target === "object" ? link.target.id : link.target;
+    return [s, t];
+  }
+
+  const SPOT_HAZE = "rgba(150, 180, 205, 0.10)";
+
   function nodeColor(node) {
     const styles = getComputedStyle(document.documentElement);
     const c0 = (styles.getPropertyValue("--node-center") || "#FFFFFF").trim();
@@ -102,22 +112,22 @@ export function createStage(container, options = {}) {
     const cEntity = (styles.getPropertyValue("--node-entity") || "#FFE0B2").trim();
     const hazeColor = "rgba(160, 200, 220, 0.32)";
 
-    // Center node: pure white halo
+    // Hover-Spotlight: alles außer Knoten + 1-Hop-Nachbarn wird stark gedimmt.
+    if (spotlightId && node.id !== spotlightId) {
+      const neigh = adjacency.get(spotlightId);
+      if (!neigh || !neigh.has(node.id)) return SPOT_HAZE;
+    }
+
     if (centerId === node.id) return c0;
 
-    // Far-away nodes (BFS distance >= 3) fade to haze
-    if (centerId) {
-      const dist = bfsDistance(centerId);
-      const d = dist.get(node.id);
+    if (centerId && centerDist.size) {
+      const d = centerDist.get(node.id);
       if (d === undefined || d >= 3) return hazeColor;
     }
 
-    // Kompetenz dataset: colour by semantic category.
     if (colorMode === "kompetenz") {
       return KOMPETENZ_CATEGORY_COLORS[node.category] || cAstro;
     }
-
-    // Astro: clean cluster-coding by kind
     if (node.kind === "entity") return cEntity;
     if (node.kind === "concept-gantefoer") return cGold;
     return cAstro;
@@ -158,14 +168,32 @@ export function createStage(container, options = {}) {
   const api = {
     setGraphData(data) {
       rebuildAdjacency(data.nodes || [], data.links || []);
+      if (centerId) centerDist = bfsDistance(centerId);
       graph.graphData(data);
     },
     setCenter(nodeId) {
       centerId = nodeId;
+      centerDist = nodeId ? bfsDistance(nodeId) : new Map();
       graph.nodeColor(nodeColor);  // force recompute
     },
     getCenterId() {
       return centerId;
+    },
+    setSpotlight(nodeId) {
+      if (spotlightId === nodeId) return;
+      spotlightId = nodeId;
+      graph.nodeColor(nodeColor);
+    },
+    getLinkDim(link) {
+      const [s, t] = endpointIds(link);
+      if (spotlightId) {
+        return (s === spotlightId || t === spotlightId) ? 1 : 0.15;
+      }
+      if (centerId && centerDist.size) {
+        const far = (d) => d === undefined || d >= 3;
+        if (far(centerDist.get(s)) && far(centerDist.get(t))) return 0.35;
+      }
+      return 1;
     },
     centerCamera() {
       const node = graph.graphData().nodes.find(n => n.id === centerId);

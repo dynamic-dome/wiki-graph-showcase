@@ -8,6 +8,8 @@
  * on every render-loop tick.
  */
 
+import { parseRgba, mixRgba, dimRgba } from "./color-utils.js";
+
 const BASE_PERIOD_BY_DENSITY = {
   sparse: 9000,
   medium: 12000,
@@ -24,24 +26,6 @@ function linkKey(link) {
   const s = typeof link.source === "object" ? link.source.id : link.source;
   const t = typeof link.target === "object" ? link.target.id : link.target;
   return `${s}->${t}`;
-}
-
-// Crude colour mixer for "rgba(r,g,b,a)" strings.
-function mixRgba(a, b, t) {
-  const ra = parseRgba(a);
-  const rb = parseRgba(b);
-  if (!ra || !rb) return a;
-  const r = Math.round(ra[0] * (1 - t) + rb[0] * t);
-  const g = Math.round(ra[1] * (1 - t) + rb[1] * t);
-  const bl = Math.round(ra[2] * (1 - t) + rb[2] * t);
-  const al = (ra[3] * (1 - t) + rb[3] * t).toFixed(3);
-  return `rgba(${r},${g},${bl},${al})`;
-}
-
-function parseRgba(s) {
-  const m = /rgba?\s*\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)(?:\s*,\s*([0-9.]+))?\s*\)/i.exec(s);
-  if (!m) return null;
-  return [Number(m[1]), Number(m[2]), Number(m[3]), m[4] === undefined ? 1 : Number(m[4])];
 }
 
 export function createGoldPulse(stage, cmbLayerEl, brandGlyphEl) {
@@ -105,7 +89,7 @@ export function createGoldPulse(stage, cmbLayerEl, brandGlyphEl) {
 
     if (state.reducedMotion) {
       // Bridges still highlighted, just not animated.
-      return isBridge ? bridgeColor : baseColor;
+      return dimRgba(isBridge ? bridgeColor : baseColor, stage.getLinkDim(link));
     }
 
     const offset = state.edgePhases.get(key) ?? 0;
@@ -121,7 +105,7 @@ export function createGoldPulse(stage, cmbLayerEl, brandGlyphEl) {
     const intensity = Math.min(1, pulse * (0.25 + state.gold * 0.85) + bridgeBoost * pulse);
 
     const accent = isBridge ? bridgeColor : goldColor;
-    return mixRgba(baseColor, accent, intensity);
+    return dimRgba(mixRgba(baseColor, accent, intensity), stage.getLinkDim(link));
   }
 
   function edgeWidthAt(link) {
