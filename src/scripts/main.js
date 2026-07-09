@@ -22,6 +22,7 @@ import { createAutoTour } from "./auto-tour.js";
 import { createSearchControl } from "./search-control.js";
 import { readState, writeState } from "./url-state.js";
 import { createNodeForms } from "./node-forms.js";
+import "./three-guard.js"; // THREE-Revision-Tripwire (Vendor r168 == Bundle r168)
 
 (async function main() {
   const urlState = readState();
