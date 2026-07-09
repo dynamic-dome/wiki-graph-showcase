@@ -9,7 +9,7 @@
 - **Tests:** pytest fuer Build, Playwright (TypeScript spec via tsx) fuer Frontend-E2E.
 - **Public-Safety:** Build rejected `private: true`-Frontmatter. Vor jedem Deploy (nicht nur erstem) `python tools/pre_deploy_sweep.py --dist dist --write-manifest` ausfuehren; das prueft private Marker, interne Pfade, Markdown-Meta-Marker und Pflichtdateien in `dist/`.
 - **Parser-Sync:** `tools/parser.py` ist eine Kopie von `dynamic_central_orchestrator/wiki_graph/parser.py` (Quell-Commit im Header dokumentiert). Bei Aenderungen an der DCO-Quelle: hier per Hand syncen, Header-Hash updaten.
-- **3d-force-graph-Bundle exponiert THREE NICHT.** Wer Custom-Geometries via `.nodeThreeObject()` will, muss `three.min.js` separat als Vendor-File einbinden. Aequivalente Strategie ueber Farbe/Groesse/Glow (siehe `three-stage.js` + `gold-pulse.js`) ist die heutige Wahl und reicht fuer Cluster-Lesbarkeit ohne 600 KB extra-Dep.
+- **THREE ist als Vendor-Modul eingebunden** (`src/vendor/three/`, r168 — MUSS zur THREE-Revision im 3d-force-graph-Bundle passen, Check: `grep -o 'const a="168"' src/vendor/3d-force-graph.min.js`). Import via Import Map (`"three"` in index.html). Bei einem Update des 3d-force-graph-Bundles beide gemeinsam heben. Custom-Geometries (`node-forms.js`), Szenen-Dressing und Bloom hängen daran.
 - **Wiki-Read-Only:** Build-Step liest `C:/Users/domes/wiki/`, schreibt NIE dorthin.
 
 ## Handoff / Reviews / Audits

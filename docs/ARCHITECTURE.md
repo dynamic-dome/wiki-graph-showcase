@@ -21,6 +21,14 @@
 - **`src/scripts/modal.js`** — Detail-Panel.
 - **`src/scripts/url-state.js`** — Parses + writes URL params.
 
+Aurum-Nebula-Module (2026-07): `color-utils.js` (rgba-Helper), `edge-flow.js`
+(Kanten-Partikel, kompetenz-only), `scene-dressing.js` (3D-Sternenfeld/Nebel),
+`bloom.js` (UnrealBloomPass am Bundle-Composer), `node-forms.js`
+(Kategorie-Geometrien, kompetenz-only). THREE r168 liegt als Vendor-Modul in
+`src/vendor/three/` und wird per Import Map aufgelöst; die Revision ist an das
+3d-force-graph-Bundle gekoppelt. `sparkles.js` wurde entfernt (ersetzt durch
+scene-dressing).
+
 ## Abhaengigkeiten
 
 - **Build:** Python 3.11+ stdlib only.

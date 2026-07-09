@@ -4,6 +4,15 @@ Neueste Eintraege oben.
 
 ---
 
+## 2026-07-09 — Aurum Nebula (Visual-Upgrade Kompetenz-Graph)
+
+- Fokus-Spotlight: Hover dimmt alles außer 1-Hop-Nachbarschaft; BFS-Distanzen jetzt gecacht (vorher O(n²) im Color-Callback).
+- Edge-Flow-Partikel entlang aller Kanten, dichter am Zentrum (kompetenz-only).
+- THREE r168 als Vendor + Import Map; echtes 3D-Sternenfeld + Nebel-Billboards (Parallaxe), 2D-Sparkles-Overlay entfernt.
+- Bloom (UnrealBloomPass) am Bundle-Composer, Threshold-begrenzt.
+- Kategorie-Geometrien: competence=Ikosaeder, synthesis=Torus, entity=Oktaeder, topic/concept=Kugeln (kompetenz-only).
+- Gold-Slider ist Master-Regler für Bloom-Stärke, Partikel-Dichte und Sternen-Tönung.
+
 ## 2026-07-04 — UI-Showcase-Upgrade: „First Light" (Fundament + Signature)
 
 Grosser Darstellungs-/Bedienbarkeits-/Vorzeigbarkeits-Sprung, informiert von den
