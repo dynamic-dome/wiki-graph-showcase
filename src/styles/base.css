@@ -130,13 +130,6 @@ body {
 .graph-container { position: absolute; inset: 0; }
 .graph-container canvas { display: block; }
 
-.sparkles-layer {
-  position: absolute; inset: 0;
-  z-index: 5;
-  pointer-events: none;
-  width: 100%; height: 100%;
-}
-
 /* Focus-lock reticle (target acquired) */
 .reticle {
   position: absolute; top: 0; left: 0; z-index: 24;

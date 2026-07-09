@@ -124,17 +124,13 @@ test("prefers-reduced-motion disables CMB layer at high gold", async ({ browser 
   await ctx.close();
 });
 
-test("sparkles canvas and tour button are present", async ({ page }) => {
+test("tour button is present", async ({ page }) => {
+  // Sparkles-Overlay wurde durch das 3D-Sternenfeld/Nebel-Dressing ersetzt
+  // (siehe aurum.spec.ts: "3D scene dressing is active and the 2D sparkles
+  // layer is gone") — #sparkles-layer existiert nicht mehr.
   await page.goto(url("/?gold=70"));
   await page.locator("#graph-container canvas").waitFor({ state: "visible", timeout: 15_000 });
-  await expect(page.locator("#sparkles-layer")).toBeAttached();
   await expect(page.locator("#tour-btn")).toBeVisible();
-  // Sparkles canvas must have non-zero pixel dimensions (sized by JS)
-  const dims = await page.locator("#sparkles-layer").evaluate(
-    (el: HTMLCanvasElement) => ({ width: el.width, height: el.height }),
-  );
-  expect(dims.width).toBeGreaterThan(0);
-  expect(dims.height).toBeGreaterThan(0);
 });
 
 test("tour button starts a tour with status output", async ({ page }) => {

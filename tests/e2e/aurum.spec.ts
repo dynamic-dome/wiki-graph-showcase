@@ -105,3 +105,20 @@ test("edge-flow particles are denser on centre-adjacent links", async ({ page })
   expect(res.farCount).toBeGreaterThanOrEqual(1);
   expect(res.centerCount).toBeGreaterThan(res.farCount);
 });
+
+test("3D scene dressing is active and the 2D sparkles layer is gone", async ({ page }) => {
+  await page.goto(url("/?dataset=kompetenz"));
+  await page.locator("#graph-container canvas").waitFor({ state: "visible", timeout: 15_000 });
+  const active = await page.evaluate(() => (window as any).__nebula.dressing.isActive());
+  expect(active).toBe(true);
+  await expect(page.locator("#sparkles-layer")).toHaveCount(0);
+});
+
+test("reduced motion still renders the graph with dressing", async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  const errors: string[] = [];
+  page.on("pageerror", (err) => errors.push(err.message));
+  await page.goto(url("/?dataset=kompetenz"));
+  await page.locator("#graph-container canvas").waitFor({ state: "visible", timeout: 15_000 });
+  expect(errors).toEqual([]);
+});

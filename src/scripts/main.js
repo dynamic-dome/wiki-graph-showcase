@@ -16,7 +16,7 @@ import { createFocusLock } from "./focus-lock.js";
 import { createThemeSwitcher } from "./theme-switcher.js";
 import { createGoldPulse } from "./gold-pulse.js";
 import { createEdgeFlow } from "./edge-flow.js";
-import { createSparkles } from "./sparkles.js";
+import { createSceneDressing } from "./scene-dressing.js";
 import { createAutoTour } from "./auto-tour.js";
 import { createSearchControl } from "./search-control.js";
 import { readState, writeState } from "./url-state.js";
@@ -81,7 +81,8 @@ import { readState, writeState } from "./url-state.js";
   );
   gold.notifyGraphData(graphData);
 
-  const sparkles = createSparkles(document.getElementById("sparkles-layer"));
+  const dressing = createSceneDressing(stage);
+  window.__nebula.dressing = dressing;
 
   const statusBar = document.getElementById("status-bar");
   const tour = createAutoTour(stage, statusBar);
@@ -93,7 +94,7 @@ import { readState, writeState } from "./url-state.js";
   slider.value = String(initialGold);
   goldValue.textContent = `${initialGold}%`;
   gold.setGold(initialGold / 100);
-  sparkles.setGold(initialGold / 100);
+  dressing.setGold(initialGold / 100);
 
   // Edge-Flow nur für Kompetenz: überschreibt die Bridge-Partikel von
   // gold-pulse (Kompetenz hat keine Bridges).
@@ -108,7 +109,7 @@ import { readState, writeState } from "./url-state.js";
     const v = parseInt(e.target.value, 10);
     goldValue.textContent = `${v}%`;
     gold.setGold(v / 100);
-    sparkles.setGold(v / 100);
+    dressing.setGold(v / 100);
     if (edgeFlow) edgeFlow.setGold(v / 100);
     writeState({ gold: v });
   });
