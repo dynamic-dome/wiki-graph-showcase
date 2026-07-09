@@ -8,7 +8,7 @@
  * on every render-loop tick.
  */
 
-import { parseRgba, mixRgba, dimRgba } from "./color-utils.js";
+import { mixRgba, dimRgba } from "./color-utils.js";
 
 const BASE_PERIOD_BY_DENSITY = {
   sparse: 9000,

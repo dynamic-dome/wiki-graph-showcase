@@ -127,7 +127,7 @@ export function dimRgba(c, factor) {
 
 In `gold-pulse.js`: die lokalen `mixRgba`/`parseRgba`-Definitionen löschen, oben ergänzen:
 ```js
-import { parseRgba, mixRgba, dimRgba } from "./color-utils.js";
+import { mixRgba, dimRgba } from "./color-utils.js";
 ```
 
 - [ ] **Step 4: `three-stage.js` — Spotlight-State, BFS-Cache, neue API**
