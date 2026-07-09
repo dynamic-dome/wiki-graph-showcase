@@ -86,3 +86,22 @@ test("spotlight dims links outside the hovered neighbourhood", async ({ page }) 
   expect(res.dimFar).toBeLessThan(0.5);
   expect(res.dimAfter).toBeGreaterThan(res.dimFar); // Spotlight aus → kein Hover-Dimming mehr
 });
+
+test("edge-flow particles are denser on centre-adjacent links", async ({ page }) => {
+  await page.goto(url("/?dataset=kompetenz&gold=60"));
+  await page.locator("#graph-container canvas").waitFor({ state: "visible", timeout: 15_000 });
+  const res = await page.evaluate(async () => {
+    const { stage, edgeFlow } = (window as any).__nebula;
+    const resp = await fetch("/assets/kompetenz/graph.json");
+    const g = await resp.json();
+    const center: string = stage.getCenterId();
+    const centerLink = g.links.find((l: any) => l.source === center || l.target === center);
+    const farLink = g.links.find((l: any) => l.source !== center && l.target !== center);
+    return {
+      centerCount: centerLink ? edgeFlow.particleCountFor(centerLink) : -1,
+      farCount: edgeFlow.particleCountFor(farLink),
+    };
+  });
+  expect(res.farCount).toBeGreaterThanOrEqual(1);
+  expect(res.centerCount).toBeGreaterThan(res.farCount);
+});

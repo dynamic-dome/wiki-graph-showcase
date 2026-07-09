@@ -15,6 +15,7 @@ import { createLabels } from "./labels.js";
 import { createFocusLock } from "./focus-lock.js";
 import { createThemeSwitcher } from "./theme-switcher.js";
 import { createGoldPulse } from "./gold-pulse.js";
+import { createEdgeFlow } from "./edge-flow.js";
 import { createSparkles } from "./sparkles.js";
 import { createAutoTour } from "./auto-tour.js";
 import { createSearchControl } from "./search-control.js";
@@ -94,11 +95,21 @@ import { readState, writeState } from "./url-state.js";
   gold.setGold(initialGold / 100);
   sparkles.setGold(initialGold / 100);
 
+  // Edge-Flow nur für Kompetenz: überschreibt die Bridge-Partikel von
+  // gold-pulse (Kompetenz hat keine Bridges).
+  let edgeFlow = null;
+  if (dataset === "kompetenz") {
+    edgeFlow = createEdgeFlow(stage);
+    edgeFlow.setGold(initialGold / 100);
+    window.__nebula.edgeFlow = edgeFlow;
+  }
+
   slider.addEventListener("input", (e) => {
     const v = parseInt(e.target.value, 10);
     goldValue.textContent = `${v}%`;
     gold.setGold(v / 100);
     sparkles.setGold(v / 100);
+    if (edgeFlow) edgeFlow.setGold(v / 100);
     writeState({ gold: v });
   });
 
@@ -110,6 +121,7 @@ import { readState, writeState } from "./url-state.js";
         onStationChange: (node) => {
           if (node) {
             stage.setCenter(node.id);
+            if (edgeFlow) edgeFlow.refresh();
             labels.refresh();
             focusLock.lockOn(node);
           }
@@ -202,6 +214,7 @@ import { readState, writeState } from "./url-state.js";
 
   async function openCenter(nodeId) {
     stage.setCenter(nodeId);
+    if (edgeFlow) edgeFlow.refresh();
     labels.refresh();
     // Acquisition: lock the reticle and gently dolly the camera onto the new
     // centre (the rig cancels any in-flight move, so this never fights).
