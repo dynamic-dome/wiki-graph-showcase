@@ -17,6 +17,7 @@ import { createThemeSwitcher } from "./theme-switcher.js";
 import { createGoldPulse } from "./gold-pulse.js";
 import { createEdgeFlow } from "./edge-flow.js";
 import { createSceneDressing } from "./scene-dressing.js";
+import { createBloom } from "./bloom.js";
 import { createAutoTour } from "./auto-tour.js";
 import { createSearchControl } from "./search-control.js";
 import { readState, writeState } from "./url-state.js";
@@ -84,6 +85,9 @@ import { readState, writeState } from "./url-state.js";
   const dressing = createSceneDressing(stage);
   window.__nebula.dressing = dressing;
 
+  const bloom = createBloom(stage);
+  window.__nebula.bloom = bloom;
+
   const statusBar = document.getElementById("status-bar");
   const tour = createAutoTour(stage, statusBar);
 
@@ -95,6 +99,7 @@ import { readState, writeState } from "./url-state.js";
   goldValue.textContent = `${initialGold}%`;
   gold.setGold(initialGold / 100);
   dressing.setGold(initialGold / 100);
+  bloom.setGold(initialGold / 100);
 
   // Edge-Flow nur für Kompetenz: überschreibt die Bridge-Partikel von
   // gold-pulse (Kompetenz hat keine Bridges).
@@ -110,6 +115,7 @@ import { readState, writeState } from "./url-state.js";
     goldValue.textContent = `${v}%`;
     gold.setGold(v / 100);
     dressing.setGold(v / 100);
+    bloom.setGold(v / 100);
     if (edgeFlow) edgeFlow.setGold(v / 100);
     writeState({ gold: v });
   });

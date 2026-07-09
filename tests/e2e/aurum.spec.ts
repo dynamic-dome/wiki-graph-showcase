@@ -122,3 +122,18 @@ test("reduced motion still renders the graph with dressing", async ({ page }) =>
   await page.locator("#graph-container canvas").waitFor({ state: "visible", timeout: 15_000 });
   expect(errors).toEqual([]);
 });
+
+test("bloom is active at default gold and off at gold 0", async ({ page }) => {
+  await page.goto(url("/?dataset=kompetenz&gold=35"));
+  await page.locator("#graph-container canvas").waitFor({ state: "visible", timeout: 15_000 });
+  const res = await page.evaluate(() => {
+    const { bloom } = (window as any).__nebula;
+    const atDefault = bloom.isActive();
+    bloom.setGold(0);
+    const atZero = bloom.isActive();
+    bloom.setGold(0.35);
+    return { atDefault, atZero };
+  });
+  expect(res.atDefault).toBe(true);
+  expect(res.atZero).toBe(false);
+});
