@@ -84,7 +84,7 @@ test("existing astrophysics URL stays compatible", async ({ page }) => {
   await page.goto(url("/?theme=dome&gold=100&node=wiki%2Fconcepts%2Fallgemeine-relativitaetstheorie"));
   await expect(page.locator("#graph-container canvas")).toBeVisible({ timeout: 15_000 });
   // No ?dataset means astro: brand keeps the astro metadata title.
-  await expect(page.locator("#brand-name")).toHaveText(/Knowledge Nebula/);
+  await expect(page.locator("#brand-name")).toHaveText(/Astrophysik-Nebel/);
 });
 
 test("bare URL defaults to the kompetenz dataset (SP-35)", async ({ page }) => {
