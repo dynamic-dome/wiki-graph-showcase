@@ -21,6 +21,7 @@ import { createBloom } from "./bloom.js";
 import { createAutoTour } from "./auto-tour.js";
 import { createSearchControl } from "./search-control.js";
 import { readState, writeState } from "./url-state.js";
+import { createNodeForms } from "./node-forms.js";
 
 (async function main() {
   const urlState = readState();
@@ -60,6 +61,12 @@ import { readState, writeState } from "./url-state.js";
   const stage = createStage(container, stageOptions);
   // Testhook für Playwright (aurum.spec.ts) — bewusst öffentlich, read-only genutzt.
   window.__nebula = { stage };
+  // Kategorie-Formen nur für Kompetenz; Astro behält Default-Kugeln.
+  if (dataset === "kompetenz") {
+    const forms = createNodeForms(stage);
+    stage.attachNodeForms(forms);
+    window.__nebula.forms = forms;
+  }
   stage.setGraphData(graphData);
 
   const initialCenter = urlState.node || graphData.default_center;

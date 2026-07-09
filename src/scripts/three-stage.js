@@ -28,7 +28,7 @@ export const KOMPETENZ_CATEGORY_COLORS = {
 };
 
 // Weight -> sphere radius. Hubs (weight=1.0) ~3x bigger than leaves (weight=0).
-function sizeFromWeight(weight) {
+export function sizeFromWeight(weight) {
   return 3 + (weight || 0) * 16;
 }
 
@@ -64,6 +64,7 @@ export function createStage(container, options = {}) {
   let nodesById = new Map();
   let lastClickMs = 0;
   let lastClickedId = null;
+  let formsRef = null;
 
   function rebuildAdjacency(nodes, links) {
     adjacency = new Map();
@@ -175,6 +176,7 @@ export function createStage(container, options = {}) {
       centerId = nodeId;
       centerDist = nodeId ? bfsDistance(nodeId) : new Map();
       graph.nodeColor(nodeColor);  // force recompute
+      if (formsRef) formsRef.refreshVisuals();
     },
     getCenterId() {
       return centerId;
@@ -183,6 +185,7 @@ export function createStage(container, options = {}) {
       if (spotlightId === nodeId) return;
       spotlightId = nodeId;
       graph.nodeColor(nodeColor);
+      if (formsRef) formsRef.refreshVisuals();
     },
     getLinkDim(link) {
       const [s, t] = endpointIds(link);
@@ -249,6 +252,13 @@ export function createStage(container, options = {}) {
       const s = typeof link.source === "object" ? link.source : nodesById.get(link.source);
       const t = typeof link.target === "object" ? link.target : nodesById.get(link.target);
       return s && t && s.cluster !== t.cluster;
+    },
+    getNodeRgba(node) {
+      return nodeColor(node);
+    },
+    attachNodeForms(forms) {
+      formsRef = forms;
+      graph.nodeThreeObject((node) => forms.objectFor(node));
     },
   };
 

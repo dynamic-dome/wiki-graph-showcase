@@ -137,3 +137,26 @@ test("bloom is active at default gold and off at gold 0", async ({ page }) => {
   expect(res.atDefault).toBe(true);
   expect(res.atZero).toBe(false);
 });
+
+test("kompetenz nodes render as category geometries", async ({ page }) => {
+  await page.goto(url("/?dataset=kompetenz"));
+  await page.locator("#graph-container canvas").waitFor({ state: "visible", timeout: 15_000 });
+  const res = await page.evaluate(() => {
+    const { forms, stage } = (window as any).__nebula;
+    if (!forms) return null;
+    const fg = stage.getGraphForceInstance();
+    // Custom-Objekte hängen als Kind-Meshes an den Node-Objekten der Szene.
+    let meshCount = 0;
+    fg.scene().traverse((o: any) => { if (o.isMesh && o.userData?.aurumForm) meshCount++; });
+    return { meshCount };
+  });
+  expect(res).not.toBeNull();
+  expect(res!.meshCount).toBeGreaterThan(50);
+});
+
+test("astro keeps default spheres (no custom forms)", async ({ page }) => {
+  await page.goto(url("/?dataset=astro"));
+  await page.locator("#graph-container canvas").waitFor({ state: "visible", timeout: 15_000 });
+  const hasForms = await page.evaluate(() => Boolean((window as any).__nebula.forms));
+  expect(hasForms).toBe(false);
+});
