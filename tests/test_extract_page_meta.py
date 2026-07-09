@@ -158,3 +158,18 @@ def test_essence_keeps_paragraph_with_inline_gt_character(tmp_path: Path) -> Non
     _write(page, "# Title\n\nIf x > 0 then we say x is positive.\n")
     meta = extract_page_meta.extract(page)
     assert meta.essence.startswith("If x > 0")
+
+
+def test_lead_section_stops_at_glued_heading_section(tmp_path: Path) -> None:
+    """Wiki-Quellseiten kleben `## `-Ueberschriften manchmal ohne Leerzeile an ihre
+    Bullet-Liste (`## Sektion\\n- bullet`); das ist fuer _is_heading_only kein reiner
+    Heading-Block, muss die Lead-Section aber trotzdem beenden."""
+    page = tmp_path / "a.md"
+    _write(
+        page,
+        "---\ntype: concept\ntitle: T\n---\n\n# Titel\n\nLead-Absatz eins.\n\n## Sektion\n- bullet eins\n- bullet zwei\n",
+    )
+    meta = extract_page_meta.extract(page)
+    assert meta is not None
+    assert "## Sektion" not in meta.essence
+    assert meta.essence == "Lead-Absatz eins."

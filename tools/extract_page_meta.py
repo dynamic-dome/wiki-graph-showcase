@@ -123,6 +123,19 @@ def _lead_section(body: str, max_paragraphs: int = 4, max_chars: int = 1200) -> 
             if collected:
                 break  # next section starts -> lead ends
             continue  # preamble heading before the lead -> skip
+        first_line = next(ln for ln in cleaned.splitlines() if ln.strip())
+        if _HEADING_LINE_RE.match(first_line):
+            # Heading klebt ohne Leerzeile an seinem Inhalt (## Sektion\n- bullet):
+            # nach gesammeltem Lead beendet das die Lead-Section; davor zaehlt
+            # nur der Inhalt hinter den Preamble-Headings.
+            if collected:
+                break
+            lines = cleaned.splitlines()
+            while lines and (not lines[0].strip() or _HEADING_LINE_RE.match(lines[0])):
+                lines.pop(0)
+            cleaned = "\n".join(lines).strip()
+            if not cleaned:
+                continue
         if _is_blockquote(cleaned):
             continue
         if collected and (len(collected) >= max_paragraphs or total + len(cleaned) > max_chars):
