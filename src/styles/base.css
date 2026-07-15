@@ -471,6 +471,18 @@ body {
   .parent-link { padding: 6px 8px; }
 }
 
+/* CA-SUB-WIKI-003: unter 480px stapelt die Topbar kontrolliert zweizeilig —
+   Zeile 1: Rücklink + Marke, Zeile 2: Datensatz-Wahl + Theme-Umschalter.
+   Vorher ragte der Theme-Umschalter rechts aus dem Viewport (Topbar clippte intern). */
+@media (max-width: 480px) {
+  .topbar { flex-wrap: wrap; row-gap: 6px; padding-left: 12px; padding-right: 12px; }
+  .brand-name { white-space: nowrap; }
+  .topbar-right {
+    order: 3; width: 100%;
+    justify-content: space-between; gap: 8px;
+  }
+}
+
 /* === A11y floor: focus visibility, touch targets, safe areas === */
 :focus-visible {
   outline: 2px solid var(--brand-glyph-color, #98e8ff);
