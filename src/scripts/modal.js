@@ -121,7 +121,13 @@ export function createModal(rootEl) {
     if (!isOpen) lastTrigger = document.activeElement;
     renderBadges(nodeDoc);
     titleEl.textContent = nodeDoc.title || nodeDoc.id;
-    subtitleEl.innerHTML = renderInline(nodeDoc.subtitle);
+    // CA-SUB-WIKI-002: competence-/synthesis-Nodes tragen subtitle == essence —
+    // den identischen Absatz nicht doppelt direkt untereinander zeigen.
+    const subtitleText = String(nodeDoc.subtitle == null ? "" : nodeDoc.subtitle).trim();
+    const essenceText = String(nodeDoc.essence == null ? "" : nodeDoc.essence).trim();
+    const subtitleDuplicatesEssence = subtitleText && subtitleText === essenceText;
+    subtitleEl.innerHTML = subtitleDuplicatesEssence ? "" : renderInline(nodeDoc.subtitle);
+    subtitleEl.hidden = subtitleDuplicatesEssence || !subtitleText;
     // essence is a multi-paragraph lead section (\n\n-separated); renderInline
     // alone would collapse it into one block, so wrap each paragraph in <p>.
     essenceEl.innerHTML = String(nodeDoc.essence == null ? "" : nodeDoc.essence)
