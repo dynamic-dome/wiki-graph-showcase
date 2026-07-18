@@ -63,12 +63,12 @@ npm run build
 npx wrangler pages deploy dist/ --project-name=wiki-graph-showcase --branch=main --commit-dirty=true
 ```
 
-1. `npm run build` baut `dist/` aus dem aktuellen Vault-Stand (liest `C:/Users/domes/wiki/`).
+1. `npm run build` baut `dist/` aus dem aktuellen Vault-Stand (liest den `vault_root` aus `showcase.config.json`, aktuell `C:/Users/domes/Desktop/Claude-Projekte/physik-weltall-wiki/`).
 2. `python tools/pre_deploy_sweep.py --dist dist --write-manifest` prueft Public-Safety-Marker, Pflichtdateien, Graph-Stats und schreibt ein Deploy-Manifest nach `dist/assets/build-manifest.json`.
 3. `wrangler pages deploy ...` pusht `dist/` direkt zu Cloudflare Pages.
 4. Live unter `https://wiki-graph-showcase.pages.dev/` nach ~30 Sekunden Edge-Propagation.
 
-Production-Branch im Repo (`main`) ist nur fuer Source-Tracking — Cloudflare baut nicht selbst, weil der Vault `C:/Users/domes/wiki/` nicht in CF-Build-Runnern existiert. Deploys laufen manuell aus dem lokalen `dist/` heraus.
+Production-Branch im Repo (`main`) ist nur fuer Source-Tracking — Cloudflare baut nicht selbst, weil der Vault (`vault_root` aus `showcase.config.json`, aktuell `C:/Users/domes/Desktop/Claude-Projekte/physik-weltall-wiki/`) nicht in CF-Build-Runnern existiert. Deploys laufen manuell aus dem lokalen `dist/` heraus.
 
 Custom-Domain `wiki.dynamic-dome.com` ist seit 2026-05-16 angebunden (Dashboard → Pages → wiki-graph-showcase → Custom domains). DNS-Records wurden auto-konfiguriert weil `dynamic-dome.com` bereits auf Cloudflare liegt.
 

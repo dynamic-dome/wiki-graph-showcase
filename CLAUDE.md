@@ -10,7 +10,7 @@
 - **Public-Safety:** Build rejected `private: true`-Frontmatter. Vor jedem Deploy (nicht nur erstem) `python tools/pre_deploy_sweep.py --dist dist --write-manifest` ausfuehren; das prueft private Marker, interne Pfade, Markdown-Meta-Marker und Pflichtdateien in `dist/`.
 - **Parser-Sync:** `tools/parser.py` ist eine Kopie von `dynamic_central_orchestrator/wiki_graph/parser.py` (Quell-Commit im Header dokumentiert). Bei Aenderungen an der DCO-Quelle: hier per Hand syncen, Header-Hash updaten.
 - **THREE ist als Vendor-Modul eingebunden** (`src/vendor/three/`, r168 — MUSS zur THREE-Revision im 3d-force-graph-Bundle passen, Check: `grep -o 'const a="168"' src/vendor/3d-force-graph.min.js`). Import via Import Map (`"three"` in index.html). Bei einem Update des 3d-force-graph-Bundles beide gemeinsam heben. Custom-Geometries (`node-forms.js`), Szenen-Dressing und Bloom hängen daran.
-- **Wiki-Read-Only:** Build-Step liest `C:/Users/domes/wiki/`, schreibt NIE dorthin.
+- **Wiki-Read-Only:** Build-Step liest den `vault_root` aus `showcase.config.json` (aktuell `C:/Users/domes/Desktop/Claude-Projekte/physik-weltall-wiki/` — Physik-Split 2026-07-18), schreibt NIE dorthin.
 
 ## Handoff / Reviews / Audits
 
