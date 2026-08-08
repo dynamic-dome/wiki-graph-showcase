@@ -13,7 +13,8 @@
 <meta property="og:image" content="https://wiki.dynamic-dome.com/assets/vendor/og-image.jpg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="Knowledge Nebula — ein 3D-Wissensgraph aus Astrophysik-Konzepten">
+<!-- WEB-059 (Audit CX-03): og:image:alt nennt denselben Doppel-Scope wie die Description -->
+<meta property="og:image:alt" content="Knowledge Nebula — Kompetenz-Graph zu Agentic Engineering und kuratierter Astrophysik-Nebel als 3D-Wissensgraph">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Knowledge Nebula — Dynamic Dome">
 <meta name="twitter:description" content="Kompetenz-Graph und Astrophysik-Nebel zum Rumklicken.">
@@ -114,6 +115,41 @@
     </div>
     <p class="modal-hint">Doppelklick auf den Knoten oeffnet ihn als neues Zentrum.</p>
   </aside>
+
+  <!-- WEB-037 (Audit E-07): serverseitiger Erklärtext gegen Thin Content —
+       natives details/summary-Panel, kein JS nötig, Text liegt im ausgelieferten HTML. -->
+  <details class="about" id="about">
+    <summary class="about-toggle">
+      <span class="about-glyph" aria-hidden="true">&#x25C6;</span> Über diese Seite
+    </summary>
+    <div class="about-body">
+      <h2>Was die Knowledge Nebula zeigt</h2>
+      <p>
+        Die Knowledge Nebula ist ein interaktiver 3D-Wissensgraph aus der Werkstatt von
+        Dominic Meiser. Sie zeigt zwei Datensätze: Der Kompetenz-Graph (Standardansicht)
+        bildet ab, wie Fähigkeiten rund um Agentic Engineering zusammenhängen — von
+        Orchestrierung, Agenten-Gedächtnis und MCP-Tooling bis zu den Wurzeln in
+        Mechatronik und Messtechnik. Jeder Knoten ist eine Kompetenz- oder Konzeptseite
+        aus einem kuratierten Wiki, jede Kante eine dokumentierte Beziehung zwischen
+        zwei Seiten.
+      </p>
+      <p>
+        Der zweite Datensatz, der Astrophysik-Nebel, ist ein kuratierter Ausschnitt aus
+        einem Physik-Wiki und zeigt dieselbe Graph-Engine an einem fachfremden
+        Wissensbestand. Beide Datensätze entstehen aus Obsidian-Vaults: Ein Build-Schritt
+        liest die Markdown-Seiten, extrahiert Verlinkungen und Metadaten und erzeugt
+        daraus den Graphen — Seiten mit Privat-Markierung schließt der Build dabei aus.
+      </p>
+      <p>
+        Du kannst Knoten suchen, anklicken und per Doppelklick als neues Zentrum öffnen,
+        mit der Auto-Tour durch den Graphen fliegen oder oben zwischen den beiden
+        Datensätzen wechseln. Die Systeme hinter diesem Showcase sind auf
+        <a href="https://dynamic-dome.com/systeme/" rel="noopener">dynamic-dome.com</a>
+        dokumentiert, unter anderem die semantische Vault-Engine
+        <a href="https://dynamic-dome.com/systeme/living-vault/" rel="noopener">living-vault</a>.
+      </p>
+    </div>
+  </details>
 
   <footer class="control-panel">
     <label class="ctrl-label" for="gold-slider">

@@ -425,6 +425,38 @@ body {
   position: absolute; left: 22px; bottom: 84px; z-index: 22;
   display: flex; flex-direction: column; gap: 8px; align-items: flex-start;
 }
+
+/* === About-Panel (WEB-037: serverseitiger Erklärtext, natives details/summary) === */
+.about {
+  position: fixed; right: 22px; bottom: 84px; z-index: 22;
+}
+.about-toggle {
+  list-style: none;
+  display: inline-flex; align-items: center; gap: 7px;
+  font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--text-muted); cursor: pointer;
+  background: var(--surface-bg); border: 1px solid var(--surface-border-color); border-radius: 999px;
+  padding: 7px 13px;
+  backdrop-filter: var(--surface-blur); -webkit-backdrop-filter: var(--surface-blur);
+  min-height: 34px;
+}
+.about-toggle::-webkit-details-marker { display: none; }
+.about-toggle:hover, .about-toggle:focus-visible { color: var(--text, #E8F4FF); }
+.about-body {
+  position: absolute; bottom: calc(100% + 10px); right: 0;
+  width: min(380px, calc(100vw - 44px));
+  max-height: min(55vh, 440px); overflow-y: auto;
+  background: var(--surface-bg); border: 1px solid var(--surface-border-color); border-radius: 14px;
+  backdrop-filter: var(--surface-blur); -webkit-backdrop-filter: var(--surface-blur);
+  padding: 16px 18px;
+  font-size: 13px; color: var(--text-muted); line-height: 1.6;
+}
+.about-body h2 {
+  font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--text, #E8F4FF); margin-bottom: 8px;
+}
+.about-body p + p { margin-top: 8px; }
+.about-body a { color: inherit; text-decoration: underline; }
 .legend-toggle {
   display: inline-flex; align-items: center; gap: 7px;
   font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase;
