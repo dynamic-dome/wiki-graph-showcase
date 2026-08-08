@@ -5,10 +5,13 @@
 # `python -m http.server` unsichtbar, weil dort _headers NICHT ausgespielt wird
 # — nur ein Live-Check (oder Cloudflare-Preview) zeigt es. Hash neu berechnen:
 #   python -c "import hashlib,base64,re;raw=open('dist/index.html','rb').read();c=re.search(rb'<script type=.importmap.>(.*?)</script>',raw,re.DOTALL).group(1);print('sha256-'+base64.b64encode(hashlib.sha256(c).digest()).decode())"
+# WEB-060 (CX-04): COOP/CORP nach Hauptdomain-Baseline ergaenzt
 /*
   X-Frame-Options: DENY
   X-Content-Type-Options: nosniff
   Referrer-Policy: strict-origin-when-cross-origin
   Strict-Transport-Security: max-age=31536000; includeSubDomains
+  Cross-Origin-Opener-Policy: same-origin
+  Cross-Origin-Resource-Policy: same-origin
   Permissions-Policy: camera=(), microphone=(), geolocation=(), interest-cohort=()
   Content-Security-Policy: default-src 'self'; script-src 'self' 'sha256-2dKkrr9dPqwVsaJrGisoD3YRJ6KcEZZop43ucG6AwDk='; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; font-src 'self' data:; frame-ancestors 'none'; base-uri 'self'; form-action 'self'
