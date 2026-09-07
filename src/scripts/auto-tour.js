@@ -22,7 +22,7 @@ function pickTopHubs(nodes, n) {
     .slice(0, n);
 }
 
-export function createAutoTour(stage, statusBarEl) {
+export function createAutoTour(stage, statusBarEl, onStateChange = () => {}) {
   const reducedMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   const state = {
@@ -81,6 +81,7 @@ export function createAutoTour(stage, statusBarEl) {
   function stopAll(silent) {
     clearTimers();
     state.onTour = false;
+    onStateChange(false);
     if (!silent && statusBarEl) statusBarEl.textContent = "";
   }
 
@@ -111,6 +112,7 @@ export function createAutoTour(stage, statusBarEl) {
     state.tourStations = pickTopHubs(allNodes, opts?.stationCount ?? 6);
     state.tourIdx = 0;
     state.onTour = true;
+    onStateChange(true);
     state.onStationChange = opts?.onStationChange ?? null;
     nextStation();
   }
@@ -120,7 +122,7 @@ export function createAutoTour(stage, statusBarEl) {
   // originated on the tour button itself (so startTour() isn't killed
   // by its own click).
   function onUserInput(event) {
-    if (event && event.type === "pointerdown") {
+    if (event && event.key !== 'Escape') {
       const path = typeof event.composedPath === "function" ? event.composedPath() : [];
       for (const el of path) {
         if (el && el.id === "tour-btn") return;

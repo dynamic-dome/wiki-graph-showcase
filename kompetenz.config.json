@@ -1,6 +1,6 @@
 {
   "dataset": "kompetenz",
-  "vault_root": "C:/Users/domes/Desktop/kompetenz-wiki",
+  "vault_root": "C:/Users/domes/Desktop/Claude-Projekte/kompetenz-wiki",
   "src_root": "src",
   "output_subdir": "kompetenz",
   "include": [
@@ -9,7 +9,10 @@
     "wiki/topics/*.md"
   ],
   "exclude": [
-    "**/README.md"
+    "**/README.md",
+    "wiki/topics/ai-pricing-2026.md",
+    "wiki/synthesis/consumer-pricing-realitaet-2026.md",
+    "wiki/entities/claude-opus-4-7.md"
   ],
   "neighbour_dirs": [
     "wiki/concepts",

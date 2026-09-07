@@ -1,5 +1,23 @@
 # Changelog
 
+## 2026-09-07 — Lokaler Minimal-Test, nicht veröffentlicht
+
+- Einstieg erklärt Punkte, Verbindungen und Suche; Darstellung optional aufklappbar.
+- Suchkategorien verständlicher benannt; doppelte Detail-Einleitungen ausgeblendet.
+- Suchdialog gibt Tastaturfokus zurück; geschlossener Dialog unsichtbar/inert.
+- Zeichenfläche folgt Größenwechseln des eingebetteten Fensters (ResizeObserver).
+- Rundgang lässt sich mit demselben Schalter starten und anhalten.
+- Drei Preis-Karten aus der öffentlichen Auswahl ausgeschlossen; Quelldaten nicht
+  verändert. Rebuild entfernt alte ausgeschlossene JSON-Dateien nur im eigenen Dataset.
+- Lokalen Kompetenz-Wiki-Pfad auf tatsächlichen Checkout korrigiert.
+- Verifikation: beide Datensätze gebaut, 66 Python-Tests erfolgreich; Public-Surface-
+  Sweep ohne Befund. Browser: Suche per Tastatur, Dialog, Escape/Fokusrückgabe,
+  Dataset-Wechsel und 390/1091px Zeichenflächen geprüft.
+- Frontend-Design und Stackatlas-Schreibstil: Orientierung vor technischen Details.
+  Atlas-Abdeckung für die Umsetzung ausreichend, für sämtliche Wiki-Fachclaims
+  lückenhaft; vorhandene Wissensartikel nicht neu fachlich zertifiziert.
+- Nur isolierter Test-Worktree. Kein Push oder Deployment; Quell-Wikis unverändert.
+
 Neueste Eintraege oben.
 
 ---

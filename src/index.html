@@ -43,12 +43,13 @@
 <link rel="stylesheet" href="assets/styles/theme-crab.css">
 <link rel="stylesheet" href="assets/styles/theme-dome.css">
 <link rel="stylesheet" href="assets/styles/competence.css">
+<link rel="stylesheet" href="assets/styles/overview.css">
 </head>
 <body>
   <div class="intro-overlay" id="intro-overlay" aria-hidden="true">
     <div class="intro-inner">
       <div class="intro-eyebrow">First Light</div>
-      <h1 class="intro-title">Knowledge Nebula</h1>
+      <p class="intro-title">Knowledge Nebula</p>
       <div class="intro-telemetry" id="intro-telemetry"></div>
     </div>
   </div>
@@ -64,26 +65,39 @@
     </div>
     <div class="topbar-right">
       <div class="dataset-switch" id="dataset-switch" role="tablist" aria-label="Datensatz waehlen">
-        <button class="dataset-btn" id="dataset-astro" data-dataset="astro" role="tab" aria-selected="false">Nebula</button>
-        <button class="dataset-btn" id="dataset-kompetenz" data-dataset="kompetenz" role="tab" aria-selected="true">Kompetenz</button>
+        <button class="dataset-btn" id="dataset-astro" data-dataset="astro" role="tab" aria-selected="false">Astrophysik</button>
+        <button class="dataset-btn" id="dataset-kompetenz" data-dataset="kompetenz" role="tab" aria-selected="true">Fähigkeiten</button>
       </div>
+      <details class="view-options" id="view-options">
+      <summary>Darstellung</summary>
+      <div class="view-options-body">
       <button class="theme-toggle" id="theme-toggle" aria-label="Theme umschalten">
-        <span class="theme-label">Theme</span>
+        <span class="theme-label">Farben</span>
         <span class="theme-current" id="theme-current">crab</span>
       </button>
       <div class="meta-readout" id="meta-readout">— Knoten · — Kanten</div>
+      <label for="gold-slider">Leuchten</label>
+      <input type="range" min="0" max="100" step="1" value="35" class="gold-slider" id="gold-slider" aria-label="Leuchtintensität">
+      <span id="gold-value">35%</span>
+      </div>
+      </details>
     </div>
   </header>
 
   <main class="stage" id="stage" aria-label="3D Wissensgraph">
     <div class="search-box" id="search-box">
+      <details class="graph-intro" open>
+        <summary><h1>Wissen entdecken</h1></summary>
+        <p>Hier zeige ich, wie Themen und Fähigkeiten zusammenhängen. Jeder Punkt steht für einen Eintrag, jede Linie verbindet verwandte Inhalte.</p>
+        <p>Wähle einen Punkt oder suche nach einem Thema. Die Erklärung öffnet sich direkt im Graphen.</p>
+      </details>
       <input
         type="search"
         id="search-input"
         class="search-input"
-        placeholder="Knoten suchen…"
+        placeholder="Thema suchen…"
         autocomplete="off"
-        aria-label="Knoten suchen"
+        aria-label="Thema suchen"
       >
       <ul class="search-results" id="search-results" role="listbox" hidden></ul>
     </div>
@@ -108,7 +122,7 @@
     <div class="modal-badges" id="modal-badges"></div>
     <h2 class="modal-title" id="modal-title"></h2>
     <p class="modal-subtitle" id="modal-subtitle"></p>
-    <p class="modal-essence" id="modal-essence"></p>
+    <div class="modal-essence" id="modal-essence"></div>
     <div class="modal-neighbours">
       <span class="modal-section-label">Verbunden mit</span>
       <div class="neighbour-pills" id="neighbour-pills"></div>
@@ -123,27 +137,19 @@
       <span class="about-glyph" aria-hidden="true">&#x25C6;</span> Über diese Seite
     </summary>
     <div class="about-body">
-      <h2>Was die Knowledge Nebula zeigt</h2>
+      <h2>Wie der Wissensgraph entsteht</h2>
       <p>
-        Die Knowledge Nebula ist ein interaktiver 3D-Wissensgraph aus der Werkstatt von
-        Dominic Meiser. Sie zeigt zwei Datensätze: Der Kompetenz-Graph (Standardansicht)
-        bildet ab, wie Fähigkeiten rund um Agentic Engineering zusammenhängen — von
-        Orchestrierung, Agenten-Gedächtnis und MCP-Tooling bis zu den Wurzeln in
-        Mechatronik und Messtechnik. Jeder Knoten ist eine Kompetenz- oder Konzeptseite
-        aus einem kuratierten Wiki, jede Kante eine dokumentierte Beziehung zwischen
-        zwei Seiten.
+        Ich pflege Wissen in verknüpften Wiki-Seiten. Für diese Ansicht werden ausgewählte
+        Einträge und ihre Verbindungen als Graph aufbereitet. Der Bereich Fähigkeiten
+        verbindet meine Arbeit mit KI-Agenten mit den Grundlagen aus Mechatronik und Messtechnik.
       </p>
       <p>
-        Der zweite Datensatz, der Astrophysik-Nebel, ist ein kuratierter Ausschnitt aus
-        einem Physik-Wiki und zeigt dieselbe Graph-Engine an einem fachfremden
-        Wissensbestand. Beide Datensätze entstehen aus Obsidian-Vaults: Ein Build-Schritt
-        liest die Markdown-Seiten, extrahiert Verlinkungen und Metadaten und erzeugt
-        daraus den Graphen — Seiten mit Privat-Markierung schließt der Build dabei aus.
+        Im Bereich Astrophysik lässt sich dieselbe Darstellung an einem anderen
+        Wissensgebiet erkunden. Beide Ansichten zeigen ausgewählte Inhalte und keinen
+        direkten Zugriff auf meine vollständigen Wikis.
       </p>
       <p>
-        Du kannst Knoten suchen, anklicken und per Doppelklick als neues Zentrum öffnen,
-        mit der Auto-Tour durch den Graphen fliegen oder oben zwischen den beiden
-        Datensätzen wechseln. Die Systeme hinter diesem Showcase sind auf
+        Die Systeme hinter dieser Darstellung beschreibe ich auf
         <a href="https://dynamic-dome.com/systeme/" rel="noopener">dynamic-dome.com</a>
         dokumentiert, unter anderem die semantische Vault-Engine
         <a href="https://dynamic-dome.com/systeme/living-vault/" rel="noopener">living-vault</a>.
@@ -152,22 +158,8 @@
   </details>
 
   <footer class="control-panel">
-    <label class="ctrl-label" for="gold-slider">
-      <span class="ctrl-glyph">&#x25C6;</span> Gold-Mode
-    </label>
-    <input
-      type="range"
-      min="0"
-      max="100"
-      step="1"
-      value="35"
-      class="gold-slider"
-      id="gold-slider"
-      aria-label="Gold-Mode Intensitaet"
-    >
-    <span class="ctrl-value" id="gold-value">35%</span>
-    <button class="tour-btn" id="tour-btn" type="button" aria-label="Auto-Tour starten">
-      <span class="tour-glyph">&#x25B6;</span> Tour
+    <button class="tour-btn" id="tour-btn" type="button" aria-label="Rundgang starten">
+      <span class="tour-glyph">&#x25B6;</span> Rundgang starten
     </button>
     <nav class="ctrl-legal" aria-label="Rechtliches">
       <a href="https://dynamic-dome.com/impressum/" rel="noopener">Impressum</a>

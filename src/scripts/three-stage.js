@@ -52,6 +52,17 @@ export function createStage(container, options = {}) {
     .cooldownTicks(500)
     .enableNodeDrag(false);
 
+  // The embedded browser can change width without navigating. Keep the actual
+  // renderer/camera size in sync, not just the surrounding CSS container.
+  function resizeStage() {
+    graph.width(container.clientWidth || window.innerWidth);
+    graph.height(container.clientHeight || window.innerHeight);
+  }
+  resizeStage();
+  window.addEventListener('resize', resizeStage);
+  const resizeObserver = new ResizeObserver(resizeStage);
+  resizeObserver.observe(container);
+
   // Hide the library's built-in "left-click: rotate…" nav hint — it reads as
   // dev chrome and overlaps the control panel. (Guarded: older bundles may
   // not expose it.)

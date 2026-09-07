@@ -97,7 +97,14 @@ import "./three-guard.js"; // THREE-Revision-Tripwire (Vendor r168 == Bundle r16
   window.__nebula.bloom = bloom;
 
   const statusBar = document.getElementById("status-bar");
-  const tour = createAutoTour(stage, statusBar);
+  const tourBtn = document.getElementById("tour-btn");
+  const tour = createAutoTour(stage, statusBar, (active) => {
+    if (!tourBtn) return;
+    const label = active ? 'Rundgang anhalten' : 'Rundgang starten';
+    tourBtn.textContent = (active ? 'Ⅱ ' : '▶ ') + label;
+    tourBtn.setAttribute('aria-label', label);
+    tourBtn.setAttribute('aria-pressed', String(active));
+  });
 
   // Slider
   const slider = document.getElementById("gold-slider");
@@ -128,9 +135,9 @@ import "./three-guard.js"; // THREE-Revision-Tripwire (Vendor r168 == Bundle r16
     writeState({ gold: v });
   });
 
-  const tourBtn = document.getElementById("tour-btn");
   if (tourBtn) {
     tourBtn.addEventListener("click", () => {
+      if (tour.isOnTour()) { tour.stopAll(); return; }
       tour.startTour({
         stationCount: 6,
         onStationChange: (node) => {
@@ -218,7 +225,7 @@ import "./three-guard.js"; // THREE-Revision-Tripwire (Vendor r168 == Bundle r16
       tooltip.classList.remove("visible");
       return;
     }
-    tooltip.innerHTML = `<div class="ttitle">${escapeHtml(node.title || node.id)}</div><div class="tmeta">${escapeHtml(node.category || "")}</div>`;
+    tooltip.innerHTML = `<div class="ttitle">${escapeHtml(node.title || node.id)}</div>`;
     tooltip.classList.add("visible");
   });
 

@@ -121,9 +121,19 @@ def run(cfg: dict, out: Path) -> None:
     subdir = cfg.get("output_subdir")
     assets = out / "assets"
     dataset_dir = assets / subdir if subdir else assets
+    if not dataset_dir.resolve().is_relative_to(assets.resolve()):
+        raise ValueError("Dataset output must stay inside the build assets directory")
     dataset_dir.mkdir(parents=True, exist_ok=True)
     nodes_dir = dataset_dir / "nodes"
     nodes_dir.mkdir(exist_ok=True)
+    if nodes_dir.is_symlink() or not nodes_dir.resolve().is_relative_to(assets.resolve()):
+        raise ValueError("Node output must be a real directory inside build assets")
+    # Excluded pages must disappear from disk too, not just the graph/index.
+    # Only this dataset's generated JSON files are candidates; other datasets stay intact.
+    expected_files = {f"{_slug(node_id)}.json" for node_id in metas}
+    for old in nodes_dir.glob("*.json"):
+        if old.name not in expected_files:
+            old.unlink()
 
     (dataset_dir / "graph.json").write_text(
         json.dumps(graph, indent=2, ensure_ascii=False, sort_keys=False) + "\n",

@@ -8,6 +8,7 @@
  */
 
 const MAX_RESULTS = 12;
+const CATEGORY_LABELS = { competence: "Fähigkeit", synthesis: "Zusammenfassung", topic: "Thema", concept: "Konzept", entity: "Person oder Organisation" };
 
 export function createSearchControl(inputEl, resultsEl, { onSelect }) {
   let entries = []; // [{id, title, category}]
@@ -88,7 +89,7 @@ export function createSearchControl(inputEl, resultsEl, { onSelect }) {
       title.textContent = e.title || e.id;
       const cat = document.createElement("span");
       cat.className = `search-cat search-cat-${e.category || "other"}`;
-      cat.textContent = e.category || "";
+      cat.textContent = CATEGORY_LABELS[e.category] || "";
       li.appendChild(title);
       li.appendChild(cat);
       li.addEventListener("mousedown", (ev) => {
@@ -105,7 +106,7 @@ export function createSearchControl(inputEl, resultsEl, { onSelect }) {
   function select(nodeId) {
     clearResults();
     inputEl.value = "";
-    inputEl.blur();
+    // Keep the search as the dialog's return-focus target.
     onSelect(nodeId);
   }
 

@@ -4,11 +4,11 @@
 
 // German display labels for kompetenz node categories.
 const CATEGORY_LABELS = {
-  competence: "Kompetenz",
-  synthesis: "Synthese",
+  competence: "Fähigkeit",
+  synthesis: "Zusammenfassung",
   topic: "Thema",
   concept: "Konzept",
-  entity: "Akteur / Entitaet",
+  entity: "Person oder Organisation",
 };
 
 // German labels for verification_status badge.
@@ -125,7 +125,7 @@ export function createModal(rootEl) {
     // den identischen Absatz nicht doppelt direkt untereinander zeigen.
     const subtitleText = String(nodeDoc.subtitle == null ? "" : nodeDoc.subtitle).trim();
     const essenceText = String(nodeDoc.essence == null ? "" : nodeDoc.essence).trim();
-    const subtitleDuplicatesEssence = subtitleText && subtitleText === essenceText;
+    const subtitleDuplicatesEssence = subtitleText && essenceText.startsWith(subtitleText);
     subtitleEl.innerHTML = subtitleDuplicatesEssence ? "" : renderInline(nodeDoc.subtitle);
     subtitleEl.hidden = subtitleDuplicatesEssence || !subtitleText;
     // essence is a multi-paragraph lead section (\n\n-separated); renderInline

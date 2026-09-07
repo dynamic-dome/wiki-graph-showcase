@@ -10,15 +10,15 @@ const ASTRO_ENTRIES = [
   { varName: "--node-center", label: "Fokus-Objekt" },
   { varName: "--node-astro", label: "Astrophysik" },
   { varName: "--node-gante", label: "Gantefoer" },
-  { varName: "--node-entity", label: "Akteur / Entitaet" },
+  { varName: "--node-entity", label: "Person oder Organisation" },
 ];
 
 const KOMPETENZ_LABELS = {
-  competence: "Kompetenz",
-  synthesis: "Synthese",
+  competence: "Fähigkeit",
+  synthesis: "Zusammenfassung",
   topic: "Thema",
   concept: "Konzept",
-  entity: "Akteur / Entitaet",
+  entity: "Person oder Organisation",
 };
 
 export function createLegend(rootEl, opts = {}) {
