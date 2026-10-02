@@ -5,7 +5,6 @@
  */
 import { CATEGORY_LABELS } from "./modal.js";
 
-// ROHFASSUNG: Texte der Liste, Redaktion durch Dominic vor dem Merge.
 export const FALLBACK_TEXTS = {
   count: (n) => `${n} Seiten`,
   none: "Keine Treffer.",
