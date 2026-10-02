@@ -20,9 +20,9 @@ python tools/build.py --config showcase.config.json --out dist/
 
 **Frontend lokal anschauen:**
 ```bash
-cd dist
-python -m http.server 8000
-# Browser: http://localhost:8000
+npm run build:all
+npm run serve:preview     # python -m tools.preview_server --dist dist --port 8051 (spielt _headers/CSP aus, 127.0.0.1)
+# Browser: http://127.0.0.1:8051
 ```
 
 **Tests:**
@@ -59,14 +59,18 @@ npx wrangler pages project create wiki-graph-showcase --production-branch=main  
 ### Jeder Update-Deploy
 
 ```bash
-npm run build
+npm run build:all
 npx wrangler pages deploy dist/ --project-name=wiki-graph-showcase --branch=main --commit-dirty=true
 ```
 
-1. `npm run build` baut `dist/` aus dem aktuellen Vault-Stand (liest den `vault_root` aus `showcase.config.json`, aktuell `C:/Users/domes/Desktop/Claude-Projekte/physik-weltall-wiki/`).
+1. `npm run build:all` baut `dist/` aus dem aktuellen Vault-Stand (liest den `vault_root` aus `showcase.config.json`, aktuell `C:/Users/domes/Desktop/Claude-Projekte/physik-weltall-wiki/`).
 2. `python tools/pre_deploy_sweep.py --dist dist --write-manifest` prueft Public-Safety-Marker, Pflichtdateien, Graph-Stats und schreibt ein Deploy-Manifest nach `dist/assets/build-manifest.json`.
-3. `wrangler pages deploy ...` pusht `dist/` direkt zu Cloudflare Pages.
-4. Live unter `https://wiki-graph-showcase.pages.dev/` nach ~30 Sekunden Edge-Propagation.
+3. Daten-Drift gegen Live prüfen (Knotenmengen von `assets/kompetenz/graph.json` und `assets/graph.json`), weil der Build den aktuellen Vault-Stand liest.
+4. `wrangler pages deploy ...` pusht `dist/` direkt zu Cloudflare Pages.
+5. `python -m tools.csp_check <url>` nach dem Deploy: Hash der Import Map muss in der CSP stehen.
+6. Live unter `https://wiki-graph-showcase.pages.dev/` nach ~30 Sekunden Edge-Propagation.
+
+`npm run build` allein baut nur den Astrophysik-Datensatz; der Standard-Datensatz (Kompetenz) liegt unter `assets/kompetenz/`.
 
 Production-Branch im Repo (`main`) ist nur fuer Source-Tracking — Cloudflare baut nicht selbst, weil der Vault (`vault_root` aus `showcase.config.json`, aktuell `C:/Users/domes/Desktop/Claude-Projekte/physik-weltall-wiki/`) nicht in CF-Build-Runnern existiert. Deploys laufen manuell aus dem lokalen `dist/` heraus.
 
@@ -87,9 +91,12 @@ Wenn du irgendwann doch eine Notification willst ("Drift seit letztem Deploy"): 
 
 `src/_headers` wird vom Build nach `dist/_headers` kopiert und von Cloudflare Pages automatisch als HTTP-Headers ausgespielt. Enthaelt CSP, HSTS, X-Frame-Options, X-Content-Type-Options, Referrer-Policy, Permissions-Policy. CSP erlaubt `style-src 'unsafe-inline'` (gold-pulse.js + url-state.js setzen inline-Styles); script-src ist auf `'self'` beschraenkt.
 
+3d-force-graph wird nicht mehr per `<script>` im HTML, sondern von `scripts/force-graph-loader.js` nach dem ersten Paint dynamisch eingefügt (kein Inline-Script, kein Hash). Der Wächtertest `tests/test_index_html_csp.py` prüft Import-Map-Hash und Script-Tags.
+
 ## Troubleshooting
 
 - **Build wirft `private page rejected`** — eine im `include` gelistete Page hat `private: true` im Frontmatter. Entweder entfernen oder aus `include` rauswerfen.
 - **Build wirft `page has no H1`** — Page hat weder `# Titel` noch `title:` im Frontmatter. Page korrigieren oder ausschliessen.
+- **Seite zeigt eine Liste statt des 3D-Graphen** — WebGL fehlt oder die Initialisierung ist gescheitert; Ursache steht als `Init failed:` in der Konsole.
 - **Frontend leer/keine Knoten** — pruefen ob `dist/assets/graph.json` existiert + `nodes`-Array nicht leer. Browser-Console auf 404 zu `graph.json` checken.
 - **`wrangler pages deploy` wirft `Project not found` (code 8000007)** — das Pages-Projekt existiert in deinem CF-Account noch nicht. Einmal `npx wrangler pages project create wiki-graph-showcase --production-branch=main` ausfuehren, dann deploy nochmal.

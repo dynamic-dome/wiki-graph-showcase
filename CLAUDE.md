@@ -11,6 +11,7 @@
 - **Parser-Sync:** `tools/parser.py` ist eine Kopie von `dynamic_central_orchestrator/wiki_graph/parser.py` (Quell-Commit im Header dokumentiert). Bei Aenderungen an der DCO-Quelle: hier per Hand syncen, Header-Hash updaten.
 - **THREE ist als Vendor-Modul eingebunden** (`src/vendor/three/`, r168 — MUSS zur THREE-Revision im 3d-force-graph-Bundle passen, Check: `grep -o 'const a="168"' src/vendor/3d-force-graph.min.js`). Import via Import Map (`"three"` in index.html). Bei einem Update des 3d-force-graph-Bundles beide gemeinsam heben. Custom-Geometries (`node-forms.js`), Szenen-Dressing und Bloom hängen daran.
 - **Wiki-Read-Only:** Build-Step liest den `vault_root` aus `showcase.config.json` (aktuell `C:/Users/domes/Desktop/Claude-Projekte/physik-weltall-wiki/` — Physik-Split 2026-07-18), schreibt NIE dorthin.
+- **Lokale Vorschau mit CSP:** `npm run serve:preview` (`tools/preview_server.py`) spielt `_headers` aus; `python -m http.server` (`npm run dev`) tut das nicht. Vor jedem Deploy `python -m tools.csp_check` gegen Vorschau und danach gegen live.
 
 ## Handoff / Reviews / Audits
 
