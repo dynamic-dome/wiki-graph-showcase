@@ -175,3 +175,39 @@ test.describe("C3: Kopfzeile", () => {
     });
   }
 });
+
+test.describe("C4: Touch", () => {
+  test("Tap auf einen Knoten oeffnet das Modal (Handy-Profil 390x844)", async ({ browser }) => {
+    const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true, deviceScaleFactor: 3 });
+    await ctx.addInitScript(skipIntro);
+    const page = await ctx.newPage();
+    const problems = trackProblems(page);
+    await page.goto(url("/?dataset=kompetenz"));
+    await page.locator("#graph-container canvas").waitFor({ state: "visible", timeout: 20_000 });
+    await page.waitForTimeout(3000); // Kamera in Ruhelage, Layout weitgehend gesetzt
+
+    const target = await page.evaluate(() => {
+      const { stage } = (window as any).__nebula;
+      const fg = stage.getGraphForceInstance();
+      const canvas = document.querySelector("#graph-container canvas") as HTMLCanvasElement;
+      const rect = canvas.getBoundingClientRect();
+      const nodes = [...fg.graphData().nodes].sort((a: any, b: any) => (b.weight || 0) - (a.weight || 0));
+      for (const n of nodes) {
+        const p = fg.graph2ScreenCoords(n.x, n.y, n.z);
+        const x = rect.left + p.x;
+        const y = rect.top + p.y;
+        if (x < 24 || x > innerWidth - 24 || y < 24 || y > innerHeight - 120) continue;
+        if (document.elementFromPoint(x, y) !== canvas) continue; // nicht unter UI-Elementen
+        return { x, y, id: n.id as string };
+      }
+      return null;
+    });
+    expect(target, "kein antippbarer Knoten im Viewport gefunden").not.toBeNull();
+
+    await page.touchscreen.tap(target!.x, target!.y);
+    await expect(page.locator("#modal")).toHaveClass(/open/, { timeout: 5000 });
+    await expect(page.locator("#modal-title")).not.toBeEmpty();
+    expect(problems).toEqual([]);
+    await ctx.close();
+  });
+});

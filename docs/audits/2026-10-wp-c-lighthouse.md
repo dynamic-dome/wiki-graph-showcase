@@ -27,3 +27,9 @@ C1b-Gate: OFFEN (TBT-Median 3904 ms > 1000 ms). C1b nur mit Dominics Go.
 ## Ohne WebGL (Vorschau, 2026-10-02)
 
 Chromium-Flags `--disable-webgl --disable-3d-apis`, 1 Lauf: Score 67, FCP 3790 ms, LCP 7380 ms, TBT 0 ms, CLS 0.003, Konsolenfehler 0 (Pfad schreibt nur `console.warn`). Kontext-Test im Playwright-Skript: `getContext("webgl2")` = false, Liste sichtbar (259 Seiten, Kompetenz). Sichtprüfung 390x844 und 1440x900: Liste und Hinweistext lesbar, Topbar frei.
+
+## C4 Touch (Vorschau, 2026-10-02)
+
+Kein Befund: Tap auf Knoten öffnet das Modal (Chromium, Handy-Profil 390×844, Vorschau). Safari/iOS ungeprüft. Keine Code-Änderung.
+
+Einschränkung: Der Test ist allein (`-g C4`), in `wp-c.spec.ts` (auch mit 4 Workern) und im seriellen Gesamtlauf (`--workers=1`) grün. Im parallelen Gesamtlauf (Standard-Worker, zusammen mit showcase/kompetenz/aurum) war er in 2 von 2 Läufen rot (`#modal` ohne Klasse `open`); Ursache nicht geklärt, Verdacht: CPU-Last durch die parallel hängenden 30-s-Tests, Knotenposition nach 3 s noch in Bewegung. Test nicht gelockert.
