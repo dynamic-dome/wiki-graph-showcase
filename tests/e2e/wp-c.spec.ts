@@ -214,4 +214,29 @@ test.describe("C4: Touch", () => {
     expect(problems).toEqual([]);
     await ctx.close();
   });
+  test("Handy 390x844: letzte Listenzeile wird nicht vom Knopf \"Über diese Seite\" verdeckt", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await withoutWebGL(page);
+    await page.goto(url("/?dataset=kompetenz"));
+    await expect(page.locator("#fallback-list button").first()).toBeVisible();
+    // Liste und Seite ans Ende scrollen
+    await page.locator("#fallback-list").evaluate((el) => { el.scrollTop = el.scrollHeight; });
+    await page.locator("#fallback-list button").last().scrollIntoViewIfNeeded();
+    await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
+    await page.waitForTimeout(200);
+    // Mehrere Messpunkte ueber die Zeile (links, Mitte, rechts x oben, Mitte, unten): jeder muss die Zeile treffen
+    const hit = await page.evaluate(() => {
+      const last = Array.from(document.querySelectorAll("#fallback-list button")).pop() as HTMLElement;
+      const r = last.getBoundingClientRect();
+      const covered: string[] = [];
+      for (const fx of [0.1, 0.5, 0.9]) {
+        for (const fy of [0.1, 0.5, 0.9, 0.97]) {
+          const el = document.elementFromPoint(r.left + r.width * fx, r.top + r.height * fy);
+          if (!(el && (el === last || last.contains(el)))) covered.push(`${fx}/${fy}:${el ? el.tagName + "." + el.className : null}`);
+        }
+      }
+      return { onRow: covered.length === 0, top: covered.join(", "), bottom: r.bottom, vh: window.innerHeight };
+    });
+    expect(hit.onRow, `verdeckt von ${hit.top} (Zeilenende ${hit.bottom}, Viewport ${hit.vh})`).toBe(true);
+  });
 });

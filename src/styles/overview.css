@@ -61,6 +61,8 @@ body.plate-mode .about { visibility: hidden; }
 body.no-webgl .intro-overlay, body.no-webgl .graph-container, body.no-webgl .label-layer,
 body.no-webgl .cmb-layer, body.no-webgl .reticle, body.no-webgl .legend, body.no-webgl .tour-btn,
 body.no-webgl #search-input, body.no-webgl #search-results, body.no-webgl .graph-intro p { display: none; }
+/* Der fixe Knopf "Ueber diese Seite" (unten rechts) darf die letzte Listenzeile nicht ueberdecken: Platz = Knopfhoehe + Abstand */
+body.no-webgl .webgl-fallback-list { padding-bottom: 64px; }
 
 /* WP C3: Kopfzeile mit Profil, Systeme, Kontakt (Rueck-Link bleibt .parent-link) */
 .site-links { display: flex; align-items: center; gap: 2px; }
