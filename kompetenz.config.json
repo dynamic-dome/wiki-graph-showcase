@@ -3,6 +3,7 @@
   "vault_root": "C:/Users/domes/Desktop/Claude-Projekte/kompetenz-wiki",
   "src_root": "src",
   "output_subdir": "kompetenz",
+  "precompute_layout": { "seed": 7, "scale": 637, "iterations": 200 },
   "include": [
     "wiki/competences/*.md",
     "wiki/synthesis/*.md",

@@ -102,6 +102,16 @@ def run(cfg: dict, out: Path) -> None:
         nodes.append(node)
     nodes.sort(key=lambda n: n["id"])
 
+    layout_cfg = cfg.get("precompute_layout")
+    if layout_cfg:
+        from tools import layout  # networkx nur hier und nur auf Wunsch
+
+        positions = layout.compute_positions(
+            [n["id"] for n in nodes], slice_edges, **layout_cfg
+        )
+        for node in nodes:
+            node["x"], node["y"], node["z"] = positions[node["id"]]
+
     graph = {
         "version": 1,
         "built_at": datetime.now(timezone.utc).isoformat(),

@@ -181,6 +181,10 @@ export function createStage(container, options = {}) {
     setGraphData(data) {
       rebuildAdjacency(data.nodes || [], data.links || []);
       if (centerId) centerDist = bfsDistance(centerId);
+      // C1b: Sind alle Positionen vorgerechnet, laeuft keine Simulation im Browser.
+      const prepositioned = (data.nodes || []).length > 0 &&
+        data.nodes.every((n) => Number.isFinite(n.x) && Number.isFinite(n.y) && Number.isFinite(n.z));
+      graph.cooldownTicks(prepositioned ? 0 : 500);
       graph.graphData(data);
     },
     setCenter(nodeId) {
