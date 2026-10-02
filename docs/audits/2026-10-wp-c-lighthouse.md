@@ -33,3 +33,15 @@ Chromium-Flags `--disable-webgl --disable-3d-apis`, 1 Lauf: Score 67, FCP 3790 m
 Kein Befund: Tap auf Knoten öffnet das Modal (Chromium, Handy-Profil 390×844, Vorschau). Safari/iOS ungeprüft. Keine Code-Änderung.
 
 Fix-Runde 1 (2026-10-02): Der parallele Gesamtlauf zeigte C4 zunächst rot (Tap traf ins Leere). Ursache gemessen: Unter Last dauert das Laden länger als 10 s (`IDLE_MS` in `auto-tour.js`), der Idle-Drift kreist die Kamera, die Knoten wandern zwischen Zielberechnung und Tap um 40 bis 130 px; ein Layout-Ruhe-Gate hilft deshalb nicht (Knoten werden nie ruhig). Behebung nur im Test: Zielberechnung und Tap werden zusammen wiederholt (`toPass`, 30 s); der erste Tap ist Eingabe und stoppt den Drift. Die Aussage bleibt gleich streng (Tap auf Knoten muss `#modal` öffnen). Danach 5 von 5 parallelen Läufen (`showcase`, `kompetenz`, `aurum`, `wp-c`) mit genau den 4 Baseline-Rot, 30 grün. Kein Produktbefund.
+
+## Zwischenstand C1 bis C4 (Vorschau, 2026-10-02)
+
+Stand `d379e24` (C1 bis C4, Sitemap, Vorschau mit CSP), frisch gebaut (`build:all`), Vorschau 127.0.0.1:8051 mit `_headers`. Median aus 2 Läufen: Score 39, FCP 3913 ms, LCP 7224 ms, TBT 1602 ms, CLS 0.000, Konsolenfehler 0. Einzelläufe: Lauf 1 Score 40, FCP 3914, LCP 7226, TBT 1458; Lauf 2 Score 38, FCP 3912, LCP 7222, TBT 1745. `csp_check`: OK (Hash `sha256-2dKkrr9dPqwVsaJrGisoD3YRJ6KcEZZop43ucG6AwDk=`).
+
+Gesamtlauf davor: Sweep `status: pass` (49 Knoten, 221 Links); pytest 83 passed; `test:unit` 16 passed; E2E (`showcase`, `kompetenz`, `aurum`, `wp-c`) 30 grün, 4 rot = die Baseline-Rot (`kompetenz.spec.ts:68`, `showcase.spec.ts:69`, `:86`, `:102`; Vorbestand nach `aca0c8e`, nicht repariert).
+
+Die Stand-Zeilen weichen untereinander ab (Nach C1: TBT 3904 ms, jetzt 1602 ms bei gleichem Skript-Pfad plus C2 bis C4); die Lasten der Messläufe schwanken stark (Baseline 2707 ms). Maßgeblich für das Gate bleibt die Zeile „Nach C1“.
+
+## C1b-Gate (Entscheid Zwischenabnahme)
+
+OFFEN. TBT-Median nach C1 = 3904 ms (> 1000 ms; Kontrollmessung Zwischenstand 1602 ms, ebenfalls > 1000 ms). C1b ist nur mit Dominics Go möglich. Ohne Go bleibt es bei C1, das Zielmaß TBT ≤ 1 s wird dann offen als verfehlt berichtet. Task 10 wird vorbereitet, aber nicht gebaut.
