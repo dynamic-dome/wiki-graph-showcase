@@ -184,9 +184,11 @@ test.describe("C4: Touch", () => {
     const problems = trackProblems(page);
     await page.goto(url("/?dataset=kompetenz"));
     await page.locator("#graph-container canvas").waitFor({ state: "visible", timeout: 20_000 });
-    await page.waitForTimeout(3000); // Kamera in Ruhelage, Layout weitgehend gesetzt
-
-    const target = await page.evaluate(() => {
+    // Ziel und Tap werden gemeinsam wiederholt: d3-force bewegt die Knoten unter Last
+    // laenger als 3 s, und nach 10 s Leerlauf kreist die Kamera (auto-tour Idle-Drift); ein einmal
+    // berechnetes Ziel kann ins Leere treffen. Der erste Tap ist Eingabe und stoppt den Drift. Die Aussage
+    // bleibt unveraendert streng: Ein Tap auf einen Knoten muss das Modal oeffnen.
+    const findTarget = () => page.evaluate(() => {
       const { stage } = (window as any).__nebula;
       const fg = stage.getGraphForceInstance();
       const canvas = document.querySelector("#graph-container canvas") as HTMLCanvasElement;
@@ -202,10 +204,12 @@ test.describe("C4: Touch", () => {
       }
       return null;
     });
-    expect(target, "kein antippbarer Knoten im Viewport gefunden").not.toBeNull();
-
-    await page.touchscreen.tap(target!.x, target!.y);
-    await expect(page.locator("#modal")).toHaveClass(/open/, { timeout: 5000 });
+    await expect(async () => {
+      const target = await findTarget();
+      expect(target, "kein antippbarer Knoten im Viewport gefunden").not.toBeNull();
+      await page.touchscreen.tap(target!.x, target!.y);
+      await expect(page.locator("#modal")).toHaveClass(/open/, { timeout: 2500 });
+    }).toPass({ timeout: 30_000 });
     await expect(page.locator("#modal-title")).not.toBeEmpty();
     expect(problems).toEqual([]);
     await ctx.close();
