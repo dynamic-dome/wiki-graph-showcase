@@ -188,24 +188,32 @@ test.describe("C4: Touch", () => {
     // laenger als 3 s, und nach 10 s Leerlauf kreist die Kamera (auto-tour Idle-Drift); ein einmal
     // berechnetes Ziel kann ins Leere treffen. Der erste Tap ist Eingabe und stoppt den Drift. Die Aussage
     // bleibt unveraendert streng: Ein Tap auf einen Knoten muss das Modal oeffnen.
-    const findTarget = () => page.evaluate(() => {
+    // C1b: Mit vorgerechneten Positionen stehen die Knoten still. Die Synthese-Knoten sind Tori (Loch in der
+    // Mitte, nicht zentriert treffbar) und verdeckte Knoten treffen den Strahl nicht; deshalb wandert das
+    // Ziel mit jedem Versuch zum naechsten Kandidaten (skip), statt immer denselben Punkt zu tippen.
+    let attempt = 0;
+    const findTarget = (skip: number) => page.evaluate((skip) => {
       const { stage } = (window as any).__nebula;
       const fg = stage.getGraphForceInstance();
       const canvas = document.querySelector("#graph-container canvas") as HTMLCanvasElement;
       const rect = canvas.getBoundingClientRect();
-      const nodes = [...fg.graphData().nodes].sort((a: any, b: any) => (b.weight || 0) - (a.weight || 0));
+      const nodes = [...fg.graphData().nodes]
+        .filter((n: any) => n.category !== "synthesis")
+        .sort((a: any, b: any) => (b.weight || 0) - (a.weight || 0));
+      let seen = 0;
       for (const n of nodes) {
         const p = fg.graph2ScreenCoords(n.x, n.y, n.z);
         const x = rect.left + p.x;
         const y = rect.top + p.y;
         if (x < 24 || x > innerWidth - 24 || y < 24 || y > innerHeight - 120) continue;
         if (document.elementFromPoint(x, y) !== canvas) continue; // nicht unter UI-Elementen
+        if (seen++ < skip) continue;
         return { x, y, id: n.id as string };
       }
       return null;
-    });
+    }, skip);
     await expect(async () => {
-      const target = await findTarget();
+      const target = await findTarget(attempt++);
       expect(target, "kein antippbarer Knoten im Viewport gefunden").not.toBeNull();
       await page.touchscreen.tap(target!.x, target!.y);
       await expect(page.locator("#modal")).toHaveClass(/open/, { timeout: 2500 });
@@ -238,5 +246,26 @@ test.describe("C4: Touch", () => {
       return { onRow: covered.length === 0, top: covered.join(", "), bottom: r.bottom, vh: window.innerHeight };
     });
     expect(hit.onRow, `verdeckt von ${hit.top} (Zeilenende ${hit.bottom}, Viewport ${hit.vh})`).toBe(true);
+  });
+});
+
+test.describe("C1b: vorgerechnete Positionen", () => {
+  test("Knoten stehen sofort auf den Positionen aus graph.json, keine Simulation", async ({ page }) => {
+    await page.addInitScript(skipIntro);
+    await page.goto(url("/?dataset=kompetenz"));
+    await page.locator("#graph-container canvas").waitFor({ state: "visible", timeout: 20_000 });
+    const res = await page.evaluate(async () => {
+      const g = await (await fetch("/assets/kompetenz/graph.json")).json();
+      const fg = (window as any).__nebula.stage.getGraphForceInstance();
+      const live = new Map<string, any>(fg.graphData().nodes.map((n: any) => [n.id, n]));
+      let maxDelta = 0;
+      for (const n of g.nodes) {
+        const l = live.get(n.id);
+        maxDelta = Math.max(maxDelta, Math.abs(l.x - n.x), Math.abs(l.y - n.y), Math.abs(l.z - n.z));
+      }
+      return { hasXyz: g.nodes.every((n: any) => Number.isFinite(n.x) && Number.isFinite(n.y) && Number.isFinite(n.z)), maxDelta };
+    });
+    expect(res.hasXyz).toBe(true);
+    expect(res.maxDelta).toBeLessThan(0.5); // keine Simulation hat die Knoten bewegt
   });
 });
