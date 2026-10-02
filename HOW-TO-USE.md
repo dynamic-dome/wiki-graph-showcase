@@ -97,6 +97,6 @@ Wenn du irgendwann doch eine Notification willst ("Drift seit letztem Deploy"): 
 
 - **Build wirft `private page rejected`** — eine im `include` gelistete Page hat `private: true` im Frontmatter. Entweder entfernen oder aus `include` rauswerfen.
 - **Build wirft `page has no H1`** — Page hat weder `# Titel` noch `title:` im Frontmatter. Page korrigieren oder ausschliessen.
-- **Seite zeigt eine Liste statt des 3D-Graphen** — WebGL fehlt oder die Initialisierung ist gescheitert; Ursache steht als `Init failed:` in der Konsole.
+- **Seite zeigt eine Liste statt des 3D-Graphen** — WebGL fehlt oder die Initialisierung ist gescheitert. Ohne WebGL steht in der Konsole die Warnung `WebGL nicht verfuegbar`, bei Init- oder Ladefehlern der Fehler `Init failed:` samt Ursache.
 - **Frontend leer/keine Knoten** — pruefen ob `dist/assets/graph.json` existiert + `nodes`-Array nicht leer. Browser-Console auf 404 zu `graph.json` checken.
 - **`wrangler pages deploy` wirft `Project not found` (code 8000007)** — das Pages-Projekt existiert in deinem CF-Account noch nicht. Einmal `npx wrangler pages project create wiki-graph-showcase --production-branch=main` ausfuehren, dann deploy nochmal.
