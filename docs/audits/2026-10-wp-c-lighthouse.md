@@ -23,3 +23,7 @@ OFFEN (TBT-Median 2707 ms > 1000 ms). C1b nur mit Dominics Go.
 Median aus 2 Läufen: Score 35, FCP 3780 ms, LCP 7221 ms, TBT 3904 ms, CLS 0.001, Konsolenfehler 0. Einzelläufe: Lauf 1 Score 35, FCP 3761, LCP 7215, TBT 3771; Lauf 2 Score 35, FCP 3798, LCP 7226, TBT 4036. `csp_check`: OK.
 
 C1b-Gate: OFFEN (TBT-Median 3904 ms > 1000 ms). C1b nur mit Dominics Go.
+
+## Ohne WebGL (Vorschau, 2026-10-02)
+
+Chromium-Flags `--disable-webgl --disable-3d-apis`, 1 Lauf: Score 67, FCP 3790 ms, LCP 7380 ms, TBT 0 ms, CLS 0.003, Konsolenfehler 0 (Pfad schreibt nur `console.warn`). Kontext-Test im Playwright-Skript: `getContext("webgl2")` = false, Liste sichtbar (259 Seiten, Kompetenz). Sichtprüfung 390x844 und 1440x900: Liste und Hinweistext lesbar, Topbar frei.

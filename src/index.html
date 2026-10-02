@@ -100,6 +100,13 @@
         aria-label="Thema suchen"
       >
       <ul class="search-results" id="search-results" role="listbox" hidden></ul>
+      <!-- ROHFASSUNG (WP C2): Texte dieses Blocks zur Redaktion durch Dominic vor dem Merge -->
+      <div class="webgl-fallback" id="webgl-fallback" hidden>
+        <p class="webgl-fallback-hint">Die 3D-Ansicht lässt sich in diesem Browser nicht starten. Die Einträge stehen hier als Liste, ein Klick öffnet die Erklärung.</p>
+        <input type="search" id="fallback-filter" class="search-input" placeholder="Liste filtern…" autocomplete="off" aria-label="Liste filtern">
+        <p class="webgl-fallback-status" id="fallback-status" role="status"></p>
+        <ul class="webgl-fallback-list" id="fallback-list"></ul>
+      </div>
     </div>
     <div class="graph-container" id="graph-container"></div>
     <div class="label-layer" id="label-layer" aria-hidden="true"></div>

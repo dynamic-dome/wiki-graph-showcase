@@ -54,3 +54,72 @@ test.describe("C1: Bibliothek nach dem ersten Paint", () => {
     await expect(page.locator("#search-results .search-result").first()).toBeVisible({ timeout: 20_000 });
   });
 });
+
+/** WebGL fuer diesen Kontext abschalten (deterministisch, unabhaengig von Chromium-Flags). */
+async function withoutWebGL(page: Page) {
+  await page.addInitScript(() => {
+    const orig = HTMLCanvasElement.prototype.getContext;
+    (HTMLCanvasElement.prototype as any).getContext = function (type: string, ...rest: unknown[]) {
+      if (type === "webgl" || type === "webgl2" || type === "experimental-webgl") return null;
+      return (orig as any).call(this, type, ...rest);
+    };
+  });
+}
+
+test.describe("C2: Liste statt Stacktrace", () => {
+  test("ohne WebGL erscheint die Liste, Filter und Modal funktionieren, kein Stacktrace", async ({ page }) => {
+    const problems = trackProblems(page);
+    await withoutWebGL(page);
+    await page.goto(url("/?dataset=kompetenz"));
+    await expect(page.locator("#webgl-fallback")).toBeVisible();
+    const all = await page.locator("#fallback-list button").count();
+    expect(all).toBeGreaterThan(100);
+    await expect(page.locator("body pre")).toHaveCount(0);
+    await expect(page.locator("#graph-container canvas")).toHaveCount(0);
+
+    await page.locator("#fallback-filter").fill("mcp");
+    const filtered = await page.locator("#fallback-list button").count();
+    expect(filtered).toBeGreaterThan(0);
+    expect(filtered).toBeLessThan(all);
+
+    await page.locator("#fallback-list button").first().click();
+    await expect(page.locator("#modal")).toHaveClass(/open/);
+    await expect(page.locator("#modal-title")).not.toBeEmpty();
+    expect(problems).toEqual([]);
+  });
+
+  test("Bibliothek nicht ladbar: Liste statt Stacktrace, console.error bleibt", async ({ page }) => {
+    const errors: string[] = [];
+    page.on("console", (m) => { if (m.type() === "error") errors.push(m.text()); });
+    await page.route("**/assets/vendor/3d-force-graph.min.js", (route) => route.abort());
+    await page.goto(url("/?dataset=kompetenz"));
+    await expect(page.locator("#webgl-fallback")).toBeVisible({ timeout: 20_000 });
+    await expect(page.locator("#fallback-list button").first()).toBeVisible();
+    await expect(page.locator("body pre")).toHaveCount(0);
+    expect(errors.some((t) => t.includes("Init failed"))).toBe(true);
+  });
+
+  test("Index fehlt: ruhige Meldung statt Fehler", async ({ page }) => {
+    const problems = trackProblems(page);
+    await withoutWebGL(page);
+    await page.route("**/assets/kompetenz/index.json", (route) => route.fulfill({ status: 404, body: "" }));
+    await page.goto(url("/?dataset=kompetenz"));
+    await expect(page.locator("#fallback-status")).not.toBeEmpty();
+    await expect(page.locator("#fallback-list button")).toHaveCount(0);
+    await expect(page.locator("body pre")).toHaveCount(0);
+    expect(problems).toEqual([]);
+  });
+
+  test("Datensatzwechsel funktioniert auch ohne WebGL", async ({ page }) => {
+    await withoutWebGL(page);
+    await page.goto(url("/?dataset=kompetenz"));
+    await expect(page.locator("#fallback-list button").first()).toBeVisible();
+    const kompetenz = await page.locator("#fallback-list button").count();
+    await page.locator("#dataset-astro").click();
+    await expect(page).toHaveURL(/dataset=astro/);
+    await expect(page.locator("#fallback-list button").first()).toBeVisible();
+    const astro = await page.locator("#fallback-list button").count();
+    expect(astro).toBeGreaterThan(10);
+    expect(astro).toBeLessThan(kompetenz);
+  });
+});

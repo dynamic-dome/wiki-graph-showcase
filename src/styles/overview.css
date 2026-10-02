@@ -41,3 +41,23 @@ body.plate-mode .about { visibility: hidden; }
   .ctrl-legal { gap: 10px; }
   .modal { height: 48dvh; bottom: 72px; }
 }
+
+/* WP C2: Liste statt 3D-Ansicht, wenn WebGL fehlt oder die Initialisierung scheitert */
+.webgl-fallback {
+  margin-top: 0.8rem; padding: 1rem 1.1rem;
+  background: var(--surface-strong); border: 1px solid var(--surface-border-color); border-radius: var(--surface-radius);
+}
+.webgl-fallback[hidden] { display: none; }
+.webgl-fallback-hint { margin: 0 0 0.75rem; font-size: 0.9rem; line-height: 1.55; }
+.webgl-fallback-status { margin: 0.5rem 0; font-size: 0.8rem; color: var(--text-muted); }
+.webgl-fallback-list { list-style: none; margin: 0; padding: 0; max-height: min(44vh, 480px); overflow-y: auto; overscroll-behavior: contain; }
+.webgl-fallback-list button {
+  display: flex; justify-content: space-between; gap: 0.75rem; width: 100%; min-height: 44px;
+  padding: 0.5rem 0.25rem; text-align: left; background: transparent; border: 0;
+  border-bottom: 1px solid var(--surface-border-color); color: var(--text); font: inherit; font-size: 0.9rem; cursor: pointer;
+}
+.webgl-fallback-list button:hover { color: var(--brand-glyph-color, #98e8ff); }
+.fallback-cat { flex: none; font-size: 0.75rem; color: var(--text-muted); }
+body.no-webgl .intro-overlay, body.no-webgl .graph-container, body.no-webgl .label-layer,
+body.no-webgl .cmb-layer, body.no-webgl .reticle, body.no-webgl .legend, body.no-webgl .tour-btn,
+body.no-webgl #search-input, body.no-webgl #search-results, body.no-webgl .graph-intro p { display: none; }
