@@ -17,3 +17,9 @@ Einzelläufe: Lauf 1 Score 29, FCP 7207, LCP 10806, TBT 2835; Lauf 2 Score 29, F
 ## C1b-Gate
 
 OFFEN (TBT-Median 2707 ms > 1000 ms). C1b nur mit Dominics Go.
+
+## Nach C1 (Vorschau, 2026-10-02)
+
+Median aus 2 Läufen: Score 35, FCP 3780 ms, LCP 7221 ms, TBT 3904 ms, CLS 0.001, Konsolenfehler 0. Einzelläufe: Lauf 1 Score 35, FCP 3761, LCP 7215, TBT 3771; Lauf 2 Score 35, FCP 3798, LCP 7226, TBT 4036. `csp_check`: OK.
+
+C1b-Gate: OFFEN (TBT-Median 3904 ms > 1000 ms). C1b nur mit Dominics Go.

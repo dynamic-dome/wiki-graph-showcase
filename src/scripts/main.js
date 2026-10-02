@@ -23,6 +23,7 @@ import { createSearchControl } from "./search-control.js";
 import { readState, writeState } from "./url-state.js";
 import { createNodeForms } from "./node-forms.js";
 import "./three-guard.js"; // THREE-Revision-Tripwire (Vendor r168 == Bundle r168)
+import { afterFirstPaint, loadForceGraph } from "./force-graph-loader.js";
 
 (async function main() {
   const urlState = readState();
@@ -37,6 +38,11 @@ import "./three-guard.js"; // THREE-Revision-Tripwire (Vendor r168 == Bundle r16
   const themeCurrent = document.getElementById("theme-current");
   const themeSwitcher = createThemeSwitcher(themeToggle, themeCurrent);
   const stored = themeSwitcher.loadStored();
+
+  // C1: 3d-force-graph (707 KB, Classic-Bundle) erst nach dem ersten Paint laden.
+  // Der Download laeuft parallel zum graph.json-Fetch; die Einleitung im HTML steht sofort.
+  const forceGraphReady = afterFirstPaint().then(() => loadForceGraph());
+  forceGraphReady.catch(() => { /* wird unten beim await behandelt */ });
 
   const graphData = await loadGraph(dataset);
   const initialTheme = urlState.theme || stored || graphData.theme_default || "crab";
@@ -59,6 +65,7 @@ import "./three-guard.js"; // THREE-Revision-Tripwire (Vendor r168 == Bundle r16
 
   // Stage
   const container = document.getElementById("graph-container");
+  await forceGraphReady;
   const stage = createStage(container, stageOptions);
   // Testhook für Playwright (aurum.spec.ts) — bewusst öffentlich, read-only genutzt.
   window.__nebula = { stage };
@@ -192,7 +199,11 @@ import "./three-guard.js"; // THREE-Revision-Tripwire (Vendor r168 == Bundle r16
       onSelect: (nodeId) => openCenter(nodeId),
     });
     loadIndex(dataset)
-      .then((idx) => search.setIndex(idx))
+      .then((idx) => {
+        search.setIndex(idx);
+        // C1: Wurde schon vor dem Laden getippt, jetzt nachziehen.
+        if (searchInput.value) searchInput.dispatchEvent(new Event("input"));
+      })
       .catch(() => { /* search degrades silently if index missing */ });
   }
 

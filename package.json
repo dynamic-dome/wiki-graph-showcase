@@ -11,9 +11,10 @@
     "serve:preview": "python -m tools.preview_server --dist dist --port 8051",
     "sweep": "python tools/pre_deploy_sweep.py --dist dist",
     "test:py": "python -m pytest tests/ --ignore=tests/e2e -v",
+    "test:unit": "node --test \"tests/unit/**/*.test.js\"",
     "test:e2e": "npx playwright test tests/e2e/showcase.spec.ts tests/e2e/kompetenz.spec.ts tests/e2e/aurum.spec.ts",
     "test:e2e:live": "npx playwright test tests/e2e/live/",
-    "test": "npm run test:py && npm run test:e2e"
+    "test": "npm run test:py && npm run test:unit && npm run test:e2e"
   },
   "devDependencies": {
     "@playwright/test": "^1.48.0",
