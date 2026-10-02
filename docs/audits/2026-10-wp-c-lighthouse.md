@@ -45,3 +45,16 @@ Die Stand-Zeilen weichen untereinander ab (Nach C1: TBT 3904 ms, jetzt 1602 ms b
 ## C1b-Gate (Entscheid Zwischenabnahme)
 
 OFFEN. TBT-Median nach C1 = 3904 ms (> 1000 ms; Kontrollmessung Zwischenstand 1602 ms, ebenfalls > 1000 ms). C1b ist nur mit Dominics Go möglich. Ohne Go bleibt es bei C1, das Zielmaß TBT ≤ 1 s wird dann offen als verfehlt berichtet. Task 10 wird vorbereitet, aber nicht gebaut.
+
+## C1b (Vorschau, 2026-10-02, Seitenzweig `feat/wp-c-c1b-vorberechnete-positionen`, kein Go, nicht live)
+
+Layout-Ausdehnung der heutigen Simulation (Schritt 2, 15 s Lauf, 259 Knoten): maxX 496, maxY 637, maxZ 498, r50 287, r95 743; `scale` = 637.
+
+Vergleich alt (`ce682dd`, Vorschau 8051) gegen neu (Seitenzweig, Vorschau 8052), abwechselnd nacheinander in derselben Lastsituation (alt, neu, alt, neu), Median aus 2 Läufen:
+
+| Stand | Score | FCP ms | LCP ms | TBT ms | CLS | Konsolenfehler |
+|---|---|---|---|---|---|---|
+| alt (ce682dd) | 38 | 3849 | 7223 | 1794 | 0.000 | 0 |
+| neu (C1b) | 44 | 3913 | 7374 | 959 | 0.000 | 0 |
+
+Einzelläufe alt: 39/3913/7223/1542 und 37/3785/7222/2047; neu: 43/3912/7371/1039 und 45/3915/7377/878 (Score/FCP/LCP/TBT). TBT neu knapp unter 1000 ms (Streuung 878 bis 1039), LCP leicht schlechter (graph.json größer). Rohdateien `c1b-alt-*.json`, `c1b-neu-*.json`.
