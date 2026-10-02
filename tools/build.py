@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -175,14 +176,33 @@ def run(cfg: dict, out: Path) -> None:
         _copy_frontend_assets(Path(src_root), out)
 
 
-def _copy_frontend_assets(src: Path, out: Path) -> None:
-    """Copy src/index.html, src/_headers, src/robots.txt, src/sitemap.xml, src/styles/, src/scripts/, src/vendor/ to dist/."""
+_LASTMOD = re.compile(rb"<lastmod>[^<]*</lastmod>")
+
+
+def _stamp_sitemap_lastmod(path: Path, today: str) -> bool:
+    """Setzt alle <lastmod> in einer Sitemap auf `today` (Bytes, Zeilenenden bleiben)."""
+    raw = path.read_bytes()
+    stamped, count = _LASTMOD.subn(f"<lastmod>{today}</lastmod>".encode("utf-8"), raw)
+    if count:
+        path.write_bytes(stamped)
+    return bool(count)
+
+
+def _copy_frontend_assets(src: Path, out: Path, today: str | None = None) -> None:
+    """Copy src/index.html, src/_headers, src/robots.txt, src/sitemap.xml, src/styles/, src/scripts/, src/vendor/ to dist/.
+
+    Die Sitemap in dist/ bekommt das Build-Datum (UTC) als <lastmod>; src/ bleibt unveraendert.
+    """
     import shutil
     # root-level files go to dist/ root (real files beat the Pages SPA catch-all)
     for root_file in ("index.html", "_headers", "robots.txt", "sitemap.xml"):
         src_file = src / root_file
         if src_file.is_file():
             shutil.copy2(src_file, out / root_file)
+    sitemap = out / "sitemap.xml"
+    if sitemap.is_file():
+        stamp = today or datetime.now(timezone.utc).date().isoformat()
+        _stamp_sitemap_lastmod(sitemap, stamp)
     # styles, scripts, vendor go under dist/assets/
     for sub in ("styles", "scripts", "vendor"):
         src_dir = src / sub
