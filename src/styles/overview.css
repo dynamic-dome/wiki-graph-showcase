@@ -61,3 +61,23 @@ body.plate-mode .about { visibility: hidden; }
 body.no-webgl .intro-overlay, body.no-webgl .graph-container, body.no-webgl .label-layer,
 body.no-webgl .cmb-layer, body.no-webgl .reticle, body.no-webgl .legend, body.no-webgl .tour-btn,
 body.no-webgl #search-input, body.no-webgl #search-results, body.no-webgl .graph-intro p { display: none; }
+
+/* WP C3: Kopfzeile mit Profil, Systeme, Kontakt (Rueck-Link bleibt .parent-link) */
+.site-links { display: flex; align-items: center; gap: 2px; }
+.site-link {
+  display: inline-flex; align-items: center; min-height: 30px; padding: 6px 8px;
+  border: 1px solid transparent; border-radius: 999px;
+  color: var(--text-muted, rgba(200, 210, 230, 0.6));
+  font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.08em; text-decoration: none;
+  transition: color 0.18s ease, border-color 0.18s ease;
+}
+.site-link:hover { color: var(--brand-glyph-color, #98e8ff); border-color: var(--border-soft, rgba(152, 232, 255, 0.3)); }
+/* Zwischenbereich: dieselbe zweizeilige Kopfzeile wie auf dem Handy, damit nichts ueberlappt */
+@media (min-width: 761px) and (max-width: 900px) {
+  .parent-link-text { display: none; }
+  .topbar { flex-wrap: wrap; gap: 0.3rem; padding: 10px 22px; background: var(--surface-strong); }
+  .topbar-right { order: 3; width: 100%; justify-content: space-between; gap: 0.4rem; }
+  .search-box { top: 116px; }
+}
+/* Kleine Handys: der Markenname weicht den vier Zielen (Glyph bleibt, Datensatz-Wahl und H1 nennen die Seite) */
+@media (max-width: 480px) { .brand-name { display: none; } }

@@ -123,3 +123,55 @@ test.describe("C2: Liste statt Stacktrace", () => {
     expect(astro).toBeLessThan(kompetenz);
   });
 });
+
+test.describe("C3: Kopfzeile", () => {
+  for (const width of [360, 390, 800, 1440]) {
+    test(`vier Ziele, ohne Ueberlappung bei ${width}px`, async ({ browser }) => {
+      const ctx = await browser.newContext({ viewport: { width, height: 844 } });
+      const page = await ctx.newPage();
+      await page.goto(url("/?dataset=kompetenz"), { waitUntil: "domcontentloaded" });
+      const links = page.locator(".site-links a");
+      await expect(links).toHaveCount(4);
+      const hrefs = await links.evaluateAll((els) => els.map((e) => (e as HTMLAnchorElement).href));
+      expect(hrefs).toEqual([
+        "https://dynamic-dome.com/",
+        "https://dynamic-dome.com/profil/",
+        "https://dynamic-dome.com/systeme/",
+        "https://dynamic-dome.com/kontakt/",
+      ]);
+
+      const m = await page.evaluate(() => {
+        const rect = (el: Element | null) => {
+          if (!el) return null;
+          const r = el.getBoundingClientRect();
+          return { left: r.left, right: r.right, top: r.top, bottom: r.bottom, w: r.width, h: r.height };
+        };
+        return {
+          vw: document.documentElement.clientWidth,
+          links: Array.from(document.querySelectorAll(".site-links a")).map(rect),
+          nav: rect(document.querySelector(".site-links")),
+          brand: rect(document.querySelector(".brand")),
+          right: rect(document.querySelector(".topbar-right")),
+          topbar: rect(document.querySelector(".topbar")),
+          search: rect(document.querySelector(".search-box")),
+        };
+      });
+      const intersects = (a: any, b: any) =>
+        a && b && a.w > 0 && b.w > 0 &&
+        a.left < b.right - 0.5 && b.left < a.right - 0.5 && a.top < b.bottom - 0.5 && b.top < a.bottom - 0.5;
+
+      for (const l of m.links as any[]) {
+        expect(l.left).toBeGreaterThanOrEqual(0);
+        expect(l.right).toBeLessThanOrEqual(m.vw + 0.5);
+        expect(l.h).toBeGreaterThanOrEqual(24);       // Mindest-Tippflaeche (WCAG 2.2)
+      }
+      const tops = (m.links as any[]).map((l) => l.top);
+      expect(Math.max(...tops) - Math.min(...tops)).toBeLessThan(4); // eine Zeile
+      expect(intersects(m.nav, m.brand)).toBe(false);
+      expect(intersects(m.nav, m.right)).toBe(false);
+      expect(intersects(m.brand, m.right)).toBe(false);
+      expect(m.search!.top).toBeGreaterThanOrEqual(m.topbar!.bottom - 1); // Suchbox unter der Kopfzeile
+      await ctx.close();
+    });
+  }
+});
