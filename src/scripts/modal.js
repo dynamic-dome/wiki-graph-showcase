@@ -3,7 +3,7 @@
  */
 
 // German display labels for kompetenz node categories.
-const CATEGORY_LABELS = {
+export const CATEGORY_LABELS = {
   competence: "Fähigkeit",
   synthesis: "Zusammenfassung",
   topic: "Thema",

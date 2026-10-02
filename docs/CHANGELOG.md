@@ -1,5 +1,14 @@
 # Changelog
 
+## 2026-10-02 — WP C (Stufe 2): schnellere, robustere Landeseite
+
+- 3d-force-graph lädt nach dem ersten Paint; die Einleitung steht sofort.
+- Ohne WebGL oder bei Ladefehler: durchsuchbare Liste mit dem vorhandenen Modal statt Stacktrace.
+- Kopfzeile: dynamic-dome.com · Profil · Systeme · Kontakt.
+- Sitemap-lastmod wird im Build gesetzt (Build-Datum).
+- Werkzeuge: Vorschau mit _headers, Lighthouse-Auswertung, CSP-Check. Messprotokoll: `docs/audits/2026-10-wp-c-lighthouse.md`.
+- Safari/iOS ungeprüft (nur Chromium mit Handy-Profil).
+
 ## 2026-09-07 — Lokaler Minimal-Test, nicht veröffentlicht
 
 - Einstieg erklärt Punkte, Verbindungen und Suche; Darstellung optional aufklappbar.

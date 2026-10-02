@@ -55,10 +55,15 @@
   </div>
 
   <header class="topbar">
-    <a class="parent-link" href="https://dynamic-dome.com/" rel="noopener" aria-label="Zurueck zu dynamic-dome.com">
-      <span class="parent-link-arrow" aria-hidden="true">&larr;</span>
-      <span class="parent-link-text">dynamic-dome.com</span>
-    </a>
+    <nav class="site-links" aria-label="Zur Hauptseite von Dominic Meiser">
+      <a class="parent-link" href="https://dynamic-dome.com/" rel="noopener" aria-label="Zurueck zu dynamic-dome.com">
+        <span class="parent-link-arrow" aria-hidden="true">&larr;</span>
+        <span class="parent-link-text">dynamic-dome.com</span>
+      </a>
+      <a class="site-link" href="https://dynamic-dome.com/profil/" rel="noopener">Profil</a>
+      <a class="site-link" href="https://dynamic-dome.com/systeme/" rel="noopener">Systeme</a>
+      <a class="site-link" href="https://dynamic-dome.com/kontakt/" rel="noopener">Kontakt</a>
+    </nav>
     <div class="brand">
       <span class="brand-glyph" id="brand-glyph">&#x25C6;</span>
       <span class="brand-name" id="brand-name">Knowledge Nebula</span>
@@ -100,6 +105,12 @@
         aria-label="Thema suchen"
       >
       <ul class="search-results" id="search-results" role="listbox" hidden></ul>
+      <div class="webgl-fallback" id="webgl-fallback" hidden>
+        <p class="webgl-fallback-hint">Die 3D-Ansicht lässt sich in diesem Browser nicht starten. Die Einträge stehen hier als Liste, ein Klick öffnet die Erklärung.</p>
+        <input type="search" id="fallback-filter" class="search-input" placeholder="Liste filtern…" autocomplete="off" aria-label="Liste filtern">
+        <p class="webgl-fallback-status" id="fallback-status" role="status"></p>
+        <ul class="webgl-fallback-list" id="fallback-list"></ul>
+      </div>
     </div>
     <div class="graph-container" id="graph-container"></div>
     <div class="label-layer" id="label-layer" aria-hidden="true"></div>
@@ -170,7 +181,8 @@
   <script type="importmap">
   { "imports": { "three": "./assets/vendor/three/three.module.min.js" } }
   </script>
-  <script src="assets/vendor/3d-force-graph.min.js"></script>
+  <!-- C1: 3d-force-graph.min.js wird von main.js nach dem ersten Paint nachgeladen
+       (scripts/force-graph-loader.js). Kein Inline-Script: CSP-Hash der Import Map bleibt gueltig. -->
   <script type="module" src="assets/scripts/main.js"></script>
 </body>
 </html>

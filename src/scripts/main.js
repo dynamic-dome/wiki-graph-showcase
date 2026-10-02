@@ -23,6 +23,47 @@ import { createSearchControl } from "./search-control.js";
 import { readState, writeState } from "./url-state.js";
 import { createNodeForms } from "./node-forms.js";
 import "./three-guard.js"; // THREE-Revision-Tripwire (Vendor r168 == Bundle r168)
+import { afterFirstPaint, loadForceGraph } from "./force-graph-loader.js";
+import { hasWebGL } from "./webgl-support.js";
+import { createFallbackList, FALLBACK_TEXTS } from "./fallback-list.js";
+
+// Spiegelt theme_default aus den Build-Configs (showcase/kompetenz), damit der
+// Fallback ohne graph.json auskommt.
+const FALLBACK_THEME = { kompetenz: "dome", astro: "crab" };
+
+let sharedModal = null;
+function getModal() {
+  if (!sharedModal) sharedModal = createModal(document.getElementById("modal"));
+  return sharedModal;
+}
+
+/**
+ * C2: Liste statt 3D-Ansicht. Bei fehlendem WebGL und bei jedem Init-Fehler.
+ * Zeigt nie einen Stacktrace auf der Seite.
+ */
+async function showFallback(dataset) {
+  document.body.classList.add("no-webgl");
+  const root = document.getElementById("webgl-fallback");
+  if (!root) return;
+  root.hidden = false;
+  const modal = getModal();
+  const openPage = async (id) => {
+    try {
+      modal.show(await loadNode(id, dataset));
+    } catch (_e) {
+      /* Seite ohne Detaildatei: Liste bleibt stehen */
+    }
+  };
+  modal.onNeighbourClick(openPage);
+  const list = createFallbackList(root, { onSelect: openPage });
+  try {
+    const idx = await loadIndex(dataset);
+    if (idx.nodes && idx.nodes.length) list.setEntries(idx.nodes);
+    else list.showError(FALLBACK_TEXTS.unavailable);
+  } catch (_e) {
+    list.showError(FALLBACK_TEXTS.unavailable);
+  }
+}
 
 (async function main() {
   const urlState = readState();
@@ -37,6 +78,20 @@ import "./three-guard.js"; // THREE-Revision-Tripwire (Vendor r168 == Bundle r16
   const themeCurrent = document.getElementById("theme-current");
   const themeSwitcher = createThemeSwitcher(themeToggle, themeCurrent);
   const stored = themeSwitcher.loadStored();
+  wireDatasetSwitch(dataset);
+
+  // C2: Ohne WebGL weder Bibliothek noch Graph laden, sondern gleich die Liste zeigen.
+  if (!hasWebGL()) {
+    console.warn("WebGL nicht verfuegbar - zeige die Liste statt des 3D-Graphen.");
+    themeSwitcher.set(urlState.theme || stored || FALLBACK_THEME[dataset] || "crab");
+    await showFallback(dataset);
+    return;
+  }
+
+  // C1: 3d-force-graph (707 KB, Classic-Bundle) erst nach dem ersten Paint laden.
+  // Der Download laeuft parallel zum graph.json-Fetch; die Einleitung im HTML steht sofort.
+  const forceGraphReady = afterFirstPaint().then(() => loadForceGraph());
+  forceGraphReady.catch(() => { /* wird unten beim await behandelt */ });
 
   const graphData = await loadGraph(dataset);
   const initialTheme = urlState.theme || stored || graphData.theme_default || "crab";
@@ -47,8 +102,6 @@ import "./three-guard.js"; // THREE-Revision-Tripwire (Vendor r168 == Bundle r16
   if (brandName && graphData.metadata && graphData.metadata.title) {
     brandName.textContent = graphData.metadata.title;
   }
-  wireDatasetSwitch(dataset);
-
   createLegend(document.getElementById("legend"), {
     dataset,
     kompetenzColors: KOMPETENZ_CATEGORY_COLORS,
@@ -59,6 +112,7 @@ import "./three-guard.js"; // THREE-Revision-Tripwire (Vendor r168 == Bundle r16
 
   // Stage
   const container = document.getElementById("graph-container");
+  await forceGraphReady;
   const stage = createStage(container, stageOptions);
   // Testhook für Playwright (aurum.spec.ts) — bewusst öffentlich, read-only genutzt.
   window.__nebula = { stage };
@@ -177,7 +231,7 @@ import "./three-guard.js"; // THREE-Revision-Tripwire (Vendor r168 == Bundle r16
   });
 
   // Modal
-  const modal = createModal(document.getElementById("modal"));
+  const modal = getModal();
   modal.onNeighbourClick(async (neighbourId) => {
     await openCenter(neighbourId);
   });
@@ -192,7 +246,11 @@ import "./three-guard.js"; // THREE-Revision-Tripwire (Vendor r168 == Bundle r16
       onSelect: (nodeId) => openCenter(nodeId),
     });
     loadIndex(dataset)
-      .then((idx) => search.setIndex(idx))
+      .then((idx) => {
+        search.setIndex(idx);
+        // C1: Wurde schon vor dem Laden getippt, jetzt nachziehen.
+        if (searchInput.value) searchInput.dispatchEvent(new Event("input"));
+      })
       .catch(() => { /* search degrades silently if index missing */ });
   }
 
@@ -272,9 +330,14 @@ import "./three-guard.js"; // THREE-Revision-Tripwire (Vendor r168 == Bundle r16
       // No node detail for that ID — skip silently
     }
   });
-})().catch((err) => {
+})().catch(async (err) => {
+  // C2: kein Stacktrace auf der Seite; console.error bleibt fuer die Diagnose.
   console.error("Init failed:", err);
-  document.body.innerHTML = `<pre style="color:#f88;padding:24px">${String(err.stack || err)}</pre>`;
+  try {
+    await showFallback(readState().dataset || DEFAULT_DATASET);
+  } catch (fallbackErr) {
+    console.error("Fallback failed:", fallbackErr);
+  }
 });
 
 /**
