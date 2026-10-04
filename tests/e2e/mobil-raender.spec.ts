@@ -91,6 +91,72 @@ test("Handy 390x844: Legende aufklappen bleibt im Bild", async ({ browser }) => 
   await m.ctx.close();
 });
 
+// Kurzes Hochformat (Tastatur offen, Splitscreen): bleibt Hochformat-Layout, nicht der Querblock
+for (const [w, h] of [[360, 480], [360, 340]] as [number, number][]) {
+  test(`Handy ${w}x${h} (wenig Hoehe im Hochformat): Kopfzeile im Bild, Fussleiste ohne Ueberlappung`, async ({ browser }) => {
+    const m = await messen(browser, w, h, true);
+    const k = await m.page.evaluate(() => {
+      const bar = document.querySelector(".topbar")!;
+      return { rechts: Math.round(document.querySelector(".topbar-right")!.getBoundingClientRect().right), scroll: bar.scrollWidth, breite: bar.clientWidth };
+    });
+    expect(k.rechts).toBeLessThanOrEqual(m.vw + 1);
+    expect(k.scroll).toBeLessThanOrEqual(k.breite + 1);
+    const B = m.boxes as Record<string, Box>;
+    for (const [a, b] of [[".tour-btn", "#legend"], ["#legend", "#about"], [".tour-btn", "#about"]]) {
+      expect(schneidet(B[a], B[b]), `${a} x ${b}`).toBe(false);
+    }
+    await m.ctx.close();
+  });
+}
+
+test("Handy 390x844: jeder Tab-Stopp ist sichtbar (auch in der versteckten Einfuehrung)", async ({ browser }) => {
+  const m = await messen(browser, 390, 844, true);
+  const unsichtbar = new Set<string>();
+  for (let i = 0; i < 40; i++) {
+    await m.page.keyboard.press("Tab");
+    const r = await m.page.evaluate(() => {
+      const a = document.activeElement;
+      if (!a || a === document.body) return null;
+      for (let e: Element | null = a; e && e !== document.body; e = e.parentElement) {
+        const b = e.getBoundingClientRect();
+        if (b.width <= 1 || b.height <= 1) return `${a.tagName}.${a.className} in ${e.tagName}.${e.className} ${Math.round(b.width)}x${Math.round(b.height)}`;
+      }
+      return null;
+    });
+    if (r) unsichtbar.add(r);
+  }
+  expect([...unsichtbar]).toEqual([]);
+  await m.ctx.close();
+});
+
+// Legende und "Ueber" liegen in anderen Stapelkontexten unter der Fussleiste: deren Hintergrund darf sie nicht abdunkeln
+for (const [w, h] of [[390, 844], [844, 390]] as [number, number][]) {
+  test(`Handy ${w}x${h}: nichts mit Hintergrund liegt ueber Legende und "Ueber diese Seite"`, async ({ browser }) => {
+    const m = await messen(browser, w, h, true);
+    // elementsFromPoint ueberspringt pointer-events:none, die Fussleiste soll aber mitgezaehlt werden
+    await m.page.addStyleTag({ content: ".control-panel { pointer-events: auto !important; }" });
+    const befunde = await m.page.evaluate(() => {
+      const out = new Set<string>();
+      for (const sel of ["#legend-toggle", ".about-toggle"]) {
+        const t = document.querySelector(sel)!;
+        const r = t.getBoundingClientRect();
+        const y = r.top + r.height / 2;
+        for (const x of [r.left + 4, r.left + r.width / 2, r.right - 4]) {
+          for (const e of document.elementsFromPoint(x, y)) {
+            if (e === t || t.contains(e)) break;
+            const s = getComputedStyle(e);
+            const f = (s.backgroundColor.match(/[\d.]+/g) ?? []).map(Number);
+            if (s.backgroundImage !== "none" || (f.length === 4 ? f[3] > 0 : f.length === 3)) out.add(`${sel} unter ${e.tagName}.${e.className}`);
+          }
+        }
+      }
+      return [...out];
+    });
+    expect(befunde).toEqual([]);
+    await m.ctx.close();
+  });
+}
+
 const DESKTOPS: [number, number][] = [[1440, 900], [1024, 768], [800, 844]];
 test("Desktop: Boxen wie vor der Aenderung, keine Beschneidung, Einfuehrung sichtbar", async ({ browser }) => {
   const jetzt: Record<string, any> = {};
