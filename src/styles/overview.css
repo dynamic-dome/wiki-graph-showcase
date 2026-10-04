@@ -83,3 +83,39 @@ body.no-webgl .webgl-fallback-list { padding-bottom: 64px; }
 }
 /* Kleine Handys: der Markenname weicht den vier Zielen (Glyph bleibt, Datensatz-Wahl und H1 nennen die Seite) */
 @media (max-width: 480px) { .brand-name { display: none; } }
+
+/* Handy: schlanke Raender (IOS-C3, 2026-10-04). Graph in der Mitte frei, Bedienung in schmalen Leisten oben und unten.
+   Die Einfuehrung bleibt fuer Screenreader und Suche im HTML (h1, WEB-037), ist auf dem Handy aber unsichtbar.
+   Maus-Geraete ueber 760 px bleiben unveraendert (tests/e2e/mobil-raender.spec.ts). */
+@media (max-width: 760px), (max-height: 500px) and (hover: none) and (pointer: coarse) {
+  .graph-intro { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden;
+    clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+  .search-box .search-input { height: 40px; margin: 0; }
+  .tour-btn { font-size: 12px; padding: 4px 10px; }
+  .legend-toggle, .about-toggle { font-size: 11px; padding: 4px 10px; min-height: 34px; }
+  /* Legende und "Ueber diese Seite" sitzen in der Fussleiste, liegen aber in anderen Stapelkontexten darunter:
+     die Leiste selbst laesst Tipps durch, ihre eigenen Knoepfe und Links bleiben antippbar. */
+  .control-panel { pointer-events: none; }
+  .control-panel > * { pointer-events: auto; }
+}
+@media (max-width: 760px) {
+  .topbar { padding: 6px 12px; row-gap: 4px; }
+  .search-box { top: 106px; left: 12px; width: calc(100vw - 24px); }
+  .control-panel { padding: 6px 12px calc(4px + env(safe-area-inset-bottom)); gap: 4px 8px; flex-wrap: wrap; }
+  .ctrl-legal { width: 100%; justify-content: center; font-size: 10px; gap: 12px; }
+  .legend { left: 150px; bottom: calc(30px + env(safe-area-inset-bottom)); }
+  .about { right: 12px; bottom: calc(30px + env(safe-area-inset-bottom)); }
+  .label-layer { clip-path: inset(154px 0 calc(80px + env(safe-area-inset-bottom)) 0); }
+}
+@media (max-height: 500px) and (hover: none) and (pointer: coarse) {
+  .topbar { flex-wrap: nowrap; padding: 6px 16px; }
+  .topbar-right { order: 0; width: auto; }
+  .brand { display: none; }
+  .search-box { top: 68px; left: 16px; width: min(560px, calc(100vw - 32px)); }
+  .search-box .search-input { height: 38px; }
+  .control-panel { padding: 6px 16px calc(6px + env(safe-area-inset-bottom)); flex-wrap: nowrap; }
+  .ctrl-legal { width: auto; }
+  .legend { left: 170px; bottom: calc(8px + env(safe-area-inset-bottom)); }
+  .about { right: 230px; bottom: calc(8px + env(safe-area-inset-bottom)); }
+  .label-layer { clip-path: inset(118px 0 calc(56px + env(safe-area-inset-bottom)) 0); }
+}
