@@ -188,6 +188,100 @@ for (const [w, h, touch] of [[844, 277, true], [844, 390, true], [390, 844, true
   });
 }
 
+// IOS-C10 (2026-10-05, echtes iPhone): Nach dem Drehen ins Querformat ragte "Thema suchen" in "Kontakt". Safari setzt
+// die seitlichen Sicherheitsabstaende (env(safe-area-inset-*)) erst nach dem resize-Ereignis, die gemessene Luecke war
+// dann veraltet. Nachgestellt ueber die Variablen --quer-l/--quer-r: sie aendern das Polster ohne resize-Ereignis.
+for (const [w, h] of QUER_MIT_LEISTEN) {
+  test(`Handy quer ${w}x${h}: Sicherheitsabstaende, die erst nach dem Messen greifen, verschieben Suche und Legende mit`, async ({ browser }) => {
+    const m = await messen(browser, w, h, true);
+    await m.page.addStyleTag({ content: ":root{--quer-l:47px!important;--quer-r:47px!important}" });
+    const konflikte = () => {
+      const r = (s: string) => document.querySelector(s)!.getBoundingClientRect();
+      const x = (a: DOMRect, b: DOMRect) => a.left < b.right - 0.5 && b.left < a.right - 0.5 && a.top < b.bottom - 0.5 && b.top < a.bottom - 0.5;
+      const out: string[] = [];
+      if (r(".site-links").left < 46) out.push("Abstand links greift nicht");
+      if (x(r("#search-input"), r(".site-links"))) out.push("Suche x Seitenlinks");
+      if (x(r("#search-input"), r(".topbar-right"))) out.push("Suche x Datensatz-Wahl");
+      if (x(r("#legend-toggle"), r(".tour-btn"))) out.push("Legende x Rundgang");
+      if (x(r("#legend-toggle"), r(".about-toggle"))) out.push("Legende x Ueber");
+      return out;
+    };
+    await expect.poll(() => m.page.evaluate(konflikte)).toEqual([]);
+    await m.ctx.close();
+  });
+}
+
+// Fussleiste im Hochformat (2026-10-05): "Rundgang", "Legende" und "Ueber" haengen in verschiedenen Stapelkontexten
+// und duerfen sich bei keiner Breite ueberlappen, auch nicht waehrend des Rundgangs ("Rundgang anhalten" ist breiter)
+// oder mit vergroesserter Schrift. Rueckgabe: Liste der Ueberlappungen und Knoepfe ausserhalb des Bildes.
+const fussKonflikte = () => {
+  const el: [string, Element][] = [
+    ["Rundgang", document.querySelector(".tour-btn")!],
+    ["Legende", document.querySelector("#legend-toggle")!],
+    ["Ueber", document.querySelector(".about-toggle")!],
+    ...[...document.querySelectorAll(".ctrl-legal a")].map((a, i): [string, Element] => [`Recht${i + 1}`, a]),
+  ];
+  const b = el.map(([n, e]) => ({ n, r: e.getBoundingClientRect() }));
+  const out: string[] = [];
+  for (let i = 0; i < b.length; i++) {
+    if (b[i].r.left < -0.5 || b[i].r.right > innerWidth + 0.5) out.push(`${b[i].n} ausserhalb`);
+    for (let j = i + 1; j < b.length; j++) {
+      const x = b[i].r, y = b[j].r;
+      if (x.left < y.right - 0.5 && y.left < x.right - 0.5 && x.top < y.bottom - 0.5 && y.top < x.bottom - 0.5) out.push(`${b[i].n} x ${b[j].n}`);
+    }
+  }
+  return out;
+};
+
+for (const w of [320, 344, 360, 390, 430]) {
+  test(`Hochformat ${w} px: Rundgang, Legende und Ueber ueberlappen nicht, auch waehrend des Rundgangs`, async ({ browser }) => {
+    const m = await messen(browser, w, 780, true);
+    await expect.poll(() => m.page.evaluate(fussKonflikte)).toEqual([]);
+    await m.page.locator("#tour-btn").tap();
+    await expect(m.page.locator("#tour-btn")).toHaveText(/anhalten/);
+    await expect.poll(() => m.page.evaluate(fussKonflikte)).toEqual([]);
+    await m.ctx.close();
+  });
+}
+
+// Naeherung fuer vergroesserte Systemschrift: die Schrift der Fussleiste waechst, die Breite des Bildes nicht
+for (const [w, f] of [[360, 1.15], [390, 1.15], [390, 1.3], [320, 1.3]] as [number, number][]) {
+  test(`Hochformat ${w} px mit Schrift x${f}: Knoepfe der Fussleiste ueberlappen nicht`, async ({ browser }) => {
+    const m = await messen(browser, w, 780, true);
+    await m.page.addStyleTag({ content: `.tour-btn{font-size:${12 * f}px!important}.legend-toggle,.about-toggle{font-size:${11 * f}px!important}.ctrl-legal{font-size:${10 * f}px!important}` });
+    await expect.poll(() => m.page.evaluate(fussKonflikte)).toEqual([]);
+    await m.ctx.close();
+  });
+}
+
+// Legende und "Ueber diese Seite" klappen auf Handys an derselben Stelle auf: dort ist immer nur eines offen
+for (const [w, h] of [[390, 844], [844, 277]] as [number, number][]) {
+  test(`Handy ${w}x${h}: Legende und "Ueber diese Seite" sind nie gleichzeitig offen`, async ({ browser }) => {
+    const m = await messen(browser, w, h, true);
+    const legende = m.page.locator("#legend-body");
+    const ueber = m.page.locator(".about-body");
+    await m.page.locator("#legend-toggle").tap();
+    await expect(legende).toBeVisible();
+    await m.page.locator(".about-toggle").tap();
+    await expect(ueber).toBeVisible();
+    await expect(legende).toBeHidden();
+    await expect(m.page.locator("#legend-toggle")).toHaveAttribute("aria-expanded", "false");
+    await m.page.locator("#legend-toggle").tap();
+    await expect(legende).toBeVisible();
+    await expect(ueber).toBeHidden();
+    await m.ctx.close();
+  });
+}
+
+test("Desktop 1440x900: Legende und \"Ueber diese Seite\" bleiben unabhaengig voneinander offen", async ({ browser }) => {
+  const m = await messen(browser, 1440, 900, false);
+  await m.page.locator("#legend-toggle").click();
+  await m.page.locator(".about-toggle").click();
+  await expect(m.page.locator("#legend-body")).toBeVisible();
+  await expect(m.page.locator(".about-body")).toBeVisible();
+  await m.ctx.close();
+});
+
 // Kurzes Hochformat (Tastatur offen, Splitscreen): bleibt Hochformat-Layout, nicht der Querblock
 for (const [w, h] of [[360, 480], [360, 340]] as [number, number][]) {
   test(`Handy ${w}x${h} (wenig Hoehe im Hochformat): Kopfzeile im Bild, Fussleiste ohne Ueberlappung`, async ({ browser }) => {

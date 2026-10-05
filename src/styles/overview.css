@@ -91,6 +91,9 @@ body.no-webgl .webgl-fallback-list { padding-bottom: 64px; }
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis; pointer-events: none;
 }
 
+/* Touch-Geraete kennen kein Schweben: der Tooltip bliebe sonst nach einem Tipp neben dem Finger stehen */
+@media (hover: none) and (pointer: coarse) { .tooltip { display: none; } }
+
 /* Handy: schlanke Raender (IOS-C3, 2026-10-04). Graph in der Mitte frei, Bedienung in schmalen Leisten oben und unten.
    Die Einfuehrung bleibt fuer Screenreader und Suche im HTML (h1, WEB-037), ist auf dem Handy aber unsichtbar.
    Maus-Geraete ueber 760 px bleiben unveraendert (tests/e2e/mobil-raender.spec.ts). */
@@ -117,15 +120,25 @@ body.no-webgl .webgl-fallback-list { padding-bottom: 64px; }
     left: max(12px, env(safe-area-inset-left)); bottom: calc(70px + env(safe-area-inset-bottom)); transform: none;
     z-index: 21; max-width: calc(100vw - 24px); font-size: 10px; text-shadow: 0 0 6px rgba(2, 1, 10, 0.95);
   }
+  /* Wird es eng, heisst der Knopf nur "Ueber" (scripts/footer-fit.js misst und setzt .fuss-kurz) */
+  .fuss-kurz .about-rest { display: none; }
 }
 @media (max-width: 760px) {
   .topbar { padding: 6px 12px; row-gap: 4px; }
   .search-box { top: 106px; left: 12px; width: calc(100vw - 24px); }
   .control-panel { padding: 6px 12px calc(4px + env(safe-area-inset-bottom)); gap: 4px 8px; flex-wrap: wrap; }
   .ctrl-legal { width: 100%; justify-content: center; font-size: 10px; gap: 12px; }
-  .legend { left: 150px; bottom: calc(30px + env(safe-area-inset-bottom)); }
+  /* Legende direkt hinter dem Rundgang-Knopf: --tour-r ist dessen gemessene rechte Kante (scripts/footer-fit.js) */
+  .legend { left: calc(var(--tour-r, 143px) + 7px); bottom: calc(30px + env(safe-area-inset-bottom)); }
   .about { right: 12px; bottom: calc(30px + env(safe-area-inset-bottom)); }
   .label-layer { clip-path: inset(154px 0 calc(88px + env(safe-area-inset-bottom)) 0); }
+  /* Passen die drei Knoepfe auch mit kurzem "Ueber" nicht nebeneinander (grosse Schrift auf schmalem Bild),
+     ruecken Legende und "Ueber" eine Zeile hoeher. footer-fit.js setzt .fuss-zwei nur im Hochformat. */
+  .fuss-zwei .legend { left: 12px; bottom: calc(72px + env(safe-area-inset-bottom)); }
+  .fuss-zwei .about { bottom: calc(72px + env(safe-area-inset-bottom)); }
+  .fuss-zwei .status-bar { bottom: calc(110px + env(safe-area-inset-bottom)); }
+  .fuss-zwei .label-layer { clip-path: inset(154px 0 calc(128px + env(safe-area-inset-bottom)) 0); }
+  .fuss-zwei .stage::before { height: calc(113px + env(safe-area-inset-bottom)); }
 }
 /* Handy quer (IOS-C5 bis C9, 2026-10-05). Messbasis: Safari laesst im Querformat mit Adress- und Tab-Leiste etwa
    277 px Hoehe, nicht 390 px. Deshalb flache Leisten, die Suche in der Kopfzeile (scripts/topbar-search.js misst die
@@ -148,7 +161,7 @@ body.no-webgl .webgl-fallback-list { padding-bottom: 64px; }
   .search-box .search-input { height: 36px; min-height: 36px; }
   .control-panel { padding: 6px var(--quer-r) calc(6px + env(safe-area-inset-bottom)) var(--quer-l); flex-wrap: nowrap; }
   .ctrl-legal { width: auto; }
-  .legend { left: calc(var(--quer-l) + 154px); bottom: calc(7px + env(safe-area-inset-bottom)); }
+  .legend { left: calc(var(--tour-r, 147px) + 23px); bottom: calc(7px + env(safe-area-inset-bottom)); }
   .about { right: calc(var(--quer-r) + 214px); bottom: calc(7px + env(safe-area-inset-bottom)); }
   /* vh meint in Safari die Hoehe ohne Leisten: erst dvh trifft das sichtbare Bild */
   .legend-body, .about-body {

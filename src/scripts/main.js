@@ -27,9 +27,12 @@ import { afterFirstPaint, loadForceGraph } from "./force-graph-loader.js";
 import { hasWebGL } from "./webgl-support.js";
 import { createFallbackList, FALLBACK_TEXTS } from "./fallback-list.js";
 import { createTopbarSearch } from "./topbar-search.js";
+import { createFooterFit, HANDY } from "./footer-fit.js";
 
 // Handy quer: vor dem Graphen messen, damit die Suche schon beim ersten Bild in der Kopfzeile sitzt
 createTopbarSearch();
+// Handy: Knoepfe der Fussleiste nach gemessener Breite anordnen
+createFooterFit();
 
 // Spiegelt theme_default aus den Build-Configs (showcase/kompetenz), damit der
 // Fallback ohne graph.json auskommt.
@@ -106,10 +109,15 @@ async function showFallback(dataset) {
   if (brandName && graphData.metadata && graphData.metadata.title) {
     brandName.textContent = graphData.metadata.title;
   }
-  createLegend(document.getElementById("legend"), {
+  // Handy: Legende und "Ueber diese Seite" klappen an derselben Stelle auf, dort ist immer nur eines offen
+  const about = document.getElementById("about");
+  const handy = window.matchMedia(HANDY);
+  const legend = createLegend(document.getElementById("legend"), {
     dataset,
     kompetenzColors: KOMPETENZ_CATEGORY_COLORS,
+    onToggle: (open) => { if (open && about && handy.matches) about.open = false; },
   });
+  if (about) about.addEventListener("toggle", () => { if (about.open && handy.matches) legend.setOpen(false); });
 
   document.getElementById("meta-readout").textContent =
     `${graphData.nodes.length} Knoten · ${graphData.links.length} Kanten`;
