@@ -5,7 +5,7 @@
  * --search-l, --search-w und --topbar-h auf <html>. Das Layout selbst steht in styles/overview.css.
  */
 export const QUER = "(min-width: 560px) and (max-height: 500px) and (hover: none) and (pointer: coarse)";
-const MIN_BREITE = 150;
+const MIN_BREITE = 140; // darunter passt der Platzhalter "Thema suchen…" nicht mehr ganz hinein
 const ABSTAND = 12;
 
 /** Platz fuer das Suchfeld zwischen den Seitenlinks (rechte Kante) und der Datensatz-Wahl (linke Kante). */

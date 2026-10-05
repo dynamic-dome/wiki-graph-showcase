@@ -139,10 +139,10 @@ body.no-webgl .webgl-fallback-list { padding-bottom: 64px; }
   }
   .stage::before { height: var(--quer-unten); }
   .topbar { flex-wrap: nowrap; padding: 6px var(--quer-r) 6px var(--quer-l); }
-  .topbar-right { order: 0; width: auto; }
+  .topbar-right { order: 0; width: auto; gap: 8px; }
   .brand, .parent-link-text { display: none; }
   .dataset-btn, .tour-btn { min-height: 36px; }
-  .view-options > summary { min-height: 36px; padding: 0.35rem 0.8rem; }
+  .view-options > summary { min-height: 36px; padding: 0.35rem 0.5rem; }
   /* Ohne Platz in der Kopfzeile (und in der Liste ohne WebGL) bleibt die Suche in einer eigenen Zeile darunter */
   .search-box { top: calc(var(--topbar-h, 54px) + 6px); left: var(--quer-l); width: min(560px, calc(100vw - var(--quer-l) - var(--quer-r))); }
   .search-box .search-input { height: 36px; min-height: 36px; }

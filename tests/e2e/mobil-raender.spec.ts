@@ -73,7 +73,7 @@ for (const [w, h] of HANDYS) {
       expect(schneidet(X["#search-input"], X[".site-links"]), "Suche x Seitenlinks").toBe(false);
       expect(schneidet(X["#search-input"], X[".topbar-right"]), "Suche x Datensatz-Wahl").toBe(false);
       expect(X["#search-input"].b).toBeLessThanOrEqual(B[".topbar"].b);
-      expect(X["#search-input"].w).toBeGreaterThanOrEqual(150);
+      expect(X["#search-input"].w).toBeGreaterThanOrEqual(140);
     } else {
       expect(B["#search-box"].t).toBeGreaterThanOrEqual(B[".topbar"].b - 1);
     }
