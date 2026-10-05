@@ -74,6 +74,13 @@ for (const [w, h] of HANDYS) {
       expect(schneidet(X["#search-input"], X[".topbar-right"]), "Suche x Datensatz-Wahl").toBe(false);
       expect(X["#search-input"].b).toBeLessThanOrEqual(B[".topbar"].b);
       expect(X["#search-input"].w).toBeGreaterThanOrEqual(140);
+      // Die Kopfzeile liegt im Stapel ueber der Buehne: ein Tipp muss trotzdem das Suchfeld treffen
+      const getroffen = await m.page.evaluate(() => {
+        const e = document.querySelector("#search-input")!;
+        const r = e.getBoundingClientRect();
+        return document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2) === e;
+      });
+      expect(getroffen, "Suchfeld in der Kopfzeile antippbar").toBe(true);
     } else {
       expect(B["#search-box"].t).toBeGreaterThanOrEqual(B[".topbar"].b - 1);
     }
@@ -127,8 +134,9 @@ for (const [w, h] of QUER_MIT_LEISTEN) {
     await m.page.waitForTimeout(500); // Einfahren dauert 0,3 s
     const r = (await modal.boundingBox())!;
     const topbar = (m.boxes as Record<string, Box>)[".topbar"];
-    expect(r.y).toBeGreaterThanOrEqual(topbar.b - 1);
-    expect(r.y + r.height).toBeGreaterThanOrEqual(m.vh - 1);
+    // beidseitig: beginnt an der Kopfzeile und endet am unteren Bildrand (Codex-Verifier TEST-1)
+    expect(Math.abs(r.y - topbar.b)).toBeLessThanOrEqual(1);
+    expect(Math.abs(r.y + r.height - m.vh)).toBeLessThanOrEqual(1);
     expect(r.x + r.width).toBeLessThanOrEqual(m.vw + 1);
     expect(r.x).toBeGreaterThanOrEqual(m.vw * 0.4); // links bleibt der Graph sichtbar
     const s = (await m.page.locator("#search-input").boundingBox())!;
