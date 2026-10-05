@@ -84,6 +84,13 @@ body.no-webgl .webgl-fallback-list { padding-bottom: 64px; }
 /* Kleine Handys: der Markenname weicht den vier Zielen (Glyph bleibt, Datensatz-Wahl und H1 nennen die Seite) */
 @media (max-width: 480px) { .brand-name { display: none; } }
 
+/* Fokus-Zeile (IOS-C6, 2026-10-05): lag nach dem Antippen eines Punktes in jeder Groesse ueber "Rundgang starten".
+   Jetzt in der Mitte der Fusszeile, auf Handys als eine Zeile ueber den Fussknoepfen (Bloecke unten). */
+.status-bar {
+  left: 50%; bottom: 32px; transform: translateX(-50%); max-width: calc(100vw - 460px);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; pointer-events: none;
+}
+
 /* Handy: schlanke Raender (IOS-C3, 2026-10-04). Graph in der Mitte frei, Bedienung in schmalen Leisten oben und unten.
    Die Einfuehrung bleibt fuer Screenreader und Suche im HTML (h1, WEB-037), ist auf dem Handy aber unsichtbar.
    Maus-Geraete ueber 760 px bleiben unveraendert (tests/e2e/mobil-raender.spec.ts). */
@@ -106,6 +113,10 @@ body.no-webgl .webgl-fallback-list { padding-bottom: 64px; }
     background: linear-gradient(0deg, rgba(2, 1, 10, 0.95), rgba(2, 1, 10, 0));
   }
   body.plate-mode .stage::before { display: none; }
+  .status-bar {
+    left: max(12px, env(safe-area-inset-left)); bottom: calc(70px + env(safe-area-inset-bottom)); transform: none;
+    z-index: 21; max-width: calc(100vw - 24px); font-size: 10px; text-shadow: 0 0 6px rgba(2, 1, 10, 0.95);
+  }
 }
 @media (max-width: 760px) {
   .topbar { padding: 6px 12px; row-gap: 4px; }
@@ -114,19 +125,72 @@ body.no-webgl .webgl-fallback-list { padding-bottom: 64px; }
   .ctrl-legal { width: 100%; justify-content: center; font-size: 10px; gap: 12px; }
   .legend { left: 150px; bottom: calc(30px + env(safe-area-inset-bottom)); }
   .about { right: 12px; bottom: calc(30px + env(safe-area-inset-bottom)); }
-  .label-layer { clip-path: inset(154px 0 calc(80px + env(safe-area-inset-bottom)) 0); }
+  .label-layer { clip-path: inset(154px 0 calc(88px + env(safe-area-inset-bottom)) 0); }
 }
-/* min-width: ein Hochformat mit wenig Hoehe (Tastatur offen, Splitscreen) behaelt das Hochformat-Layout */
+/* Handy quer (IOS-C5 bis C9, 2026-10-05). Messbasis: Safari laesst im Querformat mit Adress- und Tab-Leiste etwa
+   277 px Hoehe, nicht 390 px. Deshalb flache Leisten, die Suche in der Kopfzeile (scripts/topbar-search.js misst die
+   Luecke und setzt .search-in-topbar, --search-l, --search-w, --topbar-h), die Erklaerung ueber die ganze Hoehe unter
+   der Kopfzeile, Legende und "Ueber" scrollen innen, seitlich gelten die Sicherheitsabstaende (Notch, runde Ecken).
+   min-width: ein Hochformat mit wenig Hoehe (Tastatur offen, Splitscreen) behaelt das Hochformat-Layout. */
 @media (min-width: 560px) and (max-height: 500px) and (hover: none) and (pointer: coarse) {
-  .stage::before { height: calc(56px + env(safe-area-inset-bottom)); }
-  .topbar { flex-wrap: nowrap; padding: 6px 16px; }
-  .topbar-right { order: 0; width: auto; }
-  .brand { display: none; }
-  .search-box { top: 68px; left: 16px; width: min(560px, calc(100vw - 32px)); }
-  .search-box .search-input { height: 38px; }
-  .control-panel { padding: 6px 16px calc(6px + env(safe-area-inset-bottom)); flex-wrap: nowrap; }
+  :root {
+    --quer-l: max(16px, env(safe-area-inset-left)); --quer-r: max(16px, env(safe-area-inset-right));
+    --quer-unten: calc(48px + env(safe-area-inset-bottom));
+  }
+  .stage::before { height: var(--quer-unten); }
+  .topbar { flex-wrap: nowrap; padding: 6px var(--quer-r) 6px var(--quer-l); }
+  .topbar-right { order: 0; width: auto; gap: 8px; }
+  .brand, .parent-link-text { display: none; }
+  .dataset-btn, .tour-btn { min-height: 36px; }
+  .view-options > summary { min-height: 36px; padding: 0.35rem 0.5rem; }
+  /* Ohne Platz in der Kopfzeile (und in der Liste ohne WebGL) bleibt die Suche in einer eigenen Zeile darunter */
+  .search-box { top: calc(var(--topbar-h, 54px) + 6px); left: var(--quer-l); width: min(560px, calc(100vw - var(--quer-l) - var(--quer-r))); }
+  .search-box .search-input { height: 36px; min-height: 36px; }
+  .control-panel { padding: 6px var(--quer-r) calc(6px + env(safe-area-inset-bottom)) var(--quer-l); flex-wrap: nowrap; }
   .ctrl-legal { width: auto; }
-  .legend { left: 170px; bottom: calc(8px + env(safe-area-inset-bottom)); }
-  .about { right: 230px; bottom: calc(8px + env(safe-area-inset-bottom)); }
-  .label-layer { clip-path: inset(118px 0 calc(56px + env(safe-area-inset-bottom)) 0); }
+  .legend { left: calc(var(--quer-l) + 154px); bottom: calc(7px + env(safe-area-inset-bottom)); }
+  .about { right: calc(var(--quer-r) + 214px); bottom: calc(7px + env(safe-area-inset-bottom)); }
+  /* vh meint in Safari die Hoehe ohne Leisten: erst dvh trifft das sichtbare Bild */
+  .legend-body, .about-body {
+    max-height: calc(100vh - var(--topbar-h, 54px) - 56px - env(safe-area-inset-bottom));
+    max-height: calc(100dvh - var(--topbar-h, 54px) - 56px - env(safe-area-inset-bottom));
+    overflow-y: auto; overscroll-behavior: contain;
+  }
+  .legend-body > * { flex: none; }
+  .status-bar { left: var(--quer-l); bottom: calc(var(--quer-unten) + 2px); max-width: calc(100vw - var(--quer-l) - var(--quer-r)); }
+  .label-layer { clip-path: inset(calc(var(--topbar-h, 54px) + 48px) 0 calc(var(--quer-unten) + 18px) 0); }
+  /* Erklaerung: rechts, von der Kopfzeile bis zum unteren Rand, scrollt innen.
+     Fast deckend, weil sie hier ueber "Ueber diese Seite" und den Rechtslinks liegt (Farbe wie --surface-strong). */
+  .modal {
+    background: rgba(9, 12, 22, 0.97);
+    top: var(--topbar-h, 54px); right: 0; bottom: 0; left: auto; height: auto;
+    width: min(calc(338px + max(22px, env(safe-area-inset-right))), 58vw);
+    padding: 16px max(22px, env(safe-area-inset-right)) calc(16px + env(safe-area-inset-bottom)) 20px;
+    border-top: 0; border-left: 1px solid var(--surface-border-color);
+    transform: translateX(110%); overscroll-behavior: contain;
+  }
+  .modal.open { transform: translateX(0); }
+
+  /* Suche in der Kopfzeile. Die Buehne malt den Verlauf der Kopfzeile, sonst laege deren Hintergrund ueber dem Suchfeld */
+  .search-in-topbar body:not(.no-webgl) .topbar { background: none; }
+  .search-in-topbar body:not(.no-webgl) .stage::before {
+    top: 0; height: auto;
+    background:
+      linear-gradient(180deg, rgba(2, 1, 10, 0.92) 55%, rgba(2, 1, 10, 0)) top / 100% calc(var(--topbar-h, 54px) + 12px) no-repeat,
+      linear-gradient(0deg, rgba(2, 1, 10, 0.95), rgba(2, 1, 10, 0)) bottom / 100% var(--quer-unten) no-repeat;
+  }
+  .search-in-topbar body:not(.no-webgl) .search-box {
+    top: calc((var(--topbar-h, 54px) - 36px) / 2); left: var(--search-l); width: var(--search-w);
+  }
+  .search-in-topbar body:not(.no-webgl) .search-results {
+    width: min(420px, calc(100vw - var(--search-l) - var(--quer-r)));
+    max-height: calc(100dvh - var(--topbar-h, 54px) - 12px);
+  }
+  .search-in-topbar body:not(.no-webgl) .label-layer {
+    clip-path: inset(calc(var(--topbar-h, 54px) + 4px) 0 calc(var(--quer-unten) + 18px) 0);
+  }
+}
+/* Schmales Querformat (kleine Handys): "Darstellung" weicht der Suche, Farben und Leuchten bleiben im Hochformat erreichbar */
+@media (min-width: 560px) and (max-width: 759px) and (max-height: 500px) and (hover: none) and (pointer: coarse) {
+  .view-options { display: none; }
 }

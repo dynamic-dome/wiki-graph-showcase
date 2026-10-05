@@ -26,6 +26,10 @@ import "./three-guard.js"; // THREE-Revision-Tripwire (Vendor r168 == Bundle r16
 import { afterFirstPaint, loadForceGraph } from "./force-graph-loader.js";
 import { hasWebGL } from "./webgl-support.js";
 import { createFallbackList, FALLBACK_TEXTS } from "./fallback-list.js";
+import { createTopbarSearch } from "./topbar-search.js";
+
+// Handy quer: vor dem Graphen messen, damit die Suche schon beim ersten Bild in der Kopfzeile sitzt
+createTopbarSearch();
 
 // Spiegelt theme_default aus den Build-Configs (showcase/kompetenz), damit der
 // Fallback ohne graph.json auskommt.
