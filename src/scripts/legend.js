@@ -68,6 +68,7 @@ export function createLegend(rootEl, opts = {}) {
     body.hidden = !v;
     toggle.setAttribute("aria-expanded", v ? "true" : "false");
     rootEl.classList.toggle("open", v);
+    if (opts.onToggle) opts.onToggle(v);
   }
 
   toggle.addEventListener("click", () => setOpen(!open));

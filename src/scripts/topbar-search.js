@@ -37,6 +37,12 @@ export function createTopbarSearch(root = document.documentElement) {
   measure();
   quer.addEventListener("change", measure);
   window.addEventListener("resize", measure);
+  // IOS-C10: Safari setzt die seitlichen Sicherheitsabstaende nach dem Drehen erst nach dem resize-Ereignis.
+  // Deshalb misst jede Groessenaenderung der Kopfzeile (ihr Polster) und ihrer beiden Gruppen neu.
+  if (window.ResizeObserver) {
+    const ro = new ResizeObserver(measure);
+    for (const el of [topbar, links, right]) ro.observe(el);
+  }
   // Die Breiten haengen an den Schriften: nach dem Laden neu messen
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(measure);
 }

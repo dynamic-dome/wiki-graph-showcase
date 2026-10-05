@@ -188,6 +188,29 @@ for (const [w, h, touch] of [[844, 277, true], [844, 390, true], [390, 844, true
   });
 }
 
+// IOS-C10 (2026-10-05, echtes iPhone): Nach dem Drehen ins Querformat ragte "Thema suchen" in "Kontakt". Safari setzt
+// die seitlichen Sicherheitsabstaende (env(safe-area-inset-*)) erst nach dem resize-Ereignis, die gemessene Luecke war
+// dann veraltet. Nachgestellt ueber die Variablen --quer-l/--quer-r: sie aendern das Polster ohne resize-Ereignis.
+for (const [w, h] of QUER_MIT_LEISTEN) {
+  test(`Handy quer ${w}x${h}: Sicherheitsabstaende, die erst nach dem Messen greifen, verschieben Suche und Legende mit`, async ({ browser }) => {
+    const m = await messen(browser, w, h, true);
+    await m.page.addStyleTag({ content: ":root{--quer-l:47px!important;--quer-r:47px!important}" });
+    const konflikte = () => {
+      const r = (s: string) => document.querySelector(s)!.getBoundingClientRect();
+      const x = (a: DOMRect, b: DOMRect) => a.left < b.right - 0.5 && b.left < a.right - 0.5 && a.top < b.bottom - 0.5 && b.top < a.bottom - 0.5;
+      const out: string[] = [];
+      if (r(".site-links").left < 46) out.push("Abstand links greift nicht");
+      if (x(r("#search-input"), r(".site-links"))) out.push("Suche x Seitenlinks");
+      if (x(r("#search-input"), r(".topbar-right"))) out.push("Suche x Datensatz-Wahl");
+      if (x(r("#legend-toggle"), r(".tour-btn"))) out.push("Legende x Rundgang");
+      if (x(r("#legend-toggle"), r(".about-toggle"))) out.push("Legende x Ueber");
+      return out;
+    };
+    await expect.poll(() => m.page.evaluate(konflikte)).toEqual([]);
+    await m.ctx.close();
+  });
+}
+
 // Fussleiste im Hochformat (2026-10-05): "Rundgang", "Legende" und "Ueber" haengen in verschiedenen Stapelkontexten
 // und duerfen sich bei keiner Breite ueberlappen, auch nicht waehrend des Rundgangs ("Rundgang anhalten" ist breiter)
 // oder mit vergroesserter Schrift. Rueckgabe: Liste der Ueberlappungen und Knoepfe ausserhalb des Bildes.
