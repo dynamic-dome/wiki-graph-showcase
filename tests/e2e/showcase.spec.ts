@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect, Page } from "@playwright/test";
 import { spawn, ChildProcess } from "child_process";
 import { createServer } from "net";
 
@@ -66,6 +66,17 @@ function url(path = "/"): string {
   return `${resolvedBaseUrl}${path}`;
 }
 
+// Seit "Stufe 2" liegen Theme-Schalter, Meta-Anzeige und Leuchten-Regler im
+// eingeklappten Menue "Darstellung" (<details id="view-options">): vor jedem
+// Zugriff auf Bedienelemente oeffnen.
+async function openViewOptions(page: Page): Promise<void> {
+  const menu = page.locator("#view-options");
+  if (!(await menu.evaluate((el: HTMLDetailsElement) => el.open))) {
+    await menu.locator("summary").click();
+  }
+  await expect(menu).toHaveJSProperty("open", true);
+}
+
 test("loads the showcase page", async ({ page }) => {
   const errors: string[] = [];
   page.on("pageerror", (err) => errors.push(err.message));
@@ -76,9 +87,10 @@ test("loads the showcase page", async ({ page }) => {
   // Wait for at least one node to be rendered (3d-force-graph injects a canvas)
   await expect(page.locator("#graph-container canvas")).toBeVisible({ timeout: 15_000 });
 
-  // Should display the node count from graph.json
-  const meta = await page.locator("#meta-readout").innerText();
-  expect(meta).toMatch(/\d+ Knoten/);
+  // Should display the node count from graph.json. The readout sits inside the
+  // collapsed "Darstellung" menu (not visible), so read it via textContent
+  // (toHaveText) instead of innerText, and let it retry until the data is in.
+  await expect(page.locator("#meta-readout")).toHaveText(/\d+ Knoten/);
 
   expect(errors).toEqual([]);
 });
@@ -87,6 +99,7 @@ test("slider value updates the readout and URL", async ({ page }) => {
   await page.goto(url("/"));
   await page.locator("#graph-container canvas").waitFor({ state: "visible", timeout: 15_000 });
 
+  await openViewOptions(page);
   const slider = page.locator("#gold-slider");
   await slider.fill("80");
   // Use input event by setting value then dispatching
@@ -103,6 +116,7 @@ test("theme toggle switches data-theme attribute", async ({ page }) => {
   await page.goto(url("/"));
   await page.locator("#graph-container canvas").waitFor({ state: "visible", timeout: 15_000 });
 
+  await openViewOptions(page);
   const before = await page.evaluate(() => document.documentElement.getAttribute("data-theme"));
   await page.locator("#theme-toggle").click();
   const after = await page.evaluate(() => document.documentElement.getAttribute("data-theme"));

@@ -74,8 +74,9 @@ test("kompetenz dataset renders a graph", async ({ page }) => {
 
   // Brand name reflects the kompetenz dataset metadata title
   await expect(page.locator("#brand-name")).toHaveText(/Kompetenz-Wiki/);
-  const meta = await page.locator("#meta-readout").innerText();
-  expect(meta).toMatch(/\d+ Knoten/);
+  // #meta-readout sits inside the collapsed "Darstellung" menu (not visible):
+  // toHaveText reads textContent and retries until the data is in.
+  await expect(page.locator("#meta-readout")).toHaveText(/\d+ Knoten/);
 
   expect(errors).toEqual([]);
 });
