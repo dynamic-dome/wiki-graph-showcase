@@ -72,15 +72,17 @@ test.describe("C2: Liste statt Stacktrace", () => {
     await withoutWebGL(page);
     await page.goto(url("/?dataset=kompetenz"));
     await expect(page.locator("#webgl-fallback")).toBeVisible();
-    const all = await page.locator("#fallback-list button").count();
-    expect(all).toBeGreaterThan(100);
+    // count() right after toBeVisible races the async load of index.json
+    // (0 instead of ~259, list full after 120-230 ms): poll until it is in.
+    const rows = page.locator("#fallback-list button");
+    await expect.poll(() => rows.count()).toBeGreaterThan(100);
+    const all = await rows.count();
     await expect(page.locator("body pre")).toHaveCount(0);
     await expect(page.locator("#graph-container canvas")).toHaveCount(0);
 
     await page.locator("#fallback-filter").fill("mcp");
-    const filtered = await page.locator("#fallback-list button").count();
-    expect(filtered).toBeGreaterThan(0);
-    expect(filtered).toBeLessThan(all);
+    // one poll on both bounds: filtered AND non-empty at the same moment
+    await expect.poll(async () => { const n = await rows.count(); return n > 0 && n < all; }).toBe(true);
 
     await page.locator("#fallback-list button").first().click();
     await expect(page.locator("#modal")).toHaveClass(/open/);
