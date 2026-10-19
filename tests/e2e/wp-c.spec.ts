@@ -81,8 +81,8 @@ test.describe("C2: Liste statt Stacktrace", () => {
     await expect(page.locator("#graph-container canvas")).toHaveCount(0);
 
     await page.locator("#fallback-filter").fill("mcp");
-    await expect.poll(() => rows.count()).toBeGreaterThan(0);
-    await expect.poll(() => rows.count()).toBeLessThan(all);
+    // one poll on both bounds: filtered AND non-empty at the same moment
+    await expect.poll(async () => { const n = await rows.count(); return n > 0 && n < all; }).toBe(true);
 
     await page.locator("#fallback-list button").first().click();
     await expect(page.locator("#modal")).toHaveClass(/open/);
