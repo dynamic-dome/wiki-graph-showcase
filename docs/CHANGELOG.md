@@ -1,5 +1,13 @@
 # Changelog
 
+## 2026-10-20 — CSP für Cloudflare Web Analytics
+
+- `src/_headers`: `script-src` erlaubt zusätzlich `https://static.cloudflareinsights.com`,
+  `connect-src` `https://cloudflareinsights.com` (cookieloses Messskript, von Cloudflare Pages
+  eingefügt, sobald Web Analytics im Projekt aktiv ist). Hash der Import-Map unverändert.
+- Verifikation: 88 pytest grün, Build + `pre_deploy_sweep` ohne Befund, `tools.csp_check` gegen
+  die Vorschau OK. Datenschutz steht auf der Hauptdomain.
+
 ## 2026-10-02 — WP C (Stufe 2): schnellere, robustere Landeseite
 
 - 3d-force-graph lädt nach dem ersten Paint; die Einleitung steht sofort.
