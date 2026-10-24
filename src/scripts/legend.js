@@ -59,7 +59,7 @@ export function createLegend(rootEl, opts = {}) {
     const note = document.createElement("p");
     note.className = "legend-note";
     note.textContent =
-      "Blassere Knoten liegen weiter vom Fokus. Der Gold-Mode-Regler steuert Puls und Bruecken-Leuchten.";
+      "Blassere Knoten liegen weiter vom Fokus. Der Gold-Mode-Regler steuert Puls und Brücken-Leuchten.";
     body.appendChild(note);
   }
 

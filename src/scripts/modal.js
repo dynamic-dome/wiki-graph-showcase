@@ -16,7 +16,7 @@ const VSTATUS_LABELS = {
   verified: "verifiziert",
   partially_verified: "teilweise verifiziert",
   unverified: "unverifiziert",
-  superseded: "ueberholt",
+  superseded: "überholt",
 };
 
 // The curated node text carries **bold** markdown. It used to be written via
