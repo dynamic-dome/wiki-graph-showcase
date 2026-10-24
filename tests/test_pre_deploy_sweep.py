@@ -15,6 +15,8 @@ def _write_minimal_dist(root: Path) -> None:
     _write(root / "index.html", "<!doctype html><title>Knowledge Nebula</title>")
     _write(root / "404.html", '<!doctype html><meta name="robots" content="noindex"><title>404</title>')
     _write(root / "_headers", "/*\n  X-Frame-Options: DENY\n")
+    for icon in pre_deploy_sweep.FAVICON_FILES:
+        (root / icon).write_bytes(b"icon")
     graph = {
         "built_at": "2026-05-17T00:00:00+00:00",
         "nodes": [

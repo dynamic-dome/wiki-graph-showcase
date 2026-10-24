@@ -15,12 +15,17 @@ from pathlib import Path
 from typing import Iterable
 
 
+# Favicon-Satz der Hauptdomain (#10034). Ohne echte Dateien liefert Cloudflare Pages /favicon.ico
+# als index.html mit 200 text/html. Quelle der Liste: tools/build.py (FAVICON_FILES).
+FAVICON_FILES = ("favicon.ico", "favicon-32.png", "favicon-180.png", "favicon-192.png")
+
 REQUIRED_FILES = (
     "index.html",
     # Ohne 404.html liefert Cloudflare Pages jede unbekannte URL als index.html mit 200 (Soft-404, #9917 K1).
     "404.html",
     "_headers",
     "assets/graph.json",
+    *FAVICON_FILES,
 )
 
 GENERATED_MANIFEST = "assets/build-manifest.json"
