@@ -1,5 +1,17 @@
 # Changelog
 
+## 2026-10-24 — Echte 404 statt Soft-404 (#9917 K1)
+
+- Vorher: jede unbekannte URL (`/gibt-es-nicht`) lieferte HTTP 200 mit der Startseite, weil Cloudflare
+  Pages ohne `404.html` auf `index.html` zurückfällt. Jetzt liegt `src/404.html` (noindex, eigenes
+  `styles/not-found.css`, absolute Asset-Pfade, keine Inline-Skripte wegen der CSP) im Ausgabeordner;
+  Pages antwortet damit mit Status 404. Die App nutzt nur Query-Parameter, kein Pfad-Routing, der
+  Rückfall wird also nicht gebraucht.
+- `tools/pre_deploy_sweep.py` verlangt `404.html` (Pflichtdatei) und prüft das `noindex`;
+  `tools/preview_server.py` liefert die Datei wie Pages mit Status 404 aus.
+- README beschreibt beide Datensätze statt nur der Astrophysik (K5, GitHub-Beschreibung bleibt Owner).
+- Live vor dem Deploy: `/gibt-es-nicht` → 200 (gemessen 24.10.2026). Nach dem Deploy erwartet 404.
+
 ## 2026-10-24 — Three.js nur noch einmal laden (#9603)
 
 - Das UMD-Bundle von 3d-force-graph (707 KB) brachte eine eigene THREE-Kopie mit; zusammen mit der

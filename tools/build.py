@@ -199,13 +199,16 @@ def _stamp_sitemap_lastmod(path: Path, today: str) -> bool:
 
 
 def _copy_frontend_assets(src: Path, out: Path, today: str | None = None) -> None:
-    """Copy src/index.html, src/_headers, src/robots.txt, src/sitemap.xml, src/styles/, src/scripts/, src/vendor/ to dist/.
+    """Copy src/index.html, src/404.html, src/_headers, src/robots.txt, src/sitemap.xml, src/styles/, src/scripts/, src/vendor/ to dist/.
+
+    404.html: Cloudflare Pages liefert sie mit Status 404 fuer unbekannte URLs; fehlt sie, faellt Pages
+    auf index.html mit 200 zurueck (Soft-404, #9917 K1).
 
     Die Sitemap in dist/ bekommt das Build-Datum (UTC) als <lastmod>; src/ bleibt unveraendert.
     """
     import shutil
     # root-level files go to dist/ root (real files beat the Pages SPA catch-all)
-    for root_file in ("index.html", "_headers", "robots.txt", "sitemap.xml"):
+    for root_file in ("index.html", "404.html", "_headers", "robots.txt", "sitemap.xml"):
         src_file = src / root_file
         if src_file.is_file():
             shutil.copy2(src_file, out / root_file)

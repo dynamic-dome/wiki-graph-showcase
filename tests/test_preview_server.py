@@ -50,3 +50,23 @@ def test_server_serves_headers_js_mime_and_404(tmp_path: Path) -> None:
     finally:
         server.shutdown()
         server.server_close()
+
+
+def test_server_serves_404_html_with_status_404(tmp_path: Path) -> None:
+    (tmp_path / "index.html").write_text("<!doctype html><title>start</title>", encoding="utf-8")
+    (tmp_path / "404.html").write_text("<!doctype html><title>nicht gefunden</title>", encoding="utf-8")
+
+    server = preview_server.make_server(tmp_path, port=0)
+    port = server.server_address[1]
+    thread = threading.Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    try:
+        try:
+            urllib.request.urlopen(f"http://127.0.0.1:{port}/tief/gibt-es-nicht")
+            raise AssertionError("erwartet 404")
+        except urllib.error.HTTPError as err:
+            assert err.code == 404
+            assert b"nicht gefunden" in err.read()
+    finally:
+        server.shutdown()
+        server.server_close()

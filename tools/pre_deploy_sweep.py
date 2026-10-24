@@ -17,6 +17,8 @@ from typing import Iterable
 
 REQUIRED_FILES = (
     "index.html",
+    # Ohne 404.html liefert Cloudflare Pages jede unbekannte URL als index.html mit 200 (Soft-404, #9917 K1).
+    "404.html",
     "_headers",
     "assets/graph.json",
 )
@@ -133,6 +135,12 @@ def run(dist: Path, write_manifest: bool = False) -> tuple[int, dict]:
     for rel in REQUIRED_FILES:
         if not (dist / rel).is_file():
             findings.append(Finding("missing_required_file", rel, "required deploy file missing"))
+
+    not_found = dist / "404.html"
+    if not_found.is_file() and not re.search(
+        r"<meta[^>]+name=[\"']robots[\"'][^>]*noindex", not_found.read_text(encoding="utf-8"), re.IGNORECASE
+    ):
+        findings.append(Finding("404_not_noindex", "404.html", "404.html muss <meta name=\"robots\" content=\"noindex\"> tragen"))
 
     scan_files = []
     for p in dist.rglob("*"):

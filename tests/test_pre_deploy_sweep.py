@@ -13,6 +13,7 @@ def _write(path: Path, body: str) -> None:
 
 def _write_minimal_dist(root: Path) -> None:
     _write(root / "index.html", "<!doctype html><title>Knowledge Nebula</title>")
+    _write(root / "404.html", '<!doctype html><meta name="robots" content="noindex"><title>404</title>')
     _write(root / "_headers", "/*\n  X-Frame-Options: DENY\n")
     graph = {
         "built_at": "2026-05-17T00:00:00+00:00",
@@ -145,3 +146,26 @@ def test_pre_deploy_sweep_scans_dataset_subdir_nodes(tmp_path: Path) -> None:
     leaked = [f for f in manifest["findings"]
               if "kompetenz" in f["path"] and f["check"] == "markdown_blockquote_meta"]
     assert leaked
+
+
+def test_pre_deploy_sweep_fails_without_404_html(tmp_path: Path) -> None:
+    """Ohne 404.html wuerde Cloudflare Pages jede unbekannte URL mit 200 beantworten (Soft-404, #9917 K1)."""
+    dist = tmp_path / "dist"
+    _write_minimal_dist(dist)
+    (dist / "404.html").unlink()
+
+    code, manifest = pre_deploy_sweep.run(dist)
+
+    assert code == 1
+    assert any(f["check"] == "missing_required_file" and f["path"] == "404.html" for f in manifest["findings"])
+
+
+def test_pre_deploy_sweep_fails_when_404_html_is_indexable(tmp_path: Path) -> None:
+    dist = tmp_path / "dist"
+    _write_minimal_dist(dist)
+    _write(dist / "404.html", "<!doctype html><title>404</title>")
+
+    code, manifest = pre_deploy_sweep.run(dist)
+
+    assert code == 1
+    assert any(f["check"] == "404_not_noindex" for f in manifest["findings"])

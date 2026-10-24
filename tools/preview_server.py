@@ -3,7 +3,7 @@
 `python -m http.server` ignoriert _headers: ein CSP-Bruch (z. B. veralteter
 Import-Map-Hash) bleibt lokal unsichtbar und fällt erst live auf. Dieser Server
 spielt den `/*`-Block der _headers auf jede Antwort aus. Kein SPA-Rückfall:
-unbekannte Pfade antworten 404. Bindet nur an 127.0.0.1.
+unbekannte Pfade antworten 404 (mit dem Inhalt von dist/404.html, falls vorhanden). Bindet nur an 127.0.0.1.
 
     python -m tools.preview_server --dist dist --port 8051
 """
@@ -56,6 +56,20 @@ def make_server(dist: Path, port: int, host: str = "127.0.0.1") -> ThreadingHTTP
             for name, value in headers.items():
                 self.send_header(name, value)
             super().end_headers()
+
+        def send_error(self, code: int, message: str | None = None, explain: str | None = None) -> None:
+            # Wie Cloudflare Pages: unbekannter Pfad -> Status 404 mit dem Inhalt von 404.html.
+            page = dist / "404.html"
+            if code == 404 and page.is_file():
+                body = page.read_bytes()
+                self.send_response(404)
+                self.send_header("Content-Type", "text/html; charset=utf-8")
+                self.send_header("Content-Length", str(len(body)))
+                self.end_headers()
+                if self.command != "HEAD":
+                    self.wfile.write(body)
+                return
+            super().send_error(code, message, explain)
 
         def log_message(self, fmt: str, *args: object) -> None:  # ruhig
             pass

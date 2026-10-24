@@ -208,6 +208,7 @@ def test_build_copies_frontend_assets(mini_vault_plus_outside_link: Path, tmp_pa
     (src_root / "scripts").mkdir(parents=True)
     (src_root / "vendor").mkdir(parents=True)
     (src_root / "index.html").write_text("<!doctype html><h1>hi</h1>", encoding="utf-8")
+    (src_root / "404.html").write_text("<!doctype html><h1>404</h1>", encoding="utf-8")
     (src_root / "_headers").write_text("/*\n  X-Frame-Options: DENY\n", encoding="utf-8")
     (src_root / "styles" / "base.css").write_text("body{}", encoding="utf-8")
     (src_root / "scripts" / "main.js").write_text("// main", encoding="utf-8")
@@ -220,6 +221,7 @@ def test_build_copies_frontend_assets(mini_vault_plus_outside_link: Path, tmp_pa
     build.run(cfg, out)
 
     assert (out / "index.html").is_file()
+    assert (out / "404.html").is_file()  # Pages: echte 404 statt Soft-404 (#9917 K1)
     assert (out / "_headers").is_file()
     assert "X-Frame-Options" in (out / "_headers").read_text(encoding="utf-8")
     assert (out / "assets" / "styles" / "base.css").is_file()
