@@ -33,6 +33,16 @@ GENERATED_MANIFEST = "assets/build-manifest.json"
 RAW_PATTERNS = (
     ("internal_path", re.compile(r"(?:(?<![A-Za-z])[A-Za-z]:[\\/]|/Users/|\\Users\\)")),
     ("private_marker", re.compile(r"\bprivate\s*:\s*true\b", re.IGNORECASE)),
+    # Pipeline-Jargon aus dem Vault-Betrieb (#10033): Rechercherunden ("Welle 7", "Welle-7-Quellen"),
+    # Loop-Namen ("Loop B", "Loop-B-Cluster"), "Vault-Gap" und Cluster-Ids im Fliesstext
+    # ("Cluster `ai-regulation-privacy-2026`") gehoeren in die Quelle des Vaults, nicht auf die oeffentliche Seite.
+    # Die Quelle wird geaendert (kompetenz-wiki), nie der Build.
+    ("pipeline_jargon", re.compile(
+        r"\bWelle[ -]\d+"
+        r"|\bLoop[ -][A-Z]\b"
+        r"|\b[Vv]ault-[Gg]ap\b"
+        r"|\b[Cc]luster\s+`[a-z0-9-]+`"
+    )),
     # Secret detection targets credential KEYS/ASSIGNMENTS, not the bare word
     # "token" — in an AI vault "Token-Budget" / "Pay-per-Token" is vocabulary,
     # not a leak. api(_/-)key / private(_/-)key (also no-separator apikey) are

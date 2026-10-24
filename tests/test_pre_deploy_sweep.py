@@ -171,3 +171,66 @@ def test_pre_deploy_sweep_fails_when_404_html_is_indexable(tmp_path: Path) -> No
 
     assert code == 1
     assert any(f["check"] == "404_not_noindex" for f in manifest["findings"])
+
+
+JARGON_SAMPLES = [
+    "Welle 7 zeichnet die Entwicklung nach",
+    "These der Welle-8-Quellen: Der Bauboom",
+    "Cluster-Welle 2 von 4",
+    "ausgehend aus dem Loop-B-Cluster",
+    "(Loop B, Welle 13)",
+    "Schliesst den groessten 2026-05-11-Vault-Gap",
+    "Lage der Energie, Cluster `ai-infrastructure-energy-2026`.",
+]
+
+CLEAN_SAMPLES = [
+    "Human-in-the-Loop (HITL) und Closed-Loop Cooling",
+    "Die Gravitationswelle 5 Sekunden später",
+    "wiki/concepts/construction-vs-operations-jobs-gap",
+    "Ein Cluster aus 384 Chips, Rechencluster der Hyperscaler",
+    "Der Loop läuft weiter, der Gap bleibt offen",
+]
+
+
+def _dist_with_node_text(tmp_path: Path, text: str) -> Path:
+    dist = tmp_path / "dist"
+    _write_minimal_dist(dist)
+    _write(
+        dist / "assets" / "kompetenz" / "nodes" / "wiki__topics__x.json",
+        json.dumps({"title": "X", "essence": text}),
+    )
+    return dist
+
+
+def test_sweep_flags_pipeline_jargon_in_public_node_text(tmp_path: Path) -> None:
+    """#10033: Welle N, Loop B, Vault-Gap und Cluster-Ids gehoeren in die Vault-Quelle, nicht auf die Seite."""
+    for sample in JARGON_SAMPLES:
+        dist = _dist_with_node_text(tmp_path / str(abs(hash(sample))), sample)
+
+        code, manifest = pre_deploy_sweep.run(dist)
+
+        assert code == 1, sample
+        assert any(
+            f["check"] == "pipeline_jargon" and f["path"].endswith("wiki__topics__x.json")
+            for f in manifest["findings"]
+        ), sample
+
+
+def test_sweep_leaves_legitimate_loop_wave_and_gap_words_alone(tmp_path: Path) -> None:
+    for sample in CLEAN_SAMPLES:
+        dist = _dist_with_node_text(tmp_path / str(abs(hash(sample))), sample)
+
+        code, manifest = pre_deploy_sweep.run(dist)
+
+        assert code == 0, (sample, manifest["findings"])
+
+
+def test_sweep_flags_pipeline_jargon_in_html_too(tmp_path: Path) -> None:
+    dist = tmp_path / "dist"
+    _write_minimal_dist(dist)
+    _write(dist / "index.html", "<!doctype html><title>Knowledge Nebula</title><p>Welle 3</p>")
+
+    code, manifest = pre_deploy_sweep.run(dist)
+
+    assert code == 1
+    assert any(f["check"] == "pipeline_jargon" and f["path"] == "index.html" for f in manifest["findings"])
