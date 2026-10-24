@@ -1,4 +1,4 @@
-import { test, expect, Browser } from "@playwright/test";
+import { test, expect, Browser, Page } from "@playwright/test";
 import { readFileSync, writeFileSync, existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { startPreview, Preview } from "./helpers/preview";
@@ -18,13 +18,26 @@ const PANELS = [".topbar", "#search-box", ".tour-btn", "#legend", "#about", ".co
 const EXTRA = [".site-links", ".topbar-right", "#search-input", "#legend-toggle", ".about-toggle", ".ctrl-legal"];
 type Box = { l: number; t: number; r: number; b: number; w: number; h: number };
 
+/**
+ * Wartebedingung statt fester Zeit (#9936): Das Layout ist ruhig, wenn die Schriften geladen sind und zwei
+ * Animationsbilder vergangen sind. topbar-search.js und footer-fit.js messen per ResizeObserver und nach
+ * document.fonts.ready; beide Rueckrufe laufen vor dem naechsten Bild. Unter Last dauern Bilder laenger,
+ * die Bedingung wartet dann einfach mit, eine feste Zeit wuerde reissen.
+ */
+async function layoutRuhig(page: Page) {
+  await page.evaluate(async () => {
+    await document.fonts.ready;
+    await new Promise<void>((fertig) => requestAnimationFrame(() => requestAnimationFrame(() => fertig())));
+  });
+}
+
 async function messen(browser: Browser, width: number, height: number, touch: boolean) {
   const ctx = await browser.newContext({ viewport: { width, height }, hasTouch: touch, isMobile: touch, deviceScaleFactor: touch ? 3 : 1 });
   await ctx.addInitScript(skipIntro);
   const page = await ctx.newPage();
   await page.goto(url("/?dataset=kompetenz"));
   await page.locator("#graph-container canvas").waitFor({ state: "visible", timeout: 20_000 });
-  await page.waitForTimeout(400);
+  await layoutRuhig(page);
   const m = await page.evaluate(([sel, mehr]) => {
     const box = (e: Element) => { const r = e.getBoundingClientRect(); return { l: Math.round(r.left), t: Math.round(r.top), r: Math.round(r.right), b: Math.round(r.bottom), w: Math.round(r.width), h: Math.round(r.height) }; };
     const boxes: Record<string, any> = {};
@@ -131,7 +144,11 @@ for (const [w, h] of QUER_MIT_LEISTEN) {
     await m.page.locator("#search-results li").first().tap();
     const modal = m.page.locator("#modal.open");
     await expect(modal).toBeVisible();
-    await m.page.waitForTimeout(500); // Einfahren dauert 0,3 s
+    // Einfahren dauert 0,3 s: warten, bis die Verschiebung aus translateX(110%) bei 0 angekommen ist (#9936)
+    await expect.poll(
+      () => modal.evaluate((el) => new DOMMatrix(getComputedStyle(el).transform).m41),
+      { message: "Erklaerung ist eingefahren (translateX 0)", timeout: 15_000 },
+    ).toBe(0);
     const r = (await modal.boundingBox())!;
     const topbar = (m.boxes as Record<string, Box>)[".topbar"];
     // beidseitig: beginnt an der Kopfzeile und endet am unteren Bildrand (Codex-Verifier TEST-1)
