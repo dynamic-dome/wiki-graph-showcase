@@ -54,3 +54,35 @@ export async function loadForceGraph(importer = defaultImporter, src = FORCE_GRA
   }
   return fg;
 }
+
+/**
+ * #9949: Module, die `three` statisch importieren, werden nicht mehr von main.js importiert, sondern hier nach dem
+ * ersten Paint per import() nachgeholt (alle gleicher Ursprung, CSP-neutral). `three-guard.js` prueft nur die
+ * Revision (Seiteneffekt). `importer` ist nur fuer Tests austauschbar und bekommt den Modulnamen.
+ */
+export const THREE_MODULES = {
+  guard: "./three-guard.js",
+  nodeForms: "./node-forms.js",
+  sceneDressing: "./scene-dressing.js",
+  bloom: "./bloom.js",
+};
+
+export async function loadThreeModules(importer = defaultImporter) {
+  let guard, nodeForms, sceneDressing, bloom;
+  try {
+    [guard, nodeForms, sceneDressing, bloom] = await Promise.all([
+      importer(THREE_MODULES.guard),
+      importer(THREE_MODULES.nodeForms),
+      importer(THREE_MODULES.sceneDressing),
+      importer(THREE_MODULES.bloom),
+    ]);
+  } catch (err) {
+    throw new Error(`Failed to load THREE modules: ${err && err.message ? err.message : err}`);
+  }
+  void guard; // nur der Seiteneffekt zaehlt (Revisions-Tripwire)
+  return {
+    createNodeForms: nodeForms.createNodeForms,
+    createSceneDressing: sceneDressing.createSceneDressing,
+    createBloom: bloom.createBloom,
+  };
+}

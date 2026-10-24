@@ -16,14 +16,10 @@ import { createFocusLock } from "./focus-lock.js";
 import { createThemeSwitcher } from "./theme-switcher.js";
 import { createGoldPulse } from "./gold-pulse.js";
 import { createEdgeFlow } from "./edge-flow.js";
-import { createSceneDressing } from "./scene-dressing.js";
-import { createBloom } from "./bloom.js";
 import { createAutoTour } from "./auto-tour.js";
 import { createSearchControl } from "./search-control.js";
 import { readState, writeState } from "./url-state.js";
-import { createNodeForms } from "./node-forms.js";
-import "./three-guard.js"; // THREE-Revision-Tripwire (Vendor r168 == Bundle r168)
-import { afterFirstPaint, loadForceGraph } from "./force-graph-loader.js";
+import { afterFirstPaint, loadForceGraph, loadThreeModules } from "./force-graph-loader.js";
 import { hasWebGL } from "./webgl-support.js";
 import { createFallbackList, FALLBACK_TEXTS } from "./fallback-list.js";
 import { createTopbarSearch } from "./topbar-search.js";
@@ -97,8 +93,14 @@ async function showFallback(dataset) {
 
   // C1: 3d-force-graph (ESM, ~206 KB, nutzt die Vendor-THREE per Import Map) erst nach dem ersten Paint laden.
   // Der Download laeuft parallel zum graph.json-Fetch; die Einleitung im HTML steht sofort.
-  const forceGraphReady = afterFirstPaint().then(() => loadForceGraph());
+  // #9949: Auch alles, was `three` (685 KB) statisch importiert (three-guard, node-forms, scene-dressing, bloom),
+  // kommt erst jetzt dazu. Ein statischer Import haette den Start von main.js bis nach dem THREE-Download aufgehalten
+  // und dessen Bytes gegen CSS und Schrift des Intro-Titels (LCP-Element) konkurrieren lassen.
+  const afterPaint = afterFirstPaint();
+  const forceGraphReady = afterPaint.then(() => loadForceGraph());
+  const threeModulesReady = afterPaint.then(() => loadThreeModules());
   forceGraphReady.catch(() => { /* wird unten beim await behandelt */ });
+  threeModulesReady.catch(() => { /* wird unten beim await behandelt */ });
 
   const graphData = await loadGraph(dataset);
   const initialTheme = urlState.theme || stored || graphData.theme_default || "crab";
@@ -125,6 +127,7 @@ async function showFallback(dataset) {
   // Stage
   const container = document.getElementById("graph-container");
   const ForceGraph3D = await forceGraphReady;
+  const { createNodeForms, createSceneDressing, createBloom } = await threeModulesReady;
   const stage = createStage(container, { ...stageOptions, ForceGraph3D });
   // Testhook für Playwright (aurum.spec.ts) — bewusst öffentlich, read-only genutzt.
   window.__nebula = { stage };
