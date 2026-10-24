@@ -9,7 +9,7 @@
 const ASTRO_ENTRIES = [
   { varName: "--node-center", label: "Fokus-Objekt" },
   { varName: "--node-astro", label: "Astrophysik" },
-  { varName: "--node-gante", label: "Gantefoer" },
+  { varName: "--node-gante", label: "Ganteför" },
   { varName: "--node-entity", label: "Person oder Organisation" },
 ];
 
