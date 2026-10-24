@@ -1,10 +1,16 @@
 /**
- * C1: Das klassische 3d-force-graph-Bundle (707 KB, setzt window.ForceGraph3D)
- * wird nicht mehr als parser-blockierendes <script> ausgeliefert, sondern nach
- * dem ersten Paint dynamisch eingefuegt. CSP script-src 'self' erlaubt das
- * (gleicher Ursprung, kein Inline-Code, kein neuer Hash noetig).
+ * C1: 3d-force-graph (ESM-Variante, ~206 KB) wird nicht mit dem Start-Skript
+ * geladen, sondern nach dem ersten Paint per dynamischem import() nachgeholt.
+ * CSP script-src 'self' erlaubt das (gleicher Ursprung, kein Inline-Code, kein
+ * neuer Hash noetig).
+ *
+ * WEB-5 (#9603): Die ESM-Variante importiert `three` ueber die Import Map und
+ * teilt sich damit die EINE Vendor-Instanz (src/vendor/three) mit Bloom,
+ * Scene-Dressing und Node-Forms. Das frueher geladene UMD-Bundle
+ * (3d-force-graph.min.js, 707 KB) brachte eine zweite, eigene THREE-Kopie mit
+ * ("Multiple instances of Three.js being imported").
  */
-export const FORCE_GRAPH_SRC = "assets/vendor/3d-force-graph.min.js";
+export const FORCE_GRAPH_SRC = "../vendor/3d-force-graph.esm.min.js";
 
 const BACKGROUND_TAB_FALLBACK_MS = 1500;
 
@@ -28,20 +34,23 @@ export function afterFirstPaint(win = window) {
   });
 }
 
-/** Fuegt das Bundle als async-Script ein; liefert die ForceGraph3D-Funktion. */
-export function loadForceGraph(doc = document, src = FORCE_GRAPH_SRC) {
-  const existing = doc.defaultView && doc.defaultView.ForceGraph3D;
-  if (typeof existing === "function") return Promise.resolve(existing);
-  return new Promise((resolve, reject) => {
-    const script = doc.createElement("script");
-    script.src = src;
-    script.async = true;
-    script.onload = () => {
-      const fg = doc.defaultView.ForceGraph3D;
-      if (typeof fg === "function") resolve(fg);
-      else reject(new Error("ForceGraph3D global missing after load"));
-    };
-    script.onerror = () => reject(new Error(`Failed to load ${src}`));
-    doc.head.appendChild(script);
-  });
+// Relativ zu DIESEM Modul aufgeloest (assets/scripts/ -> assets/vendor/).
+const defaultImporter = (src) => import(src);
+
+/**
+ * Importiert das ESM-Modul; liefert die ForceGraph3D-Funktion (Default-Export).
+ * `importer` ist nur fuer Tests austauschbar.
+ */
+export async function loadForceGraph(importer = defaultImporter, src = FORCE_GRAPH_SRC) {
+  let mod;
+  try {
+    mod = await importer(src);
+  } catch (err) {
+    throw new Error(`Failed to load ${src}: ${err && err.message ? err.message : err}`);
+  }
+  const fg = mod && mod.default;
+  if (typeof fg !== "function") {
+    throw new Error("ForceGraph3D default export missing after load");
+  }
+  return fg;
 }

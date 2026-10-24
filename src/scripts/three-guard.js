@@ -1,14 +1,14 @@
 /**
- * THREE-Revision-Tripwire. Das gebuendelte 3d-force-graph nutzt intern THREE
- * r168; unsere Vendor-Kopie (src/vendor/three) MUSS dieselbe Revision sein,
- * sonst rendern die Vendor-Objekte (Bloom, Scene-Dressing, Node-Forms) still
- * falsch — kein lauter Fehler, nur subtil kaputte Darstellung.
+ * THREE-Revision-Tripwire. 3d-force-graph (ESM-Variante) nutzt seit WEB-5 die
+ * Vendor-THREE (src/vendor/three) ueber die Import Map, es gibt nur EINE
+ * Instanz. Das Bundle enthaelt aber three/examples-Code (Controls,
+ * EffectComposer) in der Revision r168; die Vendor-THREE MUSS dazu passen,
+ * sonst rendert es still falsch — kein lauter Fehler, nur subtil kaputte
+ * Darstellung.
  *
- * Grenze: das Bundle exponiert seine THREE-Instanz nicht, deshalb laesst sich
- * zur Laufzeit nur die Vendor-Seite pruefen. Ein Update des Bundles auf eine
- * neue THREE-Revision faengt weiterhin nur der statische grep-Check aus
- * CLAUDE.md ab ('const a="168"'). Dieser Tripwire schlaegt an, wenn jemand die
- * Vendor-Kopie tauscht, ohne EXPECTED_THREE_REVISION mitzuziehen.
+ * Dieser Tripwire schlaegt an, wenn jemand die Vendor-Kopie tauscht, ohne
+ * EXPECTED_THREE_REVISION (und das Bundle, tools/vendor-force-graph-esm.mjs)
+ * mitzuziehen.
  */
 import { REVISION } from "three";
 

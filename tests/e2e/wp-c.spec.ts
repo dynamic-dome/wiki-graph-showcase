@@ -23,7 +23,7 @@ function trackProblems(page: Page): string[] {
 const skipIntro = () => { try { sessionStorage.setItem("nebula_intro_seen", "1"); } catch { /* ignore */ } };
 
 async function delayForceGraph(page: Page, ms: number) {
-  await page.route("**/assets/vendor/3d-force-graph.min.js", async (route) => {
+  await page.route("**/assets/vendor/3d-force-graph.esm.min.js", async (route) => {
     await new Promise((r) => setTimeout(r, ms));
     await route.continue();
   });
@@ -93,7 +93,7 @@ test.describe("C2: Liste statt Stacktrace", () => {
   test("Bibliothek nicht ladbar: Liste statt Stacktrace, console.error bleibt", async ({ page }) => {
     const errors: string[] = [];
     page.on("console", (m) => { if (m.type() === "error") errors.push(m.text()); });
-    await page.route("**/assets/vendor/3d-force-graph.min.js", (route) => route.abort());
+    await page.route("**/assets/vendor/3d-force-graph.esm.min.js", (route) => route.abort());
     await page.goto(url("/?dataset=kompetenz"));
     await expect(page.locator("#webgl-fallback")).toBeVisible({ timeout: 20_000 });
     await expect(page.locator("#fallback-list button").first()).toBeVisible();

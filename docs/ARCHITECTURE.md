@@ -25,12 +25,14 @@ Aurum-Nebula-Module (2026-07): `color-utils.js` (rgba-Helper), `edge-flow.js`
 (Kanten-Partikel, kompetenz-only), `scene-dressing.js` (3D-Sternenfeld/Nebel),
 `bloom.js` (UnrealBloomPass am Bundle-Composer), `node-forms.js`
 (Kategorie-Geometrien, kompetenz-only). THREE r168 liegt als Vendor-Modul in
-`src/vendor/three/` und wird per Import Map aufgelöst; die Revision ist an das
-3d-force-graph-Bundle gekoppelt. `sparkles.js` wurde entfernt (ersetzt durch
+`src/vendor/three/` und wird per Import Map aufgelöst. 3d-force-graph liegt als
+ESM-Variante (`src/vendor/3d-force-graph.esm.min.js`, ~206 KB) vor und teilt sich diese
+EINE THREE-Instanz (kein zweites THREE im Bundle, vorher UMD mit 707 KB und eigener Kopie);
+die Revision des eingebetteten `three/examples`-Codes ist an die Vendor-THREE gekoppelt. `sparkles.js` wurde entfernt (ersetzt durch
 scene-dressing).
 
 ## Abhaengigkeiten
 
 - **Build:** Python 3.11+ stdlib only.
-- **Frontend:** `3d-force-graph` (vendored), `three.js` (transitive durch 3d-force-graph).
+- **Frontend:** `3d-force-graph` (vendored), `three.js` (Vendor r168, geteilt).
 - **Dev-Tests:** pytest (Python), Playwright (Node).

@@ -1,5 +1,14 @@
 # Changelog
 
+## 2026-10-24 — Three.js nur noch einmal laden (#9603)
+
+- Das UMD-Bundle von 3d-force-graph (707 KB) brachte eine eigene THREE-Kopie mit; zusammen mit der
+  Vendor-THREE entstand die Konsolenwarnung "Multiple instances of Three.js being imported".
+  Jetzt lädt `force-graph-loader.js` die ESM-Variante (`src/vendor/3d-force-graph.esm.min.js`,
+  206 KB) per `import()`; `three` kommt aus der Import Map, `createStage` erhält die Bibliothek als
+  `options.ForceGraph3D` statt über `window.ForceGraph3D`. Import-Map-Inhalt und CSP-Hash unverändert.
+- Neu: `tools/vendor-force-graph-esm.mjs` (reproduzierbarer Build), `tests/test_vendor_single_three.py`.
+
 ## 2026-10-20 — CSP für Cloudflare Web Analytics
 
 - `src/_headers`: `script-src` erlaubt zusätzlich `https://static.cloudflareinsights.com`,

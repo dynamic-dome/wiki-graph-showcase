@@ -34,43 +34,26 @@ test("afterFirstPaint loest im Hintergrund-Tab ueber das Sicherheitsnetz auf", a
   await p;
 });
 
-function fakeDoc({ onAppend }) {
-  const view = {};
-  const head = {
-    appendChild(el) { onAppend(el, view); },
-  };
-  return { defaultView: view, head, createElement: () => ({}) };
-}
-
-test("loadForceGraph fuegt ein async-Script ein und liefert ForceGraph3D", async () => {
-  let inserted;
-  const doc = fakeDoc({
-    onAppend(el, view) {
-      inserted = el;
-      view.ForceGraph3D = function ForceGraph3D() {};
-      el.onload();
-    },
-  });
-  const fg = await loadForceGraph(doc);
-  assert.equal(typeof fg, "function");
-  assert.equal(inserted.src, FORCE_GRAPH_SRC);
-  assert.equal(inserted.async, true);
+test("FORCE_GRAPH_SRC zeigt auf die ESM-Variante (ohne eigene THREE-Kopie)", () => {
+  assert.match(FORCE_GRAPH_SRC, /3d-force-graph\.esm\.min\.js$/);
 });
 
-test("loadForceGraph lehnt bei Ladefehler ab", async () => {
-  const doc = fakeDoc({ onAppend(el) { el.onerror(); } });
-  await assert.rejects(loadForceGraph(doc), /Failed to load/);
+test("loadForceGraph importiert das Modul und liefert den Default-Export", async () => {
+  let requested;
+  const ForceGraph3D = function ForceGraph3D() {};
+  const fg = await loadForceGraph(async (src) => { requested = src; return { default: ForceGraph3D }; });
+  assert.equal(fg, ForceGraph3D);
+  assert.equal(requested, FORCE_GRAPH_SRC);
 });
 
-test("loadForceGraph lehnt ab, wenn das Global nach dem Laden fehlt", async () => {
-  const doc = fakeDoc({ onAppend(el) { el.onload(); } });
-  await assert.rejects(loadForceGraph(doc), /ForceGraph3D global missing/);
+test("loadForceGraph lehnt bei Importfehler ab", async () => {
+  await assert.rejects(
+    loadForceGraph(async () => { throw new TypeError("boom"); }),
+    /Failed to load .*boom/,
+  );
 });
 
-test("loadForceGraph nutzt ein vorhandenes Global ohne neues Script", async () => {
-  let appended = false;
-  const doc = fakeDoc({ onAppend() { appended = true; } });
-  doc.defaultView.ForceGraph3D = function ForceGraph3D() {};
-  await loadForceGraph(doc);
-  assert.equal(appended, false);
+test("loadForceGraph lehnt ab, wenn der Default-Export fehlt", async () => {
+  await assert.rejects(loadForceGraph(async () => ({})), /default export missing/);
+  await assert.rejects(loadForceGraph(async () => ({ default: 42 })), /default export missing/);
 });

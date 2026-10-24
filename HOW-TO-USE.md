@@ -91,7 +91,7 @@ Wenn du irgendwann doch eine Notification willst ("Drift seit letztem Deploy"): 
 
 `src/_headers` wird vom Build nach `dist/_headers` kopiert und von Cloudflare Pages automatisch als HTTP-Headers ausgespielt. Enthaelt CSP, HSTS, X-Frame-Options, X-Content-Type-Options, Referrer-Policy, Permissions-Policy. CSP erlaubt `style-src 'unsafe-inline'` (gold-pulse.js + url-state.js setzen inline-Styles); script-src ist auf `'self'` beschraenkt.
 
-3d-force-graph wird nicht mehr per `<script>` im HTML, sondern von `scripts/force-graph-loader.js` nach dem ersten Paint dynamisch eingefügt (kein Inline-Script, kein Hash). Der Wächtertest `tests/test_index_html_csp.py` prüft Import-Map-Hash und Script-Tags.
+3d-force-graph wird nicht mehr per `<script>` im HTML, sondern von `scripts/force-graph-loader.js` nach dem ersten Paint per dynamischem `import()` der ESM-Variante nachgeladen (kein Inline-Script, kein Hash; `three` kommt aus der Import Map, es gibt nur eine Instanz). Der Wächtertest `tests/test_index_html_csp.py` prüft Import-Map-Hash und Script-Tags.
 
 ## Troubleshooting
 

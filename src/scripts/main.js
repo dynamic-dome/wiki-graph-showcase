@@ -95,7 +95,7 @@ async function showFallback(dataset) {
     return;
   }
 
-  // C1: 3d-force-graph (707 KB, Classic-Bundle) erst nach dem ersten Paint laden.
+  // C1: 3d-force-graph (ESM, ~206 KB, nutzt die Vendor-THREE per Import Map) erst nach dem ersten Paint laden.
   // Der Download laeuft parallel zum graph.json-Fetch; die Einleitung im HTML steht sofort.
   const forceGraphReady = afterFirstPaint().then(() => loadForceGraph());
   forceGraphReady.catch(() => { /* wird unten beim await behandelt */ });
@@ -124,8 +124,8 @@ async function showFallback(dataset) {
 
   // Stage
   const container = document.getElementById("graph-container");
-  await forceGraphReady;
-  const stage = createStage(container, stageOptions);
+  const ForceGraph3D = await forceGraphReady;
+  const stage = createStage(container, { ...stageOptions, ForceGraph3D });
   // Testhook für Playwright (aurum.spec.ts) — bewusst öffentlich, read-only genutzt.
   window.__nebula = { stage };
   // Kategorie-Formen nur für Kompetenz; Astro behält Default-Kugeln.

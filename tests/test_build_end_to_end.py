@@ -211,7 +211,7 @@ def test_build_copies_frontend_assets(mini_vault_plus_outside_link: Path, tmp_pa
     (src_root / "_headers").write_text("/*\n  X-Frame-Options: DENY\n", encoding="utf-8")
     (src_root / "styles" / "base.css").write_text("body{}", encoding="utf-8")
     (src_root / "scripts" / "main.js").write_text("// main", encoding="utf-8")
-    (src_root / "vendor" / "3d-force-graph.min.js").write_text("// vendor", encoding="utf-8")
+    (src_root / "vendor" / "3d-force-graph.esm.min.js").write_text("// vendor", encoding="utf-8")
 
     out = tmp_path / "dist"
     cfg = _make_config(mini_vault_plus_outside_link, out)
@@ -224,7 +224,7 @@ def test_build_copies_frontend_assets(mini_vault_plus_outside_link: Path, tmp_pa
     assert "X-Frame-Options" in (out / "_headers").read_text(encoding="utf-8")
     assert (out / "assets" / "styles" / "base.css").is_file()
     assert (out / "assets" / "scripts" / "main.js").is_file()
-    assert (out / "assets" / "vendor" / "3d-force-graph.min.js").is_file()
+    assert (out / "assets" / "vendor" / "3d-force-graph.esm.min.js").is_file()
 
 
 def test_build_is_deterministic(mini_vault_plus_outside_link: Path, tmp_path: Path) -> None:

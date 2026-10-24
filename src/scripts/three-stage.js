@@ -38,9 +38,10 @@ export function createStage(container, options = {}) {
   const colorMode = options.colorMode || "astro";
   const clustered = options.clustered !== undefined ? options.clustered : true;
 
-  const ForceGraph3D = window.ForceGraph3D;
+  // WEB-5: Die Bibliothek kommt als ESM-Modul (main.js laedt sie per import()), nicht mehr als window-Global.
+  const ForceGraph3D = options.ForceGraph3D;
   if (typeof ForceGraph3D !== "function") {
-    throw new Error("ForceGraph3D global not found — is 3d-force-graph.min.js loaded?");
+    throw new Error("ForceGraph3D missing — createStage needs options.ForceGraph3D (see force-graph-loader.js)");
   }
 
   const graph = ForceGraph3D()(container)
