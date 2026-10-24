@@ -22,15 +22,34 @@ export const DATASETS = {
 // der Astro-Nebel bleibt als Tab und ueber Legacy-Permalinks (url-state.js) erreichbar.
 export const DEFAULT_DATASET = "kompetenz";
 
+// Schluessel des von early-graph.js gestarteten Abrufs (#10019). Bewusst als Kopie
+// dort, damit early-graph.js ohne Imports startet; tests/unit/early-graph.test.js
+// haelt Schluessel und URL synchron.
+export const EARLY_GRAPH_KEY = "__earlyGraph";
+
 export function datasetConfig(dataset) {
   return DATASETS[dataset] || DATASETS[DEFAULT_DATASET];
 }
 
+/**
+ * Uebernimmt den von early-graph.js gestarteten Abruf, genau einmal und nur
+ * fuer dieselbe URL (#10019). Liefert null, wenn keiner laeuft, er fehlschlug
+ * oder die URL abweicht (z. B. Astro-Datensatz): dann holt loadGraph selbst.
+ */
+export async function takeEarlyGraph(url, scope = globalThis) {
+  const early = scope[EARLY_GRAPH_KEY];
+  if (!early || early.url !== url) return null;
+  delete scope[EARLY_GRAPH_KEY];
+  const res = await early.promise;
+  return res && res.ok ? res : null;
+}
+
 export async function loadGraph(dataset = DEFAULT_DATASET) {
   const base = datasetConfig(dataset).base;
-  const res = await fetch(`${base}/graph.json`);
+  const url = `${base}/graph.json`;
+  const res = (await takeEarlyGraph(url)) || (await fetch(url));
   if (!res.ok) {
-    throw new Error(`Failed to fetch ${base}/graph.json: ${res.status}`);
+    throw new Error(`Failed to fetch ${url}: ${res.status}`);
   }
   return res.json();
 }

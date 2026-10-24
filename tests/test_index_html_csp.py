@@ -34,3 +34,17 @@ def test_only_hashed_or_external_module_scripts_execute() -> None:
             or (b'type="module"' in attrs and b"src=" in attrs)
         )
         assert ok, f"unerwartetes Script-Tag: {attrs!r}"
+
+
+def test_graph_json_has_no_fetch_preload_and_early_module_runs_before_main() -> None:
+    """#10019: Ein <link rel=preload as=fetch crossorigin> fuer graph.json erzeugt in WebKit zwei Downloads.
+
+    Der fruehe Abruf kommt aus early-graph.js (Modul, in Dokumentreihenfolge vor main.js).
+    """
+    assert not re.search(rb"<link[^>]+rel=.preload.[^>]*graph\.json", INDEX)
+    early = INDEX.find(b'src="assets/scripts/early-graph.js"')
+    main = INDEX.find(b'src="assets/scripts/main.js"')
+    assert 0 <= early < main
+    early_tag = INDEX[INDEX.rfind(b"<script", 0, early):early]
+    assert b'type="module"' in early_tag
+    assert b"async" not in INDEX[early:INDEX.find(b">", early)]

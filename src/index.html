@@ -37,8 +37,10 @@
   }
 }
 </script>
-<!-- CA-SUB-WIKI-004: seit SP-35 ist der Kompetenz-Graph Default — den auch preloden -->
-<link rel="preload" href="assets/kompetenz/graph.json" as="fetch" crossorigin>
+<!-- CA-SUB-WIKI-004 / #10019: seit SP-35 ist der Kompetenz-Graph Default, sein Abruf startet frueh.
+     Kein <link rel=preload as=fetch>: Chromium braucht `crossorigin`, WebKit nutzt dann den Preload nicht
+     (zwei Downloads). early-graph.js startet den fetch(), graph-loader.js uebernimmt dieselbe Antwort. -->
+<script type="module" src="assets/scripts/early-graph.js"></script>
 <link rel="stylesheet" href="assets/styles/base.css">
 <link rel="stylesheet" href="assets/styles/theme-crab.css">
 <link rel="stylesheet" href="assets/styles/theme-dome.css">
