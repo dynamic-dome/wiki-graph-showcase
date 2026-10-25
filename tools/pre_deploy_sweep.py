@@ -72,17 +72,32 @@ _UMLAUT_DIGRAPH = re.compile(r"(?<![aeiouqAEIOUQ])[AaOoUu]e")
 _WORD = re.compile(r"[^\W\d_]+")
 _CODE_SPAN_OR_URL = re.compile(r"`[^`]*`|https?://\S+")
 
-# Woerter, die den Digraphen legitim tragen. Teilstring-Treffer auf dem kleingeschriebenen Wort
-# (Quelle, neue, Query, Crusoe, Phoenix, UAE, MoE usw. wie in kompetenz-wiki 5f7600c).
-ASCII_UMLAUT_ALLOWED_STEMS = (
-    # -uell und Verwandte
-    "aktuell", "manuell", "visuell", "virtuell", "punktuell", "individuell", "eventuell",
-    "intellektuell", "kontextuell", "sexuell", "duell", "fuel",
-    # Fremd- und Eigennamen, englische Fachwoerter
-    "issue", "value", "revenue", "influencer", "crusoe", "phoenix", "quera", "venue", "rescue",
-    "michael", "raphael", "israel", "samuel", "manuel", "joel", "noel", "goethe", "poet", "poes",
-    "aero", "aloe", "zoe", "shoe",
+# Woerter, die den Digraphen legitim tragen. Ausnahmen duerfen NIE als freier Teilstring auf das
+# ganze Wort wirken: "fuel" als Teilstring verdeckte erfuellt/ausfuellen/Fuellstand, "zoe" verdeckte
+# zoegern/Verzoegerung (Review WGS3-1). Darum drei Arten, jeweils auf dem kleingeschriebenen Wort.
+#
+# Aus kompetenz-wiki 5f7600c uebernommen (Wortliste der Commit-Nachricht): Quelle/Quellen, neue,
+# Steuer-, aktuell/manuell/visuell, Query/Queries, Issue, Value, Revenue, Influencer, Crusoe,
+# Phoenix, QuEra, UAE/VAE, MoE. Quelle, neue, Steuer, Query, UAE, MoE faengt schon die Regex
+# (Vokal oder q vor dem e, Grossbuchstaben-E); hier stehen nur die uebrigen.
+# Vom Bauer ergaenzt (nicht aus 5f7600c): alle weiteren Eintraege dieser drei Listen.
+
+# 1) Teilstring im Wort (nur lange, eindeutige Staemme; Komposita wie tagesaktuell bleiben erlaubt).
+ASCII_UMLAUT_ALLOWED_SUBSTRINGS = (
+    "aktuell", "manuell", "visuell",  # 5f7600c
+    "issue", "value", "revenue", "influenc", "crusoe", "phoenix", "quera",  # 5f7600c (influenc: Influencer)
+    "virtuell", "punktuell", "individuell", "eventuell", "intellektuell", "kontextuell", "sexuell",
+    "venue", "rescue", "michael", "raphael", "israel", "samuel", "manuel", "goethe",
+    "individuen", "residuen", "kontinuen", "kongruen",
+    "bluetooth", "coefficient", "truepic", "boeing", "maestro",
 )
+# 2) Wortanfang (Endungen frei): Poesie/Poet, Aerodynamik, Duell-Formen, englisch influence/poem.
+ASCII_UMLAUT_ALLOWED_PREFIXES = ("poet", "poes", "poem", "aero", "duell", "duet")
+# 3) Nur das ganze Wort: kurze Staemme, die sonst deutsche ASCII-Woerter verdecken wuerden.
+ASCII_UMLAUT_ALLOWED_WORDS = frozenset({
+    "fuel", "zoe", "shoe", "joel", "noel", "aloe", "joe",
+    "true", "due", "does", "rogue", "rogues", "league", "leagues", "blossom",
+})
 
 # ss statt ß: nur eindeutige Staemme, weil "ss" in Wörtern wie "muss", "dass", "Prozess" korrekt ist.
 _SZ_STEMS = re.compile(
@@ -146,12 +161,20 @@ def _scan_json_strings(path: Path, root: Path, findings: list[Finding]) -> objec
     return data
 
 
+def _is_allowed_umlaut_word(lower: str) -> bool:
+    return (
+        lower in ASCII_UMLAUT_ALLOWED_WORDS
+        or lower.startswith(ASCII_UMLAUT_ALLOWED_PREFIXES)
+        or any(stem in lower for stem in ASCII_UMLAUT_ALLOWED_SUBSTRINGS)
+    )
+
+
 def find_ascii_umlauts(text: str) -> list[str]:
     """Woerter mit ASCII-Umschreibung (ae/oe/ue/ss statt ä/ö/ü/ß), in Reihenfolge, ohne Doppelte."""
     found: list[str] = []
     for word in _WORD.findall(_CODE_SPAN_OR_URL.sub(" ", text)):
         lower = word.lower()
-        if any(stem in lower for stem in ASCII_UMLAUT_ALLOWED_STEMS):
+        if _is_allowed_umlaut_word(lower):
             continue
         if (_UMLAUT_DIGRAPH.search(word) or _SZ_STEMS.search(word)) and word not in found:
             found.append(word)

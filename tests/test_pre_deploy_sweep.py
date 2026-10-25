@@ -3,6 +3,8 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+import pytest
+
 from tools import pre_deploy_sweep
 
 
@@ -347,3 +349,31 @@ def test_ascii_umlaut_reports_each_word_once_per_field(tmp_path: Path) -> None:
     hits = _ascii_umlaut_findings(manifest)
     assert len(hits) == 1
     assert "fuer" in hits[0]["detail"] and "ueber" in hits[0]["detail"]
+
+
+# Ausnahmen duerfen nur ganze Woerter bzw. Wortanfaenge decken, nie freie Teilstrings:
+# Review-Befund WGS3-1 (fuel/zoe verdeckten erfuellt, ausfuellen, zoegern, Verzoegerung).
+@pytest.mark.parametrize(
+    "word",
+    [
+        "erfuellen", "Erfuellung", "erfuellt", "ausfuellen", "Fuellstand", "Erstbefuellung",
+        "zoegern", "Verzoegerung", "verzoegert", "Faehigkeit", "Schoenheit",
+    ],
+)
+def test_ascii_umlaut_exceptions_do_not_hide_german_ascii_words(word: str) -> None:
+    assert pre_deploy_sweep.find_ascii_umlauts(f"Das ist {word} hier") == [word]
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "true, does, due diligence",
+        "influence, Influencer, Rogue, League, Leagues",
+        "Boeing, Truepic, Duet, Bluetooth, Coefficient, Maestro, Blossom",
+        "Kongruenz, Residuen, Individuen, Kontinuen",
+        "fuel, Zoe, Joel, Shoe, Aloe, Duell, Duelle, aktuelle, tagesaktuell, manuellen",
+        "Poesie, Poet, Aerodynamik, Michael, Israel, Goethe",
+    ],
+)
+def test_ascii_umlaut_allows_whole_word_exceptions_and_english_terms(text: str) -> None:
+    assert pre_deploy_sweep.find_ascii_umlauts(text) == []
