@@ -234,3 +234,116 @@ def test_sweep_flags_pipeline_jargon_in_html_too(tmp_path: Path) -> None:
 
     assert code == 1
     assert any(f["check"] == "pipeline_jargon" and f["path"] == "index.html" for f in manifest["findings"])
+
+
+# --- Sweep-Waechter ascii_umlaut (#10082, Folge von kompetenz-wiki 5f7600c / #10056) ----------------
+# Nur fuer assets/kompetenz/nodes/*.json und nur die Felder title, subtitle, essence. ids, Slugs und
+# neighbours bleiben ASCII. Der Physik-Datensatz (dist/assets/nodes) ist ausgenommen.
+
+def _kompetenz_node(dist: Path, name: str, **fields: object) -> None:
+    body = {"id": "wiki/concepts/fuer-slug", "category": "concept", "neighbours": ["wiki/concepts/ueber-slug"]}
+    body.update(fields)
+    _write(dist / "assets" / "kompetenz" / "nodes" / name, json.dumps(body))
+
+
+def _ascii_umlaut_findings(manifest: dict) -> list[dict]:
+    return [f for f in manifest["findings"] if f["check"] == "ascii_umlaut"]
+
+
+ASCII_UMLAUT_SAMPLES = [
+    "Fähigkeit, die Agenten verlaesslich zu führen",
+    "Standard fuer Agenten",
+    "Ueber den Wolken",
+    "Was jemand koennen muss",
+    "Die Faehigkeit zur Zerlegung",
+    "Zustaende und Uebergaenge",
+    "Oekosystem der Modelle",
+    "Qualitaet der Quellen",
+    "Loesung ohne Aerger",
+    "ausschliesslich lokal, groessere Modelle",
+    "Strasse der Massnahmen",
+]
+
+UMLAUT_CLEAN_SAMPLES = [
+    "Fähigkeit, Übergänge für größere Modelle zu führen",
+    "Quelle, Quellen und Datenquelle",
+    "Query und Queries gegen den Graphen",
+    "neue und neuen Ansätze, Neues vom Markt",
+    "aktuell, manuell, visuell, punktuelle Eingriffe",
+    "Steuerung, gesteuert, Steuereinnahmen, Fernsteuerung",
+    "dauerhaft, aufbauen, bauen, Frauen, Vertrauen",
+    "Issue, Value, Revenue, Influencer",
+    "Crusoe, Phoenix, QuEra, UAE, VAE, MoE",
+    "Michael, Samuel und Manuel am Duell",
+]
+
+
+def test_ascii_umlaut_flags_ascii_spelling_in_kompetenz_title_subtitle_essence(tmp_path: Path) -> None:
+    for i, sample in enumerate(ASCII_UMLAUT_SAMPLES):
+        for field in ("title", "subtitle", "essence"):
+            dist = tmp_path / f"{i}-{field}" / "dist"
+            _write_minimal_dist(dist)
+            _kompetenz_node(dist, "wiki__concepts__x.json", **{field: sample})
+
+            code, manifest = pre_deploy_sweep.run(dist)
+
+            hits = _ascii_umlaut_findings(manifest)
+            assert code == 1, (sample, field)
+            assert hits and hits[0]["path"] == "assets/kompetenz/nodes/wiki__concepts__x.json", (sample, field)
+            assert field in hits[0]["detail"], (sample, field, hits[0])
+
+
+def test_ascii_umlaut_leaves_real_umlauts_and_exception_words_alone(tmp_path: Path) -> None:
+    for i, sample in enumerate(UMLAUT_CLEAN_SAMPLES):
+        dist = tmp_path / str(i) / "dist"
+        _write_minimal_dist(dist)
+        _kompetenz_node(dist, "wiki__concepts__x.json", title="Titel", subtitle=sample, essence=sample)
+
+        code, manifest = pre_deploy_sweep.run(dist)
+
+        assert _ascii_umlaut_findings(manifest) == [], (sample, manifest["findings"])
+        assert code == 0, sample
+
+
+def test_ascii_umlaut_ignores_ids_slugs_neighbours_and_code_spans(tmp_path: Path) -> None:
+    dist = tmp_path / "dist"
+    _write_minimal_dist(dist)
+    # id und neighbours tragen ASCII-Slugs (fuer, ueber); ein Code-Span und eine URL im Fliesstext ebenso.
+    _kompetenz_node(
+        dist,
+        "wiki__concepts__x.json",
+        title="Titel",
+        essence="Der Pfad `wiki/concepts/ueber-slug` und https://example.org/fuer-alle bleiben ASCII.",
+    )
+
+    code, manifest = pre_deploy_sweep.run(dist)
+
+    assert _ascii_umlaut_findings(manifest) == []
+    assert code == 0
+
+
+def test_ascii_umlaut_skips_the_physics_dataset(tmp_path: Path) -> None:
+    """Der Physik-Datensatz (dist/assets/nodes) hat noch ASCII-Leads und ist bewusst ausgenommen."""
+    dist = tmp_path / "dist"
+    _write_minimal_dist(dist)
+    _write(
+        dist / "assets" / "nodes" / "james-webb-telescope.json",
+        json.dumps({"title": "James Webb", "essence": "Das Teleskop zeigt ueberhaupt Dinge, die er zulaesst."}),
+    )
+
+    code, manifest = pre_deploy_sweep.run(dist)
+
+    assert _ascii_umlaut_findings(manifest) == []
+    assert code == 0
+
+
+def test_ascii_umlaut_reports_each_word_once_per_field(tmp_path: Path) -> None:
+    dist = tmp_path / "dist"
+    _write_minimal_dist(dist)
+    _kompetenz_node(dist, "wiki__concepts__x.json", title="Titel", essence="fuer fuer ueber")
+
+    _, manifest = pre_deploy_sweep.run(dist)
+
+    hits = _ascii_umlaut_findings(manifest)
+    assert len(hits) == 1
+    assert "fuer" in hits[0]["detail"] and "ueber" in hits[0]["detail"]

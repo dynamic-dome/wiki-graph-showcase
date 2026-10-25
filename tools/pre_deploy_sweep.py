@@ -58,6 +58,38 @@ RAW_PATTERNS = (
     )),
 )
 
+# ASCII-Umschreibung statt echter Umlaute (#10082, Folge von kompetenz-wiki 5f7600c / #10056).
+# Gilt nur fuer den Kompetenz-Datensatz und nur fuer die sichtbaren Textfelder; ids, Slugs und
+# neighbours sind Bezeichner und bleiben ASCII. Der Physik-Datensatz (assets/nodes) hat noch
+# ASCII-Leads und ist bewusst ausgenommen.
+ASCII_UMLAUT_NODE_GLOB = "kompetenz/nodes/*.json"
+ASCII_UMLAUT_FIELDS = ("title", "subtitle", "essence")
+
+# Digraph ae/oe/ue (kleines e, Anfangsbuchstabe beliebig gross) ausserhalb legitimer Folgen:
+# nach Vokal (neue, Steuer, bauen, Frauen, Feuer) und nach q (Quelle, Query, Queue) ist er normal.
+# Grossbuchstaben-e (UAE, VAE, MoE, QuEra) gilt nicht als Umschreibung.
+_UMLAUT_DIGRAPH = re.compile(r"(?<![aeiouqAEIOUQ])[AaOoUu]e")
+_WORD = re.compile(r"[^\W\d_]+")
+_CODE_SPAN_OR_URL = re.compile(r"`[^`]*`|https?://\S+")
+
+# Woerter, die den Digraphen legitim tragen. Teilstring-Treffer auf dem kleingeschriebenen Wort
+# (Quelle, neue, Query, Crusoe, Phoenix, UAE, MoE usw. wie in kompetenz-wiki 5f7600c).
+ASCII_UMLAUT_ALLOWED_STEMS = (
+    # -uell und Verwandte
+    "aktuell", "manuell", "visuell", "virtuell", "punktuell", "individuell", "eventuell",
+    "intellektuell", "kontextuell", "sexuell", "duell", "fuel",
+    # Fremd- und Eigennamen, englische Fachwoerter
+    "issue", "value", "revenue", "influencer", "crusoe", "phoenix", "quera", "venue", "rescue",
+    "michael", "raphael", "israel", "samuel", "manuel", "joel", "noel", "goethe", "poet", "poes",
+    "aero", "aloe", "zoe", "shoe",
+)
+
+# ss statt ß: nur eindeutige Staemme, weil "ss" in Wörtern wie "muss", "dass", "Prozess" korrekt ist.
+_SZ_STEMS = re.compile(
+    r"schliess|gross|heiss|strasse|spass|fliess|massnahm|ausser|bloss|stoss",
+    re.IGNORECASE,
+)
+
 LINE_PATTERNS = (
     ("markdown_blockquote_meta", re.compile(r"^\s*>")),
     ("markdown_heading_meta", re.compile(r"^\s*##\s+")),
@@ -112,6 +144,35 @@ def _scan_json_strings(path: Path, root: Path, findings: list[Finding]) -> objec
                 if pattern.search(line):
                     findings.append(Finding(name, rel, line[:120]))
     return data
+
+
+def find_ascii_umlauts(text: str) -> list[str]:
+    """Woerter mit ASCII-Umschreibung (ae/oe/ue/ss statt ä/ö/ü/ß), in Reihenfolge, ohne Doppelte."""
+    found: list[str] = []
+    for word in _WORD.findall(_CODE_SPAN_OR_URL.sub(" ", text)):
+        lower = word.lower()
+        if any(stem in lower for stem in ASCII_UMLAUT_ALLOWED_STEMS):
+            continue
+        if (_UMLAUT_DIGRAPH.search(word) or _SZ_STEMS.search(word)) and word not in found:
+            found.append(word)
+    return found
+
+
+def _scan_ascii_umlauts(path: Path, root: Path, findings: list[Finding]) -> None:
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return  # invalid_json meldet _scan_json_strings
+    if not isinstance(data, dict):
+        return
+    rel = _rel(path, root)
+    for field in ASCII_UMLAUT_FIELDS:
+        value = data.get(field)
+        if not isinstance(value, str):
+            continue
+        words = find_ascii_umlauts(value)
+        if words:
+            findings.append(Finding("ascii_umlaut", rel, f"{field}: {', '.join(words)}"))
 
 
 def _graph_stats(graph: dict) -> dict:
@@ -175,6 +236,9 @@ def run(dist: Path, write_manifest: bool = False) -> tuple[int, dict]:
         _scan_json_strings(graph_json, dist, findings)
     for node_path in sorted((dist / "assets").rglob("nodes/*.json")):
         _scan_json_strings(node_path, dist, findings)
+
+    for node_path in sorted((dist / "assets").glob(ASCII_UMLAUT_NODE_GLOB)):
+        _scan_ascii_umlauts(node_path, dist, findings)
 
     stats = _graph_stats(graph) if isinstance(graph, dict) else {}
     manifest = {
