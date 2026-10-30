@@ -410,8 +410,8 @@ body {
   color: var(--text, #E8F4FF); text-wrap: balance;
   text-shadow: 0 0 42px rgba(120, 200, 255, 0.28);
   /* #10018: .001 statt 0. Chromium zählt Elemente mit opacity 0 nicht als LCP-Kandidat, der Titel
-     wurde dadurch erst nach der Einblendung (0,32 s Verzögerung) zum LCP-Element (mobil gedrosselt
-     etwa 1,65 s statt 1,05 s). Sichtbar gleich. Kein Font-Preload für Fraunces (LCP 2,9 bis 6,2 s). */
+     wurde dadurch erst nach der Einblendung (0,32 s Verzögerung) zum LCP-Element (Messung 30.10., mobil
+     gedrosselt: Median etwa 1,6 s mit opacity 0, etwa 1,2 s mit .001). Sichtbar gleich. Kein Font-Preload für Fraunces (LCP 2,9 bis 6,2 s). */
   opacity: .001; transform: translateY(16px);
   animation: intro-rise 1.2s 0.32s ease forwards;
 }
