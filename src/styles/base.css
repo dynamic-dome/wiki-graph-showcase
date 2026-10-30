@@ -409,7 +409,10 @@ body {
   font-size: clamp(2.4rem, 7vw, 5rem); letter-spacing: -0.02em; line-height: 1;
   color: var(--text, #E8F4FF); text-wrap: balance;
   text-shadow: 0 0 42px rgba(120, 200, 255, 0.28);
-  opacity: 0; transform: translateY(16px);
+  /* #10018: .001 statt 0. Chromium zählt Elemente mit opacity 0 nicht als LCP-Kandidat, der Titel
+     wurde dadurch erst nach der Einblendung (0,32 s Verzögerung) zum LCP-Element (mobil gedrosselt
+     etwa 1,65 s statt 1,05 s). Sichtbar gleich. Kein Font-Preload für Fraunces (LCP 2,9 bis 6,2 s). */
+  opacity: .001; transform: translateY(16px);
   animation: intro-rise 1.2s 0.32s ease forwards;
 }
 .intro-telemetry {
@@ -445,7 +448,7 @@ body {
 .about-body {
   position: absolute; bottom: calc(100% + 10px); right: 0;
   width: min(380px, calc(100vw - 44px));
-  max-height: min(55vh, 440px); overflow-y: auto;
+  max-height: min(62vh, 480px); overflow-y: auto;
   background: var(--surface-bg); border: 1px solid var(--surface-border-color); border-radius: 14px;
   backdrop-filter: var(--surface-blur); -webkit-backdrop-filter: var(--surface-blur);
   padding: 16px 18px;
@@ -456,6 +459,7 @@ body {
   color: var(--text, #E8F4FF); margin-bottom: 8px;
 }
 .about-body p + p { margin-top: 8px; }
+.about-body .about-stand { font-size: 12px; opacity: 0.8; }
 .about-body a { color: inherit; text-decoration: underline; }
 .legend-toggle {
   display: inline-flex; align-items: center; gap: 7px;

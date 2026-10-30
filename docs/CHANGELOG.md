@@ -1,5 +1,22 @@
 # Changelog
 
+## 2026-10-30 — Intro-Titel schneller, Über-Text zu den Knoten, Inhaltsstand (#10018, #10035 K2/K6)
+
+- **Intro-Titel (#10018):** `.intro-title` startet mit `opacity: .001` statt `0`. Die Einblend-Animation bleibt
+  unverändert. Chromium wertet opacity 0 nicht als LCP-Kandidat; der Titel wurde erst nach der Einblendung zum
+  LCP-Element. Messung lokal (Chromium, Slow 4G, 4x CPU, 390 px, je 3 Läufe, Vorschau mit CSP): vorher 1772 / 1592 /
+  1492 ms (Median 1592), nachher 1188 / 1360 / 1224 ms (Median 1224). Kein Font-Preload für Fraunces.
+- **K2:** Der Über-Text nannte „Mechatronik und Messtechnik“, dazu gibt es keine Knoten. Der Satz beschreibt jetzt, was
+  die Fähigkeiten-Knoten tragen: Arbeitsabläufe, MCP, Überwachung, EU-Regeln, Rechenzentren.
+- **K6:** Das Über-Panel zeigt „Inhaltsstand: Mai 2026 (mittleres Seitendatum), gebaut am 30.10.2026.“ Der Build
+  schreibt den Median-Monat der `updated`-Daten als `metadata.content_median_month` in `graph.json`
+  (Kompetenz 2026-05, Astrophysik 2026-04), das Build-Datum kommt aus `built_at`. Kein neuer Netzabruf.
+  Das Panel darf auf Desktop etwas höher werden (`max-height` 62 vh, höchstens 480 px), damit die neue Zeile ohne
+  Scrollen sichtbar bleibt.
+- Neue Wächter: `tests/test_content_stand.py` (opacity .001, kein Font-Preload, Über-Text, Median, Build),
+  `tests/unit/content-stand.test.js`.
+- Offen (Owner): Push und Deploy; K5 (GitHub-Beschreibung) per `gh repo edit`.
+
 ## 2026-10-24 — Echte 404 statt Soft-404 (#9917 K1)
 
 - Vorher: jede unbekannte URL (`/gibt-es-nicht`) lieferte HTTP 200 mit der Startseite, weil Cloudflare

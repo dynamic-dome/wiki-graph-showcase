@@ -24,6 +24,7 @@ import { hasWebGL } from "./webgl-support.js";
 import { createFallbackList, FALLBACK_TEXTS } from "./fallback-list.js";
 import { createTopbarSearch } from "./topbar-search.js";
 import { createFooterFit, HANDY } from "./footer-fit.js";
+import { formatStand } from "./content-stand.js";
 
 // Handy quer: vor dem Graphen messen, damit die Suche schon beim ersten Bild in der Kopfzeile sitzt
 createTopbarSearch();
@@ -110,6 +111,13 @@ async function showFallback(dataset) {
   const brandName = document.getElementById("brand-name");
   if (brandName && graphData.metadata && graphData.metadata.title) {
     brandName.textContent = graphData.metadata.title;
+  }
+  // K6: Inhaltsstand im Über-Panel (Median-Monat der Seitendaten, Build-Datum aus graph.json)
+  const standEl = document.getElementById("about-stand");
+  const standText = formatStand(graphData.metadata, graphData.built_at);
+  if (standEl && standText) {
+    standEl.textContent = standText;
+    standEl.hidden = false;
   }
   // Handy: Legende und "Ueber diese Seite" klappen an derselben Stelle auf, dort ist immer nur eines offen
   const about = document.getElementById("about");

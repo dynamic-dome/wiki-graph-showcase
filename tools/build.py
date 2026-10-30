@@ -14,6 +14,29 @@ from pathlib import Path
 from tools import extract_page_meta, filter_slice, parser
 
 
+_ISO_DATE = re.compile(r"^\d{4}-\d{2}-\d{2}")
+
+
+def _median_month(dates: list[str]) -> str | None:
+    """Monat (YYYY-MM) des mittleren `updated`-Datums der Knoten (K6, #10035).
+
+    Bei gerader Anzahl gilt das untere der beiden mittleren Daten; ohne Daten None.
+    """
+    if not dates:
+        return None
+    ordered = sorted(dates)
+    return ordered[(len(ordered) - 1) // 2][:7]
+
+
+def _metadata_with_stand(metadata: dict, dates: list[str]) -> dict:
+    """Kopie der Config-Metadaten plus `content_median_month` (Inhaltsstand der Seite)."""
+    result = dict(metadata)
+    month = _median_month(dates)
+    if month:
+        result["content_median_month"] = month
+    return result
+
+
 def _slug(node_id: str) -> str:
     return node_id.replace("/", "__")
 
@@ -77,6 +100,7 @@ def run(cfg: dict, out: Path) -> None:
     nodes: list[dict] = []
     metas: dict[str, extract_page_meta.PageMeta] = {}
     vstatus: dict[str, str] = {}
+    updated_dates: list[str] = []
     for p in pages:
         meta = extract_page_meta.extract(p)
         if meta is None:
@@ -95,6 +119,9 @@ def run(cfg: dict, out: Path) -> None:
         }
         # Additive: verification_status badge when present in frontmatter.
         fm = extract_page_meta.read_frontmatter(p) or {}
+        upd = str(fm.get("updated") or "")
+        if _ISO_DATE.match(upd):
+            updated_dates.append(upd[:10])
         vs = fm.get("verification_status")
         if vs:
             node["verification_status"] = str(vs)
@@ -118,7 +145,7 @@ def run(cfg: dict, out: Path) -> None:
         "default_center": cfg["default_center"],
         "theme_default": cfg.get("theme_default", "crab"),
         "default_gold": cfg.get("default_gold", 35),
-        "metadata": cfg.get("metadata", {}),
+        "metadata": _metadata_with_stand(cfg.get("metadata", {}), updated_dates),
         "nodes": nodes,
         "links": [
             {"source": s, "target": t, "type": slice_edge_type[(s, t)]}
