@@ -63,6 +63,34 @@ def test_pre_deploy_sweep_fails_on_internal_path(tmp_path: Path) -> None:
     assert any(f["check"] == "internal_path" for f in manifest["findings"])
 
 
+def test_pre_deploy_sweep_fails_on_home_relative_path(tmp_path: Path) -> None:
+    # 2026-11-13: "~/Desktop/..." in a synthesis lead passed the sweep.
+    dist = tmp_path / "dist"
+    _write_minimal_dist(dist)
+    _write(
+        dist / "assets" / "nodes" / "wiki__synthesis__leak.json",
+        json.dumps({"essence": "Projekt (Pfad `~/Desktop/Claude-Projekte/regelkreis`)"}),
+    )
+
+    code, manifest = pre_deploy_sweep.run(dist)
+
+    assert code == 1
+    assert any(f["check"] == "internal_path" for f in manifest["findings"])
+
+
+def test_pre_deploy_sweep_allows_tilde_outside_paths(tmp_path: Path) -> None:
+    dist = tmp_path / "dist"
+    _write_minimal_dist(dist)
+    _write(
+        dist / "assets" / "nodes" / "wiki__concepts__tilde.json",
+        json.dumps({"essence": "etwa ~50 % Trefferquote, Bereich 1~/2 Seiten"}),
+    )
+
+    code, manifest = pre_deploy_sweep.run(dist)
+
+    assert not any(f["check"] == "internal_path" for f in manifest["findings"])
+
+
 def test_pre_deploy_sweep_allows_https_urls(tmp_path: Path) -> None:
     dist = tmp_path / "dist"
     _write_minimal_dist(dist)

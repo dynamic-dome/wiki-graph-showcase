@@ -13,7 +13,8 @@
     "**/README.md",
     "wiki/topics/ai-pricing-2026.md",
     "wiki/synthesis/consumer-pricing-realitaet-2026.md",
-    "wiki/entities/claude-opus-4-7.md"
+    "wiki/entities/claude-opus-4-7.md",
+    "wiki/synthesis/regelkreis-welle-3-praxis-2026.md"
   ],
   "neighbour_dirs": [
     "wiki/concepts",

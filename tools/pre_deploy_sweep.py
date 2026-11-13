@@ -31,7 +31,8 @@ REQUIRED_FILES = (
 GENERATED_MANIFEST = "assets/build-manifest.json"
 
 RAW_PATTERNS = (
-    ("internal_path", re.compile(r"(?:(?<![A-Za-z])[A-Za-z]:[\\/]|/Users/|\\Users\\)")),
+    # "~/" catches home-relative paths like ~/Desktop/... (2026-11-13), not "1~/2" or "~50"
+    ("internal_path", re.compile(r"(?:(?<![A-Za-z])[A-Za-z]:[\\/]|/Users/|\\Users\\|(?<![\w~])~/(?=[\w.]))")),
     ("private_marker", re.compile(r"\bprivate\s*:\s*true\b", re.IGNORECASE)),
     # Pipeline-Jargon aus dem Vault-Betrieb (#10033): Rechercherunden ("Welle 7", "Welle-7-Quellen"),
     # Loop-Namen ("Loop B", "Loop-B-Cluster"), "Vault-Gap" und Cluster-Ids im Fliesstext
