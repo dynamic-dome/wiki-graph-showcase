@@ -1,7 +1,7 @@
 # Inventory of the kompetenz-wiki core tier (competences/synthesis/topics).
 # Writes a BOM-free, sorted list of vault-relative page IDs (no .md) to TEMP.
 # See global rule 10.6 (run via -File, not inline) and 10.7 (UTF8Encoding($false)).
-$root = 'C:\Users\domes\Desktop\kompetenz-wiki'
+$root = Join-Path $HOME 'Desktop\kompetenz-wiki'
 $dirs = 'wiki\competences', 'wiki\synthesis', 'wiki\topics'
 $out = @()
 foreach ($d in $dirs) {

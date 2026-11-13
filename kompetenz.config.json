@@ -1,6 +1,6 @@
 {
   "dataset": "kompetenz",
-  "vault_root": "C:/Users/domes/Desktop/Claude-Projekte/kompetenz-wiki",
+  "vault_root": "../kompetenz-wiki",
   "src_root": "src",
   "output_subdir": "kompetenz",
   "precompute_layout": { "seed": 7, "scale": 637, "iterations": 200 },

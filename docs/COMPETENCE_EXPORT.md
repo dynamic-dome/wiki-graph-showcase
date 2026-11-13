@@ -6,7 +6,7 @@ identisch zum Astro-Mechanismus, nur über eine zweite Config parametrisiert.
 
 ## Quelle
 
-- **Vault:** `C:/Users/domes/Desktop/kompetenz-wiki` (eigener Vault, nicht `~/wiki`).
+- **Vault:** `~/Desktop/kompetenz-wiki` (eigener Vault, nicht `~/wiki`).
 - **Config:** `kompetenz.config.json` im Repo-Root.
 
 ## Was rein kommt (Scope)

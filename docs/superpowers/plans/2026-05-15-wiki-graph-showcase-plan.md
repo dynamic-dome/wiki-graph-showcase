@@ -11,7 +11,7 @@
 - **Frontend:** Vanilla HTML5 + CSS3 (custom properties for theming) + Vanilla JS (ES2020, no transpiler) + `3d-force-graph` 1.x (vendored, 707 KB) + `three.js` r150+ (transitive via 3d-force-graph)
 - **Tests:** pytest for build script; Playwright (`@playwright/test`) for frontend smoke
 - **Hosting:** Cloudflare Pages with `npm run build` hook (the npm script just shells to Python; no real Node deps needed for the app, only for Playwright dev tests)
-- **Source-of-truth:** Vault at `C:/Users/domes/wiki/` (read-only access during build only)
+- **Source-of-truth:** Vault at `~/wiki/` (read-only access during build only)
 
 ---
 
@@ -140,7 +140,7 @@ Create `~/Desktop/Claude-Projekte/wiki-graph-showcase/CLAUDE.md`:
 - **Tests:** pytest fuer Build, Playwright (TypeScript spec via tsx) fuer Frontend-E2E.
 - **Public-Safety:** Build rejected `private: true`-Frontmatter. Vor jedem ersten Deploy: manueller Sweep durch alle generierten `nodes/*.json` auf private Inhalte (Namen, interne Pfade, etc.).
 - **Parser-Sync:** `tools/parser.py` ist eine Kopie von `dynamic_central_orchestrator/wiki_graph/parser.py` (Quell-Commit im Header dokumentiert). Bei Aenderungen an der DCO-Quelle: hier per Hand syncen, Header-Hash updaten.
-- **Wiki-Read-Only:** Build-Step liest `C:/Users/domes/wiki/`, schreibt NIE dorthin.
+- **Wiki-Read-Only:** Build-Step liest `~/wiki/`, schreibt NIE dorthin.
 ```
 
 - [ ] **Step 5: Write `HOW-TO-USE.md`**
@@ -320,7 +320,7 @@ docs/-convention from user CLAUDE.md."
 - Create: `tools/__init__.py`
 - Create: `tools/parser.py`
 
-**Source:** `C:/Users/domes/dynamic_central_orchestrator/wiki_graph/parser.py` at commit `0050d65` (the 2026-05-15 path-ID + bracket-strip fix).
+**Source:** `~/dynamic_central_orchestrator/wiki_graph/parser.py` at commit `0050d65` (the 2026-05-15 path-ID + bracket-strip fix).
 
 - [ ] **Step 1: Create `tools/__init__.py` (empty)**
 
@@ -332,7 +332,7 @@ echo "" > tools/__init__.py
 
 - [ ] **Step 2: Copy `parser.py` and add provenance header**
 
-Read the source file at `C:/Users/domes/dynamic_central_orchestrator/wiki_graph/parser.py` and copy its full content into `tools/parser.py`, **prepending** these provenance lines just above the existing module docstring (the docstring starts with `"""Wikilink + YAML-frontmatter parser ...`):
+Read the source file at `~/dynamic_central_orchestrator/wiki_graph/parser.py` and copy its full content into `tools/parser.py`, **prepending** these provenance lines just above the existing module docstring (the docstring starts with `"""Wikilink + YAML-frontmatter parser ...`):
 
 ```python
 # Source: dynamic_central_orchestrator/wiki_graph/parser.py @ commit 0050d65
@@ -935,7 +935,7 @@ deterministic sort, missing-file warning."
 **Files:**
 - Create: `tools/build.py`
 - Create: `tests/test_build_end_to_end.py`
-- Create: `showcase.config.json` (real config, points at `C:/Users/domes/wiki`)
+- Create: `showcase.config.json` (real config, points at `~/wiki`)
 
 **Responsibility:** Tie parser + extractor + filter together. Read config, build `dist/assets/graph.json` and `dist/assets/nodes/*.json`, copy template files.
 
@@ -1264,7 +1264,7 @@ Deterministic output (modulo built_at timestamp). 5 e2e tests."
 
 ```json
 {
-  "vault_root": "C:/Users/domes/wiki",
+  "vault_root": "~/wiki",
   "include": [
     "wiki/concepts/allgemeine-relativitaetstheorie.md",
     "wiki/concepts/spezielle-relativitaetstheorie.md",
@@ -1850,7 +1850,7 @@ by JS later."
 Run:
 ```bash
 mkdir -p src/vendor
-cp C:/Users/domes/dynamic_central_orchestrator/vendor/3d-force-graph.min.js src/vendor/3d-force-graph.min.js
+cp ~/dynamic_central_orchestrator/vendor/3d-force-graph.min.js src/vendor/3d-force-graph.min.js
 ```
 
 Expected: file is ~707 KB.
@@ -2916,7 +2916,7 @@ Spot-check the README, browse `docs/`.
   3. Production branch: `main`.
   4. Build settings:
      - Framework preset: `None`.
-     - Build command: `python -m tools.build --config showcase.config.json --out dist/` — **but** Cloudflare's build env may not have access to `C:/Users/domes/wiki` (read: it will not). See Step 2 for the fix.
+     - Build command: `python -m tools.build --config showcase.config.json --out dist/` — **but** Cloudflare's build env may not have access to `~/wiki` (read: it will not). See Step 2 for the fix.
      - Build output directory: `dist`
      - Environment variables: `PYTHON_VERSION=3.11`
 

@@ -53,7 +53,7 @@ def test_pre_deploy_sweep_fails_on_internal_path(tmp_path: Path) -> None:
     _write_minimal_dist(dist)
     _write(
         dist / "assets" / "nodes" / "wiki__concepts__leak.json",
-        json.dumps({"essence": "Source path: C:/Users/domes/wiki/private.md"}),
+        json.dumps({"essence": "Source path: C:/Users/someone/wiki/private.md"}),
     )
 
     code, manifest = pre_deploy_sweep.run(dist)
