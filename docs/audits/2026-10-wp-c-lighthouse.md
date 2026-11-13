@@ -1,6 +1,6 @@
 # WP C (wiki.dynamic-dome.com): Lighthouse-Messprotokoll
 
-Lighthouse 13.4, mobil, nur Performance, Median aus 2 Läufen. Rohdateien liegen lokal unter `C:/Users/domes/AppData/Local/Temp/wiki-lh/` und sind nicht versioniert.
+Lighthouse 13.4, mobil, nur Performance, Median aus 2 Läufen. Rohdateien liegen lokal unter `%TEMP%/wiki-lh/` und sind nicht versioniert.
 
 | Stand | Datum | Ort | Score | FCP ms | LCP ms | TBT ms | CLS | Konsolenfehler |
 |---|---|---|---|---|---|---|---|---|

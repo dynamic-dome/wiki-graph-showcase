@@ -57,7 +57,7 @@ Evidenz: `docs/superpowers/specs/` und `docs/superpowers/plans/` erwaehnen weite
 
 Status: akzeptiertes Risiko.
 
-Evidenz: `showcase.config.json` enthaelt `C:/Users/domes/wiki`, weil der Build den lokalen Vault lesen muss. Die Deploy-Sicherheitsgrenze ist: `dist/` wird gescannt und liefert diesen Pfad nicht aus; die Live-Seite serviert nur generiertes JSON.
+Evidenz: `showcase.config.json` enthaelt `~/wiki`, weil der Build den lokalen Vault lesen muss. Die Deploy-Sicherheitsgrenze ist: `dist/` wird gescannt und liefert diesen Pfad nicht aus; die Live-Seite serviert nur generiertes JSON.
 
 ## Konstruktive Richtung
 

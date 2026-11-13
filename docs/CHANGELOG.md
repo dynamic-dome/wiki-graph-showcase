@@ -290,7 +290,7 @@ Wiki-TODO `~/wiki/wiki/todos/2026-05-15-showcase-essence-extractor.md` auf `stat
 
 ## 2026-05-15 — Phase 0-4: Build-Pipeline lauffaehig
 
-**Stand:** 8 Commits, 23 pytest-Tests gruen, Tree clean. Pipeline produziert real **31 Knoten / 103 Kanten** gegen `C:/Users/domes/wiki/` — innerhalb Spec-Erwartung (31-40 / 30-200).
+**Stand:** 8 Commits, 23 pytest-Tests gruen, Tree clean. Pipeline produziert real **31 Knoten / 103 Kanten** gegen `~/wiki/` — innerhalb Spec-Erwartung (31-40 / 30-200).
 
 **Phasen:**
 - **Phase 0** Scaffold + handoff merge-pack (CLAUDE.md konsolidiert, docs/agent-handoff/, Spec + Plan + 3 visual-references, docs-Struktur PROJECT/CAPABILITIES/ARCHITECTURE/CHANGELOG)
