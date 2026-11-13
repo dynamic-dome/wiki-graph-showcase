@@ -7,7 +7,9 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 import re
+import statistics
 import sys
 from dataclasses import dataclass, asdict
 from datetime import datetime, timezone
@@ -199,6 +201,37 @@ def _scan_ascii_umlauts(path: Path, root: Path, findings: list[Finding]) -> None
             findings.append(Finding("ascii_umlaut", rel, f"{field}: {', '.join(words)}"))
 
 
+# Layout-Wächter (Live-Befund 2026-11-13): Ein Knoten ohne Kante drückte die
+# vorgerechneten Positionen zusammen, die Nebula wurde zum Knäuel (Median- zu
+# Maximalabstand vom Zentrum 0,04). Gesunde Stände lagen bei 0,29 und 0,33.
+LAYOUT_MIN_MEDIAN_TO_MAX = 0.15
+
+
+def _check_layout_spread(path: Path, root: Path, findings: list[Finding]) -> None:
+    try:
+        graph = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return  # ungültiges JSON meldet _scan_json_strings
+    nodes = graph.get("nodes", []) if isinstance(graph, dict) else []
+    radii = []
+    for node in nodes:
+        coords = [node.get(axis) for axis in ("x", "y", "z")] if isinstance(node, dict) else []
+        if len(coords) == 3 and all(isinstance(c, (int, float)) for c in coords):
+            radii.append(math.dist((0.0, 0.0, 0.0), coords))
+    if len(radii) < 10 or max(radii) == 0:
+        return  # kein vorgerechnetes Layout (Physik-Datensatz) oder zu klein
+    ratio = statistics.median(radii) / max(radii)
+    if ratio < LAYOUT_MIN_MEDIAN_TO_MAX:
+        findings.append(
+            Finding(
+                "layout_collapsed",
+                _rel(path, root),
+                f"Median/Maximum der Abstände vom Zentrum {ratio:.2f} < {LAYOUT_MIN_MEDIAN_TO_MAX}: "
+                "Knoten liegen zusammengedrückt (Ausreißer, z. B. ein Knoten ohne Kante)",
+            )
+        )
+
+
 def _graph_stats(graph: dict) -> dict:
     nodes = graph.get("nodes", [])
     links = graph.get("links", [])
@@ -258,6 +291,7 @@ def run(dist: Path, write_manifest: bool = False) -> tuple[int, dict]:
     graph = _scan_json_strings(graph_path, dist, findings) if graph_path.is_file() else None
     for graph_json in sorted((dist / "assets").glob("*/graph.json")):
         _scan_json_strings(graph_json, dist, findings)
+        _check_layout_spread(graph_json, dist, findings)
     for node_path in sorted((dist / "assets").rglob("nodes/*.json")):
         _scan_json_strings(node_path, dist, findings)
 

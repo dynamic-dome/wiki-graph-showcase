@@ -405,3 +405,47 @@ def test_ascii_umlaut_exceptions_do_not_hide_german_ascii_words(word: str) -> No
 )
 def test_ascii_umlaut_allows_whole_word_exceptions_and_english_terms(text: str) -> None:
     assert pre_deploy_sweep.find_ascii_umlauts(text) == []
+
+
+def _write_layout_graph(dist: Path, radii: list[float]) -> None:
+    """Kompetenz-Graph mit vorgerechneten Positionen auf der x-Achse."""
+    nodes = [
+        {"id": f"wiki/concepts/n{i}", "cluster": "k", "x": r, "y": 0.0, "z": 0.0}
+        for i, r in enumerate(radii)
+    ]
+    graph = {"built_at": "2026-11-13T00:00:00+00:00", "nodes": nodes, "links": []}
+    _write(dist / "assets" / "kompetenz" / "graph.json", json.dumps(graph))
+
+
+def test_sweep_flags_collapsed_layout(tmp_path: Path) -> None:
+    # Live-Befund 2026-11-13: ein Knoten ohne Kante bei r=694, der Rest im
+    # Median bei r=29 (Verhältnis 0,04). So ein Knäuel darf nicht deployt werden.
+    dist = tmp_path / "dist"
+    _write_minimal_dist(dist)
+    _write_layout_graph(dist, [694.0] + [29.0] * 40)
+
+    code, manifest = pre_deploy_sweep.run(dist)
+
+    assert code == 1
+    assert [f for f in manifest["findings"] if f["check"] == "layout_collapsed"]
+
+
+def test_sweep_accepts_spread_layout(tmp_path: Path) -> None:
+    # Gesunde Stände: Median/Maximum 225/779 (Woche davor) und 307/923 (nach dem Fix).
+    dist = tmp_path / "dist"
+    _write_minimal_dist(dist)
+    _write_layout_graph(dist, [779.0] + [225.0] * 40)
+
+    code, manifest = pre_deploy_sweep.run(dist)
+
+    assert code == 0, manifest["findings"]
+
+
+def test_sweep_ignores_graph_without_positions(tmp_path: Path) -> None:
+    # Der Physik-Datensatz rechnet sein Layout im Browser, ohne x/y/z.
+    dist = tmp_path / "dist"
+    _write_minimal_dist(dist)
+
+    code, _ = pre_deploy_sweep.run(dist)
+
+    assert code == 0
